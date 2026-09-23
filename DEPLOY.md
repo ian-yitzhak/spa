@@ -157,6 +157,14 @@ systemctl start beautyflow
 
 **Restore media:** `tar -xzf /var/backups/beautyflow/media-….tar.gz -C /home/beautyflow/app && chown -R beautyflow:beautyflow /home/beautyflow/app/media`
 
+## Speed notes
+
+- CSS is precompiled (`static/css/tw.css`, see README) and htmx is served from `/static/`; nothing on a
+  page is built in the browser. Pages answer in ~0.1 s at the origin.
+- gunicorn 26 keeps a control socket in `/home/beautyflow/.gunicorn`. The unit must list it in
+  `ReadWritePaths` (the sandbox makes the home folder read-only); without it a graceful reload can stall
+  requests for over a minute. Create it with `install -d -o beautyflow -g beautyflow -m 700 /home/beautyflow/.gunicorn`.
+
 ## Common operations
 
 ```bash
@@ -213,7 +221,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/beautyflow/app/media
+ReadWritePaths=/home/beautyflow/app/media /home/beautyflow/.gunicorn
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=beautyflow
