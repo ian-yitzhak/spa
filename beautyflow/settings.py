@@ -54,6 +54,7 @@ CSRF_COOKIE_SAMESITE = "Lax"
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755  # nginx (www-data) serves /media/ and must be able to enter every folder
 ADMINS = [(n, e) for n, e in [a.split(":") for a in os.environ.get("ADMINS", "").split(",") if ":" in a]]
 LOGIN_LOCKOUT_ATTEMPTS = 5
 LOGIN_LOCKOUT_MINUTES = 15
