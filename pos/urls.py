@@ -16,7 +16,6 @@ urlpatterns = [
     path("open/", views.open_tickets, name="pos_open"),
     path("open/<uuid:pk>/resume/", views.resume, name="pos_resume"),
     path("sales/", views.sales, name="pos_sales"),
-    path("sales/<uuid:pk>/void/", views.void, name="pos_void"),
     path("reports/", views.reports, name="pos_reports"),
     path("receipt/<uuid:pk>/", views.receipt, name="pos_receipt"),
     path("receipt/<uuid:pk>/pdf/", views.receipt_pdf, name="pos_receipt_pdf"),

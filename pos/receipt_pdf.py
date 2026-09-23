@@ -60,10 +60,13 @@ def build_receipt_pdf(order, public_url):
         row("Cash", f"{order.paid_cash:,.2f}")
     if order.customer_name:
         row("Client", order.customer_name)
+    names = list(dict.fromkeys(it.staff.name for it in items if it.staff_id))
+    if len(names) == 1:
+        row("Done by", names[0])
     dashes()
     for it in items:
         row(f"{it.qty} x {it.name}", f"{it.line_total:,.2f}")
-        if it.staff_id:
+        if it.staff_id and len(names) > 1:
             line(f"   by {it.staff.name}", 7, dy=4)
     dashes()
     if order.discount:

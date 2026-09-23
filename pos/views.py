@@ -330,24 +330,6 @@ def pay(request):
     return resp
 
 
-@owner_pos_required
-@require_POST
-def void(request, pk):
-    """Cancel a paid sale (wrong entry, refund). Not once any of its commission has been paid out."""
-    order = get_object_or_404(request.vendor.orders, pk=pk, paid_at__isnull=False)
-    if order.items.filter(payout__isnull=False).exists():
-        messages.error(request, "Commission on this sale has already been paid out, so it can't be voided. "
-                                "Take it off the staff member's next payout as a deduction instead.")
-    elif order.status != Order.Status.CANCELLED:
-        order.status = Order.Status.CANCELLED
-        order.reconcile_note = (request.POST.get("note") or "Voided").strip()[:200]
-        order.reconciled_at = timezone.now()
-        order.save(update_fields=["status", "reconcile_note", "reconciled_at", "updated_at"])
-        order.items.update(commission=0)
-        messages.warning(request, f"Sale #{order.ref} voided. It no longer counts in sales or commission.")
-    return redirect("pos_sales")
-
-
 # ── Sales ──────────────────────────────────────────────────────────────
 
 @pos_required
@@ -528,13 +510,18 @@ def reports(request):
 
 # ── Receipts ───────────────────────────────────────────────────────────
 
+def _receipt_lines(order):
+    """The lines, plus who did them: one name for the whole receipt when one person did everything."""
+    items = list(order.items.select_related("staff__user"))
+    names = list(dict.fromkeys(l.staff.name for l in items if l.staff_id))
+    return {"items": items, "many_staff": len(names) > 1, "done_by": names[0] if len(names) == 1 else ""}
+
+
 @pos_required
 def receipt(request, pk):
     order = get_object_or_404(_visible_orders(request).select_related("cashier", "vendor"), pk=pk)
-    return render(request, "pos/receipt.html", {"vendor": order.vendor, "order": order,
-                                                "items": order.items.select_related("staff__user"),
-                                                "public_url": request.build_absolute_uri(f"/r/{order.pk}/"), "owner": True,
-                                                "can_void": request.role == "owner" and order.is_paid and order.status != Order.Status.CANCELLED})
+    return render(request, "pos/receipt.html", {"vendor": order.vendor, "order": order, **_receipt_lines(order),
+                                                "public_url": request.build_absolute_uri(f"/r/{order.pk}/"), "owner": True})
 
 
 @pos_required
@@ -569,8 +556,7 @@ def public_receipt_pdf(request, pk):
 def public_receipt(request, pk):
     """Shareable receipt (UUID acts as the secret)."""
     order = get_object_or_404(Order.objects.select_related("vendor"), pk=pk, paid_at__isnull=False)
-    return render(request, "pos/receipt.html", {"vendor": order.vendor, "order": order,
-                                                "items": order.items.select_related("staff__user"),
+    return render(request, "pos/receipt.html", {"vendor": order.vendor, "order": order, **_receipt_lines(order),
                                                 "public_url": request.build_absolute_uri(), "owner": False})
 
 

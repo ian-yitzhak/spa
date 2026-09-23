@@ -107,21 +107,13 @@ class PayoutTests(SalonCase):
         self.client.force_login(self.joy.user)
         self.assertEqual(self.client.get(f"/pos/payouts/{p.pk}/").status_code, 404)
 
-    def test_paid_out_sale_cannot_be_voided(self):
-        o = self.ring_up(self.amina, self.braids)
-        StaffPayout.pay(self.amina, [o.items.get().pk], self.owner, "cash")
+    def test_receipt_names_the_stylist_once(self):
+        o = self.ring_up(self.amina, self.braids, self.nails)
         self.client.force_login(self.owner)
-        self.client.post(f"/pos/sales/{o.pk}/void/")
-        o.refresh_from_db()
-        self.assertEqual(o.status, Order.Status.DONE)
-
-    def test_void_removes_commission(self):
-        o = self.ring_up(self.amina, self.braids)
-        self.client.force_login(self.owner)
-        self.client.post(f"/pos/sales/{o.pk}/void/", {"note": "wrong client"})
-        o.refresh_from_db()
-        self.assertEqual(o.status, Order.Status.CANCELLED)
-        self.assertEqual(self.amina.balance(), 0)
+        page = self.client.get(f"/pos/receipt/{o.pk}/").content.decode()
+        self.assertEqual(page.count("Amina"), 1)
+        self.assertIn("Done by", page)
+        self.assertNotIn("Void", page)
 
 
 class AccessTests(SalonCase):
