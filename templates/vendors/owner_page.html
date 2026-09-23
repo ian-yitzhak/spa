@@ -8,7 +8,7 @@
 ]}</script>{% endblock %}
 {% block content %}
 <section class="bg-dark text-white"><div class="hero-in mx-auto max-w-4xl px-4 py-16">
-  <p class="text-sm font-semibold uppercase tracking-wider text-accent">{% if kind == 'salon' %}For salons{% elif kind == 'spa' %}For spas &amp; massage{% elif kind == 'barber' %}For barbershops{% elif kind == 'booking' %}Online booking{% else %}Free listing{% endif %}</p>
+  <p class="text-sm font-semibold text-accent">{% if kind == 'salon' %}For salons{% elif kind == 'spa' %}For spas &amp; massage{% elif kind == 'barber' %}For barbershops{% elif kind == 'booking' %}Online booking{% else %}Free listing{% endif %}</p>
   <h1 class="mt-2 font-heading text-3xl font-semibold md:text-4xl">{% if kind == 'salon' %}Know what every stylist earns — without a calculator{% elif kind == 'spa' %}Bookings, therapists and payouts in one place{% elif kind == 'barber' %}Every cut on record. Every barber paid right.{% elif kind == 'booking' %}Let clients book the stylist they want{% else %}Put your beauty business on the map{% endif %}</h1>
   <p class="mt-4 max-w-2xl text-lg text-gray-200">{{ meta }}</p>
   <div class="mt-6 flex flex-wrap gap-2"><a href="{% url 'signup' %}" class="rounded-lg bg-primary px-5 py-3 font-semibold hover:bg-primary/90">Start free</a><a href="{% url 'pricing' %}" class="rounded-lg border border-white/30 px-5 py-3 font-semibold">See pricing</a></div>

@@ -44,6 +44,6 @@
   <section><h2 class="font-bold">Reviews ({{ v.reviews.count }})</h2>
     <ul class="mt-2 divide-y rounded-2xl border text-sm">{% for r in reviews %}<li class="p-2"><strong>{{ r.name }}</strong> <span class="text-accent">{% for _ in "x"|rjust:r.stars %}★{% endfor %}</span>{% if not r.is_approved %} <span class="text-xs text-gray-400">hidden</span>{% endif %}<div class="text-gray-600">{{ r.comment }}</div></li>{% empty %}<li class="p-3 text-gray-500">None</li>{% endfor %}</ul></section>
   <section class="lg:col-span-2"><h2 class="font-bold">Recent inquiries</h2>
-    <ul class="mt-2 divide-y rounded-2xl border text-sm">{% for i in inquiries %}<li class="p-2"><span class="rounded bg-gray-100 px-1 text-xs uppercase">{{ i.get_kind_display }}</span> <strong>{{ i.name }}</strong> · {{ i.phone }} · <span class="text-gray-400">{{ i.created_at|timesince }} ago</span><div class="text-gray-600">{{ i.message }}</div></li>{% empty %}<li class="p-3 text-gray-500">None</li>{% endfor %}</ul></section>
+    <ul class="mt-2 divide-y rounded-2xl border text-sm">{% for i in inquiries %}<li class="p-2"><span class="rounded bg-gray-100 px-1 text-xs">{{ i.get_kind_display }}</span> <strong>{{ i.name }}</strong> · {{ i.phone }} · <span class="text-gray-400">{{ i.created_at|timesince }} ago</span><div class="text-gray-600">{{ i.message }}</div></li>{% empty %}<li class="p-3 text-gray-500">None</li>{% endfor %}</ul></section>
 </div>
 {% endblock %}

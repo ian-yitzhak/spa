@@ -13,7 +13,7 @@
       <div>
         <div class="flex items-center gap-2">
           <h2 class="font-heading text-lg font-semibold">{{ b.name }}</h2>
-          {% if b.is_main %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gray-500">Main</span>{% endif %}
+          {% if b.is_main %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">Main</span>{% endif %}
           {% if b.pos_active %}<span class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">Active · {{ b.days_left }}d left</span>
           {% elif b.pos_expires_at %}<span class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">Expired {{ b.pos_expires_at|date:"j M" }}</span>
           {% else %}<span class="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-800">Not paid yet</span>{% endif %}

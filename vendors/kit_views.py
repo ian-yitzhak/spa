@@ -91,7 +91,7 @@ def kit_image(request, kind):
         block = int(name_font.size * 1.15) + 16 + int(tag_font.size * 1.15); y0 = (520 - block) // 2  # name + tagline centred in the band
         _put(d, (x, y0), v.brand_name, W - x - 120, 150, WHITE)
         _put(d, (x, y0 + int(name_font.size * 1.15) + 16), tag, W - x - 120, 64, ORANGE, False)
-        _center(d, 700, "OUR PRICES", _font(140), RED, W); _center(d, 880, "Scan to see services, prices & photos", _font(72, False), DARK, W)
+        _center(d, 700, "Our prices", _font(140), RED, W); _center(d, 880, "Scan to see services, prices & photos", _font(72, False), DARK, W)
         q = _qr(url, 1500); img.paste(q, ((W - 1500) // 2, 1020)); _center(d, 2600, "Book your next appointment online", _font(72, False), (80, 80, 80), W)
         if v.phone: _center(d, 2720, f"Call / WhatsApp {v.phone}", _font(72), DARK, W)
         d.rectangle([0, H - 220, W, H], fill=RED); _center(d, H - 160, "Powered by BeautyFlow · beautyflow.co.ke", _font(72), WHITE, W)

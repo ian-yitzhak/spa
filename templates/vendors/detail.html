@@ -52,7 +52,7 @@
           <article class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:flex">
             {% if o.image %}<div class="relative h-44 w-full flex-none sm:h-auto sm:w-52"><img src="{{ o.image.url }}" alt="{{ o.title }}" class="h-full w-full object-cover sm:absolute sm:inset-0"></div>{% endif %}
             <div class="flex min-w-0 flex-1 flex-col p-5">
-              <span class="inline-flex w-fit items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">{% icon "tag" "h-3 w-3" %}Offer</span>
+              <span class="inline-flex w-fit items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-semibold text-white">{% icon "tag" "h-3 w-3" %}Offer</span>
               <h3 class="mt-2 font-heading text-lg font-semibold leading-snug text-black">{{ o.title }}</h3>
               {% if o.details %}<p class="mt-1 line-clamp-3 text-sm text-gray-600">{{ o.details }}</p>{% endif %}
               <div class="mt-auto flex flex-wrap items-center gap-3 pt-4 text-xs text-gray-500">

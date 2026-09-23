@@ -5,7 +5,7 @@
   <tbody>{% for i in inquiries %}<tr class="border-t align-top {% if not i.is_read %}bg-red-50/40{% endif %}">
     <td class="p-3 whitespace-nowrap text-gray-500">{{ i.created_at|date:"j M H:i" }}</td>
     <td class="p-3"><a href="{% url 'ap_vendor' i.vendor.pk %}" class="hover:text-primary">{{ i.vendor.brand_name }}</a></td>
-    <td class="p-3"><span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs uppercase">{{ i.get_kind_display }}</span></td>
+    <td class="p-3"><span class="rounded bg-gray-100 px-1.5 py-0.5 text-xs">{{ i.get_kind_display }}</span></td>
     <td class="p-3">{{ i.name }}<div class="text-xs text-gray-500">{{ i.phone }}</div></td>
     <td class="p-3 text-gray-700">{{ i.message }}{% if i.item %}<div class="text-xs text-gray-400">Item: {{ i.item.name }}</div>{% endif %}</td>
   </tr>{% empty %}<tr><td colspan="5" class="p-6 text-center text-gray-500">No inquiries yet.</td></tr>{% endfor %}</tbody></table>

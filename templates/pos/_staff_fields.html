@@ -1,6 +1,6 @@
 {% load icons %}
 <fieldset class="grid gap-3 sm:grid-cols-2">
-  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Who they are</legend>
+  <legend class="mb-2 text-xs font-semibold text-gray-500">Who they are</legend>
   {% include "pos/_field.html" with f=form.first_name cls="" %}
   {% include "pos/_field.html" with f=form.job_title cls="" %}
   <div class="sm:col-span-2"><span class="mb-1 block text-sm font-medium">Role</span>
@@ -14,18 +14,18 @@
   <label class="flex items-center gap-2 text-sm sm:col-span-2">{{ form.show_on_site }} {{ form.show_on_site.label }}</label>
 </fieldset>
 <fieldset class="mt-6 grid gap-3 sm:grid-cols-2">
-  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Login</legend>
+  <legend class="mb-2 text-xs font-semibold text-gray-500">Login</legend>
   {% include "pos/_field.html" with f=form.email cls="" %}
   {% include "pos/_field.html" with f=form.password cls="" %}
 </fieldset>
 <fieldset class="mt-6 grid gap-3 sm:grid-cols-3">
-  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Pay</legend>
+  <legend class="mb-2 text-xs font-semibold text-gray-500">Pay</legend>
   {% include "pos/_field.html" with f=form.commission_type cls="" %}
   {% include "pos/_field.html" with f=form.commission_value cls="" %}
   {% include "pos/_field.html" with f=form.payout_phone cls="" %}
 </fieldset>
 <fieldset class="mt-6">
-  <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Services they do</legend>
+  <legend class="mb-1 text-xs font-semibold text-gray-500">Services they do</legend>
   <p class="mb-2 text-xs text-gray-500">Tick what they do. Leave the rate blank to use their default, or set a different % or KES for that service. Cashiers don't need services.</p>
   {% if services %}
   <div class="mb-2 flex gap-2 text-xs"><button type="button" onclick="document.querySelectorAll('[data-svc]').forEach(function(c){c.checked=true})" class="rounded border px-2 py-1">Tick all</button><button type="button" onclick="document.querySelectorAll('[data-svc]').forEach(function(c){c.checked=false})" class="rounded border px-2 py-1">Untick all</button></div>

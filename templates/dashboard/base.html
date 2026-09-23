@@ -35,7 +35,7 @@
     </nav>
     {% else %}
     <nav class="flex flex-col gap-1 rounded-2xl border p-2 text-sm lg:border-0 lg:p-0" aria-label="Dashboard">
-      <div class="px-3 pt-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Business</div>
+      <div class="px-3 pt-1 text-[11px] font-semibold text-gray-400">Business</div>
       <a href="{% url 'dashboard' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'dashboard' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "home" %}Overview</a>
       <a href="{% url 'dashboard_profile' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'dashboard_profile' or u == 'dashboard_hours' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "id" %}Business profile</a>
       <details class="group" {% if u == 'dashboard_menu' or u == 'item_new' or u == 'item_edit' or u == 'dashboard_gallery' or u == 'dashboard_offers' or u == 'dashboard_inquiries' or u == 'dashboard_reviews' or u == 'dashboard_kit' or u == 'dashboard_share' %}open{% endif %}>

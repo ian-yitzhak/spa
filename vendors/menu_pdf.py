@@ -116,7 +116,7 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
         cx = col_x[col]; y = y_cols[col]
         if y - 7 * mm < bottom:
             new_page(); y = y_cols[col]
-        c.setFillColor(DARK); c.setFont("Helvetica-Bold", 11.5); c.drawString(cx, y, name.upper()); y -= 6.5 * mm
+        c.setFillColor(DARK); c.setFont("Helvetica-Bold", 11.5); c.drawString(cx, y, name); y -= 6.5 * mm
         for it in items:
             if y < bottom:
                 y_cols[col] = y; new_page(); y = y_cols[col]

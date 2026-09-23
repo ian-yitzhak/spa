@@ -71,7 +71,7 @@ def build_receipt_pdf(order, public_url):
         row("Discount", f"-{order.discount:,.2f}")
     row("Subtotal", f"{order.subtotal:,.2f}")
     row("VAT (16%)", f"{order.tax:,.2f}")
-    row("TOTAL", f"KES {order.total:,.2f}", True, 11)
+    row("Total", f"KES {order.total:,.2f}", True, 11)
     if order.is_paid:
         row("Paid via", f"{order.get_payment_method_display()}{' ' + order.payment_ref if order.payment_ref else ''}")
         if order.payer_name:
@@ -83,7 +83,7 @@ def build_receipt_pdf(order, public_url):
             row("Received", f"{order.received:,.2f}")
             row("Change", f"{order.change_due:,.2f}", True)
     else:
-        line("NOT PAID", 10, True, "center")
+        line("Not paid", 10, True, "center")
         line("Awaiting payment", 8, align="center", dy=4)
     dashes()
     line("Thank you! Karibu tena.", 8, align="center", dy=4)

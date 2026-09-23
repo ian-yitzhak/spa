@@ -16,7 +16,7 @@
 <div class="mt-4 grid gap-4 lg:grid-cols-12">
   <div class="lg:col-span-7">
     <div class="rounded-xl border bg-gray-50 p-3">
-      <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Who is doing it?</div>
+      <div class="mb-2 text-xs font-semibold text-gray-500">Who is doing it?</div>
       <div class="flex flex-wrap gap-2">
         <a href="?staff=" class="rounded-full border px-3 py-1.5 text-sm {% if not picked %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">Pick on the ticket</a>
         {% for s in team %}<a href="?staff={{ s.pk }}" class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm {% if picked and picked.pk == s.pk %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">

@@ -70,11 +70,11 @@
     var TOTAL={{ order.total|floatformat:"-2" }};
     var form=document.getElementById('pay-form');
     form.addEventListener('htmx:confirm',function(e){e.preventDefault();
-      var m=document.getElementById('pay-method').value,names={cash:'CASH',mpesa:'M-PESA',card:'CARD',split:'M-PESA & CASH'},extra='';
+      var m=document.getElementById('pay-method').value,names={cash:'cash',mpesa:'M-Pesa',card:'card',split:'M-Pesa and cash'},extra='';
       if(m==='split'){var mp=+(form.querySelector('[name=mpesa_amount]').value||0),ca=+(form.querySelector('[name=cash_amount]').value||0);
         if(mp+ca<=0){alert('Enter the M-Pesa and cash amounts.');return}
         extra='\nM-Pesa '+mp.toLocaleString()+' + cash '+ca.toLocaleString()+' = '+(mp+ca).toLocaleString();}
-      if(confirm('Record a '+names[m]+' payment of KES {{ order.total|kes }}?'+extra+'\n\nThis completes the sale and books the commission.'))e.detail.issueRequest(true)});
+      if(confirm('Record '+names[m]+' payment of KES {{ order.total|kes }}?'+extra+'\n\nThis completes the sale and books the commission.'))e.detail.issueRequest(true)});
     form.addEventListener('htmx:responseError',function(e){var box=document.getElementById('pay-err');box.textContent=e.detail.xhr.responseText;box.classList.remove('hidden')});
     function splitLeft(){var mp=+(form.querySelector('[name=mpesa_amount]').value||0),ca=+(form.querySelector('[name=cash_amount]').value||0),left=TOTAL-mp-ca;
       document.getElementById('split-left').textContent=left>0?('Remaining KES '+left.toLocaleString()):(left<0?('Change KES '+Math.abs(left).toLocaleString()):'Adds up to the total.')}
