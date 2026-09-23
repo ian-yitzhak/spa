@@ -25,8 +25,8 @@ goes live once DNS points here and the certificate is issued (see "Going live").
 
 ## First admin
 
-`ianenoch11@gmail.com` (superuser, email pre-verified). The starting password is in
-`/root/beautyflow-admin.txt` on the server — change it after the first login.
+`ianenoch11@gmail.com` — platform owner (superuser, role admin, email pre-verified). The password was set
+on 23 Sep 2026 and isn't stored on the server. To reset it, use `manage.py changepassword ianenoch11@gmail.com` as the app user.
 Log in at `/login/`; a 6-digit code is emailed, then you land on `/admin/`.
 
 ## Going live (DNS + HTTPS)
