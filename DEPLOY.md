@@ -1,8 +1,8 @@
 # BeautyFlow — Deployment
 
 Dedicated VPS **173.249.23.183** (Ubuntu 24.04, 8 GB RAM, 96 GB disk). Nothing else runs on it.
-Set up 23 Sep 2026. The app answers on `http://173.249.23.183/` now; **https://beautyflow.co.ke**
-goes live once DNS points here and the certificate is issued (see "Going live").
+Live at **https://beautyflow.co.ke** since 23 Sep 2026: Cloudflare (proxied, nameservers
+`giancarlo`/`lana.ns.cloudflare.com`) → this VPS, with a Let's Encrypt certificate on the origin.
 
 ## Server layout
 
@@ -20,6 +20,7 @@ goes live once DNS points here and the certificate is issued (see "Going live").
 | Reverse proxy | `/etc/nginx/sites-available/beautyflow` (symlinked into `sites-enabled`, the default site is removed) |
 | Database | PostgreSQL db `beautyflow`, role `beautyflow`, listens on localhost only. Password in `.env` and `/root/.beautyflow-db-pass` |
 | Firewall | `ufw`: only SSH (22), HTTP (80), HTTPS (443) |
+| DNS resolver | The provider's resolvers (195.179.224.53, 209.126.15.53) stopped answering, so `/etc/systemd/resolved.conf.d/public-dns.conf` sets 1.1.1.1 / 8.8.8.8. Without it certbot renewals, email and Paystack calls fail |
 | Brute force | `fail2ban` on sshd — 5 failures = 1 h ban (`fail2ban-client status sshd`) |
 | Logs | `journalctl -u beautyflow -f` · `/var/log/nginx/beautyflow.{access,error}.log` |
 
@@ -35,7 +36,11 @@ Log in at `/login/`; a 6-digit code is emailed, then you land on `/admin/`.
    - `A  beautyflow.co.ke      → 173.249.23.183`
    - `A  www.beautyflow.co.ke  → 173.249.23.183` (or a CNAME to the apex)
    If you use Cloudflare, leave the records **grey-cloud (DNS only)** until step 2 is done.
-2. On the server, once `dig +short beautyflow.co.ke` shows the new IP:
+*Done 23 Sep 2026: both records are proxied in Cloudflare and the certificate is issued. Cloudflare SSL mode is
+"Full" — it connects to the origin on 443, so if the certificate or the 443 block ever goes away the site shows
+**Cloudflare error 521**. Check with `ss -ltn | grep 443` and `certbot certificates`.*
+
+2. On the server, once `dig +short beautyflow.co.ke` shows the new IP (or Cloudflare's IPs when proxied):
    ```bash
    certbot --nginx -d beautyflow.co.ke -d www.beautyflow.co.ke --redirect -m ianenoch11@gmail.com --agree-tos -n
    systemctl reload nginx

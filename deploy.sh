@@ -18,4 +18,4 @@ sshpass -e $SSH "$HOST" "export LC_ALL=C.UTF-8; set -e
 chown -R beautyflow:beautyflow $APP
 sudo -u beautyflow -H bash -c 'cd $APP && /home/beautyflow/venv/bin/pip install -q -r requirements.txt && (/home/beautyflow/venv/bin/pip-audit --progress-spinner off 2>&1 | tail -2 || true) && /home/beautyflow/venv/bin/python manage.py migrate --noinput && /home/beautyflow/venv/bin/python manage.py collectstatic --noinput | tail -1'
 systemctl reload beautyflow && sleep 3 && systemctl is-active beautyflow  # graceful: no 502 window
-curl -s -o /dev/null -w 'app via nginx -> %{http_code}\n' --max-time 20 -H 'Host: beautyflow.co.ke' http://127.0.0.1/"
+curl -s -o /dev/null -w 'https://beautyflow.co.ke (origin) -> %{http_code}\n' --max-time 20 --resolve beautyflow.co.ke:443:127.0.0.1 https://beautyflow.co.ke/"
