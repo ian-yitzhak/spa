@@ -954,7 +954,7 @@ def _month_calendar(shifts_by_date, month_start, today):
 
 @owner_pos_required
 def shifts(request):
-    """Today's board, the week's rota, and — for one person — their month on a calendar."""
+    """Today's board and the staff list; one person's shifts on a month calendar."""
     from .forms import StaffShiftForm
     v = request.vendor
     today = timezone.localdate()
@@ -975,7 +975,7 @@ def shifts(request):
                                                  defaults={"starts": s.starts, "ends": s.ends, "branch": s.branch, "note": s.note})
         messages.success(request, f"{s.staff.name} on {s.date:%a %d %b}, {s.starts:%H:%M}–{s.ends:%H:%M}" + (" and the rest of that week." if repeat else "."))
         back = request.POST.get("next") or ""
-        return redirect(back if back.startswith("/pos/shifts/") else f"{request.path}?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
+        return redirect(back if back.startswith("/pos/shifts/") else f"{request.path}?staff={s.staff_id}&month={s.date:%Y-%m}")
     team, board = _today_board(request, v, today)
     ctx = _ctx(request, form=form, today=today, board=board, team=team, who=who, statuses=StaffShift.Status.choices)
     if who:
@@ -995,22 +995,6 @@ def shifts(request):
                                 "absent": sum(1 for x in rows if x.status == StaffShift.Status.ABSENT),
                                 "leave": sum(1 for x in rows if x.status == StaffShift.Status.LEAVE)})
         return render(request, "pos/shifts_person.html", ctx)
-    try:
-        start = timezone.datetime.strptime(request.GET.get("week", ""), "%Y-%m-%d").date()
-    except ValueError:
-        start = today
-    start -= timedelta(days=start.weekday())
-    days = [start + timedelta(days=i) for i in range(7)]
-    week = _scope(request, v.staff_shifts.filter(date__gte=days[0], date__lte=days[-1])).select_related("staff__user")
-    grid = {}
-    for sh in week:
-        grid.setdefault((sh.staff_id, sh.date), []).append(sh)
-    table = [{"staff": st, "cells": [{"date": d, "shifts": grid.get((st.pk, d), [])} for d in days],
-              "hours": round(sum(x.hours for d in days for x in grid.get((st.pk, d), [])
-                                 if x.status in (StaffShift.Status.WORKED, StaffShift.Status.PLANNED)), 1)}
-             for st in team]
-    ctx.update(days=days, table=table, prev=(start - timedelta(days=7)).isoformat(), next=(start + timedelta(days=7)).isoformat(),
-               this_week=(today - timedelta(days=today.weekday())).isoformat())
     return render(request, "pos/shifts.html", ctx)
 
 
@@ -1025,7 +1009,7 @@ def shift_status(request, pk):
         s.status = target
         s.save(update_fields=["status"])
     back = request.POST.get("next") or ""
-    return redirect(back if back.startswith("/pos/shifts/") else f"/pos/shifts/?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
+    return redirect(back if back.startswith("/pos/shifts/") else f"/pos/shifts/?staff={s.staff_id}&month={s.date:%Y-%m}")
 
 
 # ── Branches (owner) ──────────────────────────────────────────────────

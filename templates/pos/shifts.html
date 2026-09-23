@@ -1,26 +1,11 @@
 {% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Staff shifts{% endblock %}{% block dash %}
-<div class="flex flex-wrap items-center justify-between gap-2">
-  <div><h1 class="text-2xl font-black">Staff shifts</h1><p class="text-sm text-gray-500">{{ today|date:"l j F" }}</p></div>
-</div>
+<h1 class="text-2xl font-black">Staff shifts</h1>
+<p class="text-sm text-gray-500">{{ today|date:"l j F" }}</p>
 <div class="mt-4">{% include "pos/_shifts_top.html" %}</div>
 
-<div class="mt-8 flex flex-wrap items-center justify-between gap-2">
-  <h2 class="font-bold">Week of {{ days.0|date:"j M" }} – {{ days.6|date:"j M Y" }}</h2>
-  <div class="flex items-center gap-1 text-sm">
-    <a href="?week={{ prev }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50" aria-label="Previous week">‹</a>
-    <a href="?week={{ this_week }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50">This week</a>
-    <a href="?week={{ next }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50" aria-label="Next week">›</a>
-  </div>
+<h2 class="mt-8 font-bold">Staff</h2>
+<div class="mt-3 divide-y rounded-2xl border">
+  {% for st in team %}<a href="?staff={{ st.pk }}" class="flex items-center justify-between px-5 py-3 font-semibold hover:bg-gray-50 hover:text-primary">{{ st.name }}<span class="text-gray-300">›</span></a>
+  {% empty %}<p class="p-6 text-center text-sm text-gray-500">Add staff first, then plan their shifts here.</p>{% endfor %}
 </div>
-<div class="mt-3 overflow-x-auto rounded-2xl border">
-  <table class="w-full min-w-[760px] table-fixed text-sm">
-    <thead class="bg-gray-50 text-left text-xs text-gray-500"><tr><th class="w-40 p-3">Staff</th>{% for d in days %}<th class="p-2 {% if d == today %}text-primary{% endif %}">{{ d|date:"D" }} <span class="{% if d == today %}rounded-full bg-primary px-1.5 text-white{% endif %}">{{ d|date:"j" }}</span></th>{% endfor %}<th class="w-16 p-3 text-right">Hrs</th></tr></thead>
-    <tbody>{% for row in table %}<tr class="border-t align-top">
-      <td class="p-3"><a href="?staff={{ row.staff.pk }}" class="font-semibold hover:text-primary">{{ row.staff.name }}</a><div class="truncate text-xs text-gray-500">{{ row.staff.job_title|default:row.staff.get_role_display }}</div></td>
-      {% for c in row.cells %}<td class="p-1.5 {% if c.date == today %}bg-primary/5{% endif %}"><div class="space-y-1">{% for s in c.shifts %}{% include "pos/_shift_chip.html" %}{% empty %}<span class="block px-1.5 py-1 text-[11px] text-gray-300">—</span>{% endfor %}</div></td>{% endfor %}
-      <td class="p-3 text-right font-semibold">{{ row.hours }}</td>
-    </tr>{% empty %}<tr><td colspan="9" class="p-6 text-center text-gray-500">Add staff first, then plan their shifts here.</td></tr>{% endfor %}</tbody>
-  </table>
-</div>
-<p class="mt-2 text-xs text-gray-500">Click a name to see their month. Click a shift to mark it worked, absent or leave.</p>
 {% endblock %}
