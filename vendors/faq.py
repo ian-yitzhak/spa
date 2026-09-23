@@ -103,7 +103,7 @@ def answer(vendor, question):
 
     if re.search(TOPICS["reserve"], text):
         if vendor.accepts_bookings:
-            return "Yes — pick a service, a time and (if you like) who you want, under 'Book an appointment' on this page. We confirm on WhatsApp.", False
+            return "Yes — tap “Add” on the services you want, then pick a time under 'Book an appointment' on this page. We confirm on WhatsApp.", False
         return "Bookings aren't taken online — message us on WhatsApp to find a slot.", True
 
     if re.search(TOPICS["home"], text):

@@ -4,7 +4,7 @@ Hi {{ name }},
 
 Here is what BeautyFlow does for you:
 
-Online booking page: clients see your services, prices and team, and book a time.
+Online booking page: clients add the services they want and book a time.
 Staff commission: every service is tagged to the person who did it, and commission is worked out for you.
 Payslips: mark commission paid and your staff see the payslip in their own login.
 Staff shifts: plan the week's rota; everyone sees their own shifts.

@@ -88,26 +88,6 @@
         <div id="menu-items" class="mt-2 divide-y divide-gray-100">{% include "partials/menu_items.html" %}</div>
       </section>
 
-      {% if team %}
-      <section class="reveal">
-        <h2 class="font-heading text-xl font-semibold text-black">Meet the team</h2>
-        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-          {% for s in team %}
-          <div class="flex gap-3 rounded-xl border border-gray-200 p-4">
-            <div class="h-16 w-16 flex-none overflow-hidden rounded-full bg-accent/30">{% if s.photo %}<img src="{{ s.photo.url }}" alt="{{ s.name }}" loading="lazy" class="h-full w-full object-cover">{% else %}<div class="grid h-full place-items-center font-heading text-xl font-semibold text-primary">{{ s.name|first }}</div>{% endif %}</div>
-            <div class="min-w-0 flex-1">
-              <div class="font-semibold text-black">{{ s.name }}</div>
-              {% if s.job_title %}<div class="text-xs text-gray-500">{{ s.job_title }}</div>{% endif %}
-              {% if s.bio %}<p class="mt-1 text-sm text-gray-600">{{ s.bio }}</p>{% endif %}
-              {% with links=s.service_links.all %}{% if links %}<div class="mt-1 text-xs text-gray-500">{% for l in links|slice:":4" %}{{ l.service.name }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if links|length > 4 %} +{{ links|length|add:"-4" }}{% endif %}</div>{% endif %}{% endwith %}
-              {% if vendor.accepts_bookings and not vendor.menu_locked %}<button type="button" data-book-staff="{{ s.pk }}" class="mt-2 rounded-lg border border-primary px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-white">Book with {{ s.name }}</button>{% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </section>
-      {% endif %}
-
       {% if photos %}
       <section class="reveal">
         <h2 class="font-heading text-xl font-semibold text-black">Gallery</h2>
@@ -143,9 +123,8 @@
 
     <aside class="stagger min-w-0 space-y-6 lg:sticky lg:top-20 lg:self-start">
       {% if vendor.accepts_bookings and not vendor.menu_locked %}
-      <div id="book" class="scroll-mt-24 rounded-xl border-2 border-primary/30 bg-white p-5 shadow-sm"><div id="reserve-box">{% include "partials/reservation_form.html" with res_form=res_form %}</div></div>
+      <div id="book" data-preselect="{{ res_form.initial.services.0|default:'' }}" class="scroll-mt-24 rounded-xl border-2 border-primary/30 bg-white p-5 shadow-sm"><div id="reserve-box">{% include "partials/reservation_form.html" with res_form=res_form %}</div></div>
       {% endif %}
-      <a href="{% url 'menu_inquire' vendor.type_slug vendor.slug %}" class="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-3 text-sm font-semibold hover:border-primary hover:text-primary">{% icon "chat" "h-4 w-4" %}Ask a question or get a quote</a>
 
       <div id="contact" class="scroll-mt-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h3 class="font-semibold text-black">Contact</h3>
@@ -200,15 +179,37 @@
 
 <script>
 (function(){
-  function form(){return document.querySelector('#reserve-box form')}
-  function pick(name,value){var f=form();if(!f)return false;var el=f.querySelector('[name='+name+']');if(el&&value){el.value=value}
-    document.getElementById('book').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){var d=f.querySelector('[name=date]');if(d)d.focus()},400);return true}
-  document.addEventListener('click',function(e){
-    var b=e.target.closest('[data-book]');if(b){e.preventDefault();if(!pick('service',b.dataset.book)&&b.dataset.wa)window.open(b.dataset.wa+'?text='+encodeURIComponent('Hi, I would like to book: '+b.dataset.name),'_blank');return}
-    var s=e.target.closest('[data-book-staff]');if(s){e.preventDefault();pick('staff',s.dataset.bookStaff)}
-  });
+  var book=document.getElementById('book'); if(!book) return;
+  var key='bf-booking-{{ vendor.pk }}', cart=[];
+  try{cart=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){cart=[]}
+  function save(){try{localStorage.setItem(key,JSON.stringify(cart))}catch(e){}}
+  function kes(n){return 'KES '+Number(n).toLocaleString('en-KE',{maximumFractionDigits:2})}
+  function dur(m){var h=Math.floor(m/60),r=m%60;return (h?h+' hr ':'')+(r?r+' min':'')||'—'}
+  function has(id){return cart.some(function(x){return x.id===id})}
+  function add(b){if(!has(b.dataset.add)){cart.push({id:b.dataset.add,name:b.dataset.name,price:+b.dataset.price,mins:+b.dataset.mins});save()}render()}
+  function remove(id){cart=cart.filter(function(x){return x.id!==id});save();render()}
+  function render(){
+    var list=document.getElementById('bk-cart'),hidden=document.getElementById('bk-hidden'),total=0,mins=0;
+    if(list){list.innerHTML='';
+      if(!cart.length){list.innerHTML='<p class="rounded-lg border border-dashed p-3 text-center text-xs text-gray-500">Tap “Add” on the services you want.</p>'}
+      cart.forEach(function(x){total+=x.price;mins+=x.mins;
+        var row=document.createElement('div');row.className='flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm';
+        row.innerHTML='<span class="min-w-0 flex-1 truncate"></span><span class="whitespace-nowrap font-semibold"></span><button type="button" class="px-1 text-lg leading-none text-gray-400 hover:text-primary" aria-label="Remove">×</button>';
+        row.children[0].textContent=x.name;row.children[1].textContent=kes(x.price);row.children[2].onclick=function(){remove(x.id)};list.appendChild(row)});
+      if(cart.length){var t=document.createElement('div');t.className='flex justify-between px-1 pt-1 text-sm font-semibold';t.innerHTML='<span></span><span></span>';t.children[0].textContent=cart.length+' service'+(cart.length>1?'s':'')+' · '+dur(mins);t.children[1].textContent=kes(total);list.appendChild(t)}}
+    if(hidden){hidden.innerHTML='';cart.forEach(function(x){var i=document.createElement('input');i.type='hidden';i.name='services';i.value=x.id;hidden.appendChild(i)})}
+    document.querySelectorAll('[data-add]').forEach(function(b){var on=has(b.dataset.add);b.querySelector('span').textContent=on?'Added':'Add';b.classList.toggle('opacity-60',on)});
+    var bar=document.getElementById('bk-bar');if(bar){bar.classList.toggle('hidden',!cart.length);bar.querySelector('[data-sum]').textContent=cart.length+' service'+(cart.length>1?'s':'')+' · '+kes(total)}
+  }
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-add]');if(b){e.preventDefault();if(has(b.dataset.add))remove(b.dataset.add);else add(b)}});
+  document.body.addEventListener('htmx:afterSwap',function(){if(document.querySelector('#reserve-box [data-sent]')){cart=[];save()}render()});
+  var pre=book.dataset.preselect;if(pre){var b=document.querySelector('[data-add="'+pre+'"]');if(b&&!has(pre))add(b)}
+  render();
 })();
 </script>
+<div id="bk-bar" class="fixed inset-x-0 bottom-0 z-40 hidden border-t bg-white p-3 shadow-[0_-8px_24px_rgba(0,0,0,.08)] lg:hidden">
+  <a href="#book" class="flex items-center justify-between rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white"><span data-sum></span><span>Book →</span></a>
+</div>
 {% if vendor.is_live %}
 <button id="faq-fab" type="button" aria-label="Ask a question" class="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-primary text-white shadow-lg transition hover:bg-primary/90 active:scale-95">{% icon "chat" "h-7 w-7" %}</button>
 <div id="faq-panel" class="fixed bottom-24 right-5 z-40 hidden w-[calc(100vw-2.5rem)] max-w-sm overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl">

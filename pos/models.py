@@ -38,16 +38,11 @@ class Staff(models.Model):
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.STAFF)
     branch = models.ForeignKey("pos.Branch", on_delete=models.SET_NULL, null=True, blank=True, related_name="staff")
     job_title = models.CharField("Job title", max_length=60, blank=True, help_text='e.g. "Senior stylist", "Nail tech"')
-    national_id = models.CharField("ID number", max_length=20, blank=True)
     hired_on = models.DateField("Start date", null=True, blank=True)
-    photo = models.ImageField(upload_to="staff/", blank=True)
-    bio = models.CharField("Short bio", max_length=200, blank=True)
-    payout_phone = models.CharField("M-Pesa number for pay", max_length=20, blank=True)
     commission_type = models.CharField("Commission", max_length=8, choices=Commission.choices, default=Commission.PERCENT)
     commission_value = models.DecimalField("Rate", max_digits=10, decimal_places=2, default=0,
                                            help_text="Percent (e.g. 30) or KES per service (e.g. 200)")
     services = models.ManyToManyField(MenuItem, through="StaffService", blank=True, related_name="staff")
-    show_on_site = models.BooleanField("Show on the public page", default=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -486,7 +481,7 @@ class StaffPayout(models.Model):
 
 
 class Booking(models.Model):
-    """A client's appointment: a service, optionally with a named staff member."""
+    """A client's appointment: one or more services, optionally with a named staff member."""
     class Status(models.TextChoices):
         REQUESTED = "requested", "Requested"
         CONFIRMED = "confirmed", "Confirmed"
@@ -502,7 +497,6 @@ class Booking(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="bookings")
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name="bookings")
-    service = models.ForeignKey(MenuItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="bookings")
     staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True, related_name="bookings",
                               help_text="Leave blank for anyone available")
     name = models.CharField("Client name", max_length=80)
@@ -535,13 +529,52 @@ class Booking(models.Model):
         return self.status in (self.Status.REQUESTED, self.Status.CONFIRMED)
 
     @property
+    def lines(self):
+        return list(self.items.all())
+
+    @property
+    def services_label(self):
+        names = [l.name for l in self.lines]
+        return ", ".join(names) if names else "—"
+
+    @property
+    def total(self):
+        return sum((l.price for l in self.lines), Decimal("0"))
+
+    def set_services(self, services):
+        """Replace what's booked. The appointment runs as long as all the services together."""
+        self.items.all().delete()
+        for i, svc in enumerate(services):
+            BookingItem.objects.create(booking=self, service=svc, name=svc.name, price=svc.sale_price,
+                                       duration_min=svc.duration_min or 0, position=i)
+        self.duration_min = sum(s.duration_min or 0 for s in services) or 60
+        self.save(update_fields=["duration_min"])
+
+    @property
     def wa_confirm_link(self):
         from urllib.parse import quote
-        what = self.service.name if self.service else "your appointment"
+        what = self.services_label if self.lines else "your appointment"
         who = f" with {self.staff.name}" if self.staff else ""
         msg = (f"Hi {self.name}, {what}{who} at {self.vendor.brand_name} on {self.date:%a %d %b} at "
                f"{self.time:%H:%M} is confirmed. See you then!")
         return f"https://wa.me/{Vendor.normalize_msisdn(self.phone)}?text={quote(msg)}"
+
+
+class BookingItem(models.Model):
+    """One service on a booking. Name and price are kept as booked, even if the service changes later."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="items")
+    service = models.ForeignKey(MenuItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="booking_items")
+    name = models.CharField(max_length=120)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    duration_min = models.PositiveSmallIntegerField(default=0)
+    position = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position"]
+
+    def __str__(self):
+        return self.name
 
 
 class Expense(models.Model):

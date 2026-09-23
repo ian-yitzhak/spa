@@ -165,7 +165,7 @@ OWNER_PAGES = {
     "barbershop-software": ("Barbershop POS in Kenya — track every cut and pay your barbers | BeautyFlow",
                             "A barbershop POS for Kenya: ring up cuts per barber, pay commission in one tap, see who brings in the most, and take bookings online.", "barber"),
     "booking-page": ("Free online booking page for salons, spas & barbers in Kenya | BeautyFlow",
-                     "Get a free booking page with your services, prices, team and photos. Clients book a slot with the stylist they want; you confirm on WhatsApp.", "booking"),
+                     "Get a free booking page with your services, prices and photos. Clients add the services they want to one booking and pick a time; you confirm on WhatsApp.", "booking"),
     "list-your-business": ("List your salon, spa or barbershop in Kenya — free | BeautyFlow",
                            "List your beauty or wellness business on BeautyFlow for free: show your prices and team, get found on Google for “salons in …” searches, and take bookings.", "listing"),
 }

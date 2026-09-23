@@ -144,7 +144,6 @@ class Vendor(models.Model):
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="vendor")
     brand_name = models.CharField(max_length=120)
     slug = models.SlugField(unique=True)
-    menu_token = models.CharField(max_length=24, unique=True, blank=True, db_index=True, editable=False)  # the QR link: /m/<token>/
     business_type = models.CharField(max_length=12, choices=[(r[0], r[1]) for r in BUSINESS_TYPES], default="salon")
     tags = models.ManyToManyField(Tag, blank=True, related_name="vendors", verbose_name="Services & specialities")
     logo = models.ImageField(upload_to="logos/", blank=True)
@@ -193,8 +192,6 @@ class Vendor(models.Model):
         self.county_loc, self.area_loc = Location.ensure(self.county, self.town)
         from .sanitize import clean_html
         self.about = clean_html(self.about)
-        if not self.menu_token:
-            self.menu_token = self.new_menu_token()
         first_save = self._state.adding
         super().save(*args, **kwargs)
         if first_save:
@@ -398,19 +395,6 @@ class Vendor(models.Model):
         Vendor.objects.filter(pk=self.pk).update(is_published=True)
         self.is_published = True
         return True
-
-    @staticmethod
-    def new_menu_token():
-        import secrets
-        return secrets.token_urlsafe(12)  # 16 chars, ~96 bits
-
-    def rotate_menu_token(self):
-        """New QR link; the old one stops working (reprint the QR)."""
-        self.menu_token = self.new_menu_token()
-        self.save(update_fields=["menu_token"])
-
-    def get_menu_url(self):
-        return f"/m/{self.menu_token}/"
 
     def rating(self):
         if not hasattr(self, "avg_rating"):  # else annotated by Vendor.objects.for_cards()

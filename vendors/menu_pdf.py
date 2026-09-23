@@ -3,7 +3,6 @@ Free plan gets a diagonal BEAUTYFLOW watermark on every page; Premium is clean."
 import io
 import os
 
-import qrcode
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -49,17 +48,17 @@ def _watermark(c):
     c.restoreState()
 
 
-def _footer(c, vendor, page, watermark, menu_url):
+def _footer(c, vendor, page, watermark, page_url):
     c.setFillColor(LIGHT); c.rect(0, 0, W, 14 * mm, fill=1, stroke=0)
     c.setFillColor(RED); c.rect(0, 14 * mm, W, 1.2 * mm, fill=1, stroke=0)
     c.setFillColor(colors.black); c.setFont("Helvetica", 8)
-    c.drawString(M, 5.5 * mm, "Powered by BeautyFlow · www.beautyflow.co.ke")
+    c.drawString(M, 5.5 * mm, f"Book online: {page_url.replace('https://', '')}")
     c.drawRightString(W - M, 5.5 * mm, f"Page {page}")
     if watermark:
         _watermark(c)
 
 
-def build_menu_pdf(vendor, menu_url, watermark=True):
+def build_menu_pdf(vendor, page_url, watermark=True):
     buf = io.BytesIO(); c = canvas.Canvas(buf, pagesize=A4); c.setTitle(f"{vendor.brand_name} price list")
     page = 1
     # ── Cover band
@@ -82,12 +81,8 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
     line = y_top - 25 * mm
     contact = " · ".join(v for v in [f"Tel {vendor.phone}" if vendor.phone else "", f"WhatsApp {vendor.whatsapp}" if vendor.whatsapp and vendor.whatsapp != vendor.phone else "", ", ".join(v for v in [vendor.address, vendor.town, vendor.county] if v)] if v)
     c.drawString(x, line, contact[:110]); line -= 5 * mm
-    if vendor.delivers:
-        c.drawString(x, line, "Delivery available"); line -= 5 * mm
-    # QR (top right)
-    qr = qrcode.make(menu_url, box_size=6, border=1).convert("RGB"); from reportlab.lib.utils import ImageReader
-    c.drawImage(ImageReader(qr), W - M - 28 * mm, H - 44 * mm, 28 * mm, 28 * mm)
-    c.setFont("Helvetica", 7); c.setFillColor(colors.white); c.drawCentredString(W - M - 14 * mm, H - 48 * mm, "Scan to book")
+    if vendor.home_service:
+        c.drawString(x, line, "Home visits available"); line -= 5 * mm
     # ── Menu
     y = H - 74 * mm
     c.setFillColor(RED); c.setFont("Helvetica-Bold", 16); c.drawString(M, y, "Services & prices")
@@ -108,7 +103,7 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
     y_start = y; y_cols = [y_start, y_start]; col_x = [M, M + col_w + gap]
     def new_page():
         nonlocal page, y_cols
-        _footer(c, vendor, page, watermark, menu_url); c.showPage(); page += 1
+        _footer(c, vendor, page, watermark, page_url); c.showPage(); page += 1
         c.setFillColor(DARK); c.setFont("Helvetica-Bold", 12); c.drawString(M, H - M, f"{vendor.brand_name} — price list (continued)")
         y_cols = [H - M - 10 * mm, H - M - 10 * mm]
     def draw_block(col, name, items):
@@ -151,5 +146,5 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
         if im:
             c.saveState(); pth = c.beginPath(); pth.roundRect(px, y - 38 * mm, 34 * mm, 30 * mm, 3 * mm); c.clipPath(pth, stroke=0)
             c.drawImage(im[0], px, y - 38 * mm, 34 * mm, 30 * mm, mask="auto"); c.restoreState(); px += 38 * mm
-    _footer(c, vendor, page, watermark, menu_url); c.showPage(); c.save()
+    _footer(c, vendor, page, watermark, page_url); c.showPage(); c.save()
     return buf.getvalue()

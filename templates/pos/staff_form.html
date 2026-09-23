@@ -1,7 +1,7 @@
 {% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Edit {{ st.name }}{% endblock %}{% block dash %}
 <a href="{% url 'pos_staff_detail' st.pk %}" class="text-sm text-gray-500 hover:text-primary">← {{ st.name }}</a>
 <h1 class="mt-2 text-2xl font-black">Edit {{ st.name }}</h1>
-<form method="post" enctype="multipart/form-data" class="mt-4 max-w-3xl">{% csrf_token %}
+<form method="post" class="mt-4 max-w-3xl">{% csrf_token %}
   {% if form.non_field_errors %}<p class="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ form.non_field_errors.0 }}</p>{% endif %}
   {% include "pos/_staff_fields.html" %}
   <div class="mt-5 flex flex-wrap items-center gap-3"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Save</button></div>

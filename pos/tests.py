@@ -173,8 +173,9 @@ class StaffFormTests(SalonCase):
 
 class BookingTests(SalonCase):
     def test_booking_to_sale(self):
-        b = Booking.objects.create(vendor=self.v, service=self.braids, staff=self.amina, name="Faith", phone="0733111222",
+        b = Booking.objects.create(vendor=self.v, staff=self.amina, name="Faith", phone="0733111222",
                                    date=timezone.localdate(), time="10:00")
+        b.set_services([self.braids])
         self.client.force_login(self.cashier.user)
         self.assertRedirects(self.client.post(f"/pos/bookings/{b.pk}/start/"), "/pos/", fetch_redirect_response=False)
         b.refresh_from_db()
@@ -186,11 +187,46 @@ class BookingTests(SalonCase):
         self.assertEqual(b.order.customer_name, "Faith")
 
     def test_staff_only_sees_own_bookings(self):
-        Booking.objects.create(vendor=self.v, service=self.braids, staff=self.amina, name="Faith", phone="0733111222",
-                               date=timezone.localdate() + timedelta(days=1), time="10:00")
-        Booking.objects.create(vendor=self.v, service=self.nails, staff=self.joy, name="Mercy", phone="0733111333",
-                               date=timezone.localdate() + timedelta(days=1), time="11:00")
+        Booking.objects.create(vendor=self.v, staff=self.amina, name="Faith", phone="0733111222",
+                               date=timezone.localdate() + timedelta(days=1), time="10:00").set_services([self.braids])
+        Booking.objects.create(vendor=self.v, staff=self.joy, name="Mercy", phone="0733111333",
+                               date=timezone.localdate() + timedelta(days=1), time="11:00").set_services([self.nails])
         self.client.force_login(self.amina.user)
         page = self.client.get("/pos/bookings/").content.decode()
         self.assertIn("Faith", page)
         self.assertNotIn("Mercy", page)
+
+
+class PublicBookingTests(SalonCase):
+    def test_client_books_several_services(self):
+        from django.urls import reverse
+        url = reverse("reserve", args=[self.v.type_slug, self.v.slug])
+        day = (timezone.localdate() + timedelta(days=2)).isoformat()
+        r = self.client.post(url, {"services": [self.braids.pk, self.nails.pk], "date": day, "time": "10:00",
+                                   "name": "Wanjiku", "phone": "0712345678"})
+        self.assertContains(r, "Booking request sent")
+        b = Booking.objects.get(name="Wanjiku")
+        self.assertEqual([l.name for l in b.items.all()], ["Braids", "Gel nails"])
+        self.assertEqual(b.duration_min, 240 + 60)
+        self.assertEqual(b.total, Decimal("4900.00"))                      # nails at their 10% discount
+        # the cashier opens a ticket with both services on it
+        self.client.force_login(self.cashier.user)
+        self.client.post(f"/pos/bookings/{b.pk}/start/")
+        b.refresh_from_db()
+        self.assertEqual(sorted(l.name for l in b.order.items.all()), ["Braids", "Gel nails"])
+
+    def test_booking_needs_a_service(self):
+        from django.urls import reverse
+        r = self.client.post(reverse("reserve", args=[self.v.type_slug, self.v.slug]),
+                             {"date": (timezone.localdate() + timedelta(days=1)).isoformat(), "time": "10:00",
+                              "name": "X", "phone": "0712345678"})
+        self.assertContains(r, "Add at least one service")
+        self.assertFalse(Booking.objects.exists())
+
+    def test_public_page_has_no_team_or_qr(self):
+        self.v.is_published = True
+        self.v.save()
+        page = self.client.get(self.v.get_absolute_url()).content.decode()
+        self.assertNotIn("Meet the team", page)
+        self.assertNotIn("Ask a question or get a quote", page)
+        self.assertIn('data-add="', page)

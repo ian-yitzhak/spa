@@ -49,10 +49,10 @@ if not User.objects.filter(email="owner@beautyflow.co.ke").exists():
     for i in range(6):
         for s, t in ((amina, ("08:00", "17:00")), (joy, ("10:00", "19:00"))):
             StaffShift.objects.create(vendor=v, branch=v.main_branch(), staff=s, date=today + timedelta(days=i), starts=t[0], ends=t[1])
-    Booking.objects.create(vendor=v, branch=v.main_branch(), service=knot, staff=amina, name="Faith", phone="0733111222",
-                           date=today, time="10:00", duration_min=300)
-    Booking.objects.create(vendor=v, branch=v.main_branch(), service=gel, staff=joy, name="Mercy", phone="0733111333",
-                           date=today + timedelta(days=1), time="14:00", duration_min=60, status=Booking.Status.CONFIRMED)
+    Booking.objects.create(vendor=v, branch=v.main_branch(), staff=amina, name="Faith", phone="0733111222",
+                           date=today, time="10:00").set_services([knot])
+    Booking.objects.create(vendor=v, branch=v.main_branch(), staff=joy, name="Mercy", phone="0733111333",
+                           date=today + timedelta(days=1), time="14:00", status=Booking.Status.CONFIRMED).set_services([gel, pedi])
     Offer.objects.create(vendor=v, title="Mid-week glow — 20% off facials", details="Tuesday to Thursday")
     Review.objects.create(vendor=v, name="Kevin", email="kevin@example.com", stars=5, comment="Neatest braids in town!",
                           verified_at=timezone.now())

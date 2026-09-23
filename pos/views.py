@@ -176,7 +176,7 @@ def home(request):
                page=page, qs=qs_prefix, cat=cat, q=q, team=_team(v), picked=picked,
                open_count=_scope(request, v.orders.filter(status=Order.Status.OPEN, paid_at__isnull=True)).count(),
                bookings_today=_scope(request, v.bookings.filter(date=today, status__in=[Booking.Status.REQUESTED, Booking.Status.CONFIRMED],
-                                                                order__isnull=True)).select_related("service", "staff__user")[:6])
+                                                                order__isnull=True)).select_related("staff__user").prefetch_related("items")[:6])
     if request.htmx and request.htmx.target in ("menu-grid", "grid-more"):
         return render(request, "pos/_menu_grid.html", ctx)
     return render(request, "pos/home.html", ctx)
@@ -651,7 +651,7 @@ def me(request):
         ctx.update(
             agg_today=agg_today, agg_month=agg_month, balance=st.balance(),
             bookings=v.bookings.filter(staff=st, date__gte=today, status__in=[Booking.Status.REQUESTED, Booking.Status.CONFIRMED])
-                               .select_related("service")[:8],
+                               .prefetch_related("items")[:8],
             shifts=st.shifts.filter(date__gte=today)[:7],
             payouts=st.payouts.all()[:5],
             recent=mine.select_related("order").order_by("-order__paid_at")[:8])
@@ -662,7 +662,7 @@ def me(request):
                by_method=list(paid_today.values("payment_method").annotate(t=Sum("total")).order_by("-t")),
                open_tickets=_scope(request, v.orders.filter(status=Order.Status.OPEN, paid_at__isnull=True)).prefetch_related("items")[:10],
                bookings=_scope(request, v.bookings.filter(date=today)).exclude(status=Booking.Status.CANCELLED)
-                        .select_related("service", "staff__user"),
+                        .select_related("staff__user").prefetch_related("items"),
                recent=paid_today.order_by("-paid_at")[:8])
     return render(request, "pos/me_cashier.html", ctx)
 
@@ -700,14 +700,17 @@ def bookings(request):
         b = form.save(commit=False)
         b.vendor, b.created_by = v, request.user
         b.branch = (b.staff.branch if b.staff and b.staff.branch_id else None) or getattr(request, "write_branch", None) or v.main_branch()
-        b.duration_min = form.cleaned_data.get("duration_min") or (b.service.duration_min if b.service else 60)
         if b.source != Booking.Source.ONLINE:
             b.status = Booking.Status.CONFIRMED
         b.save()
-        messages.success(request, f"Booked: {b.name}, {b.service.name if b.service else ''} on {b.date:%a %d %b} at {b.time:%H:%M}.")
+        b.set_services(list(form.cleaned_data["services"]))
+        if form.cleaned_data.get("duration_min"):
+            b.duration_min = form.cleaned_data["duration_min"]
+            b.save(update_fields=["duration_min"])
+        messages.success(request, f"Booked: {b.name}, {b.services_label} on {b.date:%a %d %b} at {b.time:%H:%M}.")
         return redirect(f"{request.path}?date={b.date.isoformat()}")
     today = timezone.localdate()
-    qs = _scope(request, v.bookings.all()).select_related("service", "staff__user", "order")
+    qs = _scope(request, v.bookings.all()).select_related("staff__user", "order").prefetch_related("items")
     if request.role == "staff":
         qs = qs.filter(staff=request.staff)
     view = request.GET.get("view", "upcoming")
@@ -763,7 +766,7 @@ def booking_status(request, pk):
 @require_POST
 def booking_start(request, pk):
     """Client has arrived: open a ticket with their service and stylist already on it."""
-    b = get_object_or_404(request.vendor.bookings.select_related("service", "staff"), pk=pk)
+    b = get_object_or_404(request.vendor.bookings.select_related("staff").prefetch_related("items__service"), pk=pk)
     if b.order_id and b.order.paid_at is None:
         request.session[SESSION_ORDER] = str(b.order_id)
         return redirect("pos_home")
@@ -772,8 +775,9 @@ def booking_start(request, pk):
         return redirect("pos_receipt", pk=b.order_id)
     order = Order.objects.create(vendor=request.vendor, branch=b.branch or request.vendor.main_branch(), cashier=request.user,
                                  source=Order.Source.BOOKING, customer_name=b.name, customer_phone=b.phone, notes=b.note[:200])
-    if b.service and not b.service.price_on_request:
-        OrderItem.add(order, b.service, staff=b.staff)
+    for line in b.items.all():
+        if line.service and not line.service.price_on_request:
+            OrderItem.add(order, line.service, staff=b.staff)
     b.order = order
     if b.status == Booking.Status.REQUESTED:
         b.status = Booking.Status.CONFIRMED
@@ -810,7 +814,7 @@ def staff_list(request):
     from .forms import StaffForm, save_staff_services
     v = request.vendor
     services = list(v.items.filter(price_on_request=False).order_by("category__order", "name"))
-    form = StaffForm(request.POST or None, request.FILES or None, vendor=v, branch=getattr(request, "write_branch", None))
+    form = StaffForm(request.POST or None, vendor=v, branch=getattr(request, "write_branch", None))
     if request.method == "POST" and form.is_valid():
         st = form.save(vendor=v)
         save_staff_services(st, request.POST, services)
@@ -835,7 +839,7 @@ def staff_edit(request, pk):
     v = request.vendor
     st = get_object_or_404(Staff.objects.select_related("user"), pk=pk, vendor=v)
     services = list(v.items.filter(price_on_request=False).order_by("category__order", "name"))
-    form = StaffForm(request.POST or None, request.FILES or None, instance=st, vendor=v)
+    form = StaffForm(request.POST or None, instance=st, vendor=v)
     if request.method == "POST" and form.is_valid():
         form.save(vendor=v)
         save_staff_services(st, request.POST, services)

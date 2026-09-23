@@ -2,7 +2,7 @@ from django.urls import path, re_path
 
 from django.contrib.sitemaps.views import sitemap
 
-from . import client_views, kit_views, seo_views, views
+from . import client_views, seo_views, views
 from .models import ALL_TYPES, BUSINESS_TYPES
 
 PLURAL = "|".join([ALL_TYPES[4]] + [r[4] for r in BUSINESS_TYPES])
@@ -41,9 +41,6 @@ urlpatterns = [
     path("dashboard/inquiries/", client_views.inquiries, name="dashboard_inquiries"),
     path("dashboard/inquiries/<uuid:pk>/<str:action>/", client_views.inquiry_action, name="inquiry_action"),
     path("dashboard/inquiries/new-count/", client_views.inquiry_new_count, name="inquiry_new_count"),
-    path("m/<str:token>/", views.menu_by_token, name="menu_by_token"),
-    path("dashboard/kit/", kit_views.kit, name="dashboard_kit"),
-    path("dashboard/kit/<slug:kind>.png", kit_views.kit_image, name="kit_image"),
     path("dashboard/payments/", views.payments_page, name="dashboard_payments"),
     # SEO directory
     path("sitemap.xml", sitemap, {"sitemaps": seo_views.SITEMAPS}, name="sitemap"),
@@ -59,8 +56,6 @@ urlpatterns = [
     # Vendor pages (canonical: /restaurant/<slug>/)
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/$", views.vendor_detail, name="vendor_detail"),
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/menu/$", views.vendor_menu_only, name="vendor_menu_only"),
-    re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/qr/$", views.vendor_qr_card, name="vendor_qr_card"),
-    re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/qr\.png$", views.vendor_qr_png, name="vendor_qr_png"),
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/og\.jpg$", views.vendor_og_image, name="vendor_og_image"),
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/contact/$", views.reveal_contact, name="reveal_contact"),
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/inquire/$", client_views.inquire, name="menu_inquire"),

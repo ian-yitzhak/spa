@@ -1,0 +1,8 @@
+<div class="sm:col-span-2 lg:col-span-3">
+  <span class="mb-1 block text-sm font-medium">Services</span>
+  <div class="grid max-h-64 gap-1 overflow-y-auto rounded-lg border p-2 sm:grid-cols-2">
+    {% for c in form.services %}<label class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-50 has-[:checked]:bg-primary/5">{{ c.tag }}<span>{{ c.choice_label }}</span></label>{% empty %}<p class="p-2 text-sm text-gray-500">No services yet.</p>{% endfor %}
+  </div>
+  {% for e in form.services.errors %}<p class="mt-0.5 text-xs text-red-600">{{ e }}</p>{% endfor %}
+</div>
+{% for f in form %}{% if f.name != 'services' %}{% include "pos/_field.html" with f=f cls="" %}{% endif %}{% endfor %}

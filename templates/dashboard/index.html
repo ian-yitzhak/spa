@@ -17,7 +17,7 @@
   <div class="rounded-2xl border p-5">
     <h3 class="font-bold">Your public page</h3>
     <p class="mt-1 break-all text-sm text-gray-600">{{ request.scheme }}://{{ request.get_host }}{{ vendor.get_absolute_url }}</p>
-    <div class="mt-3 flex gap-2 text-sm"><a href="{% url 'dashboard_share' %}" class="rounded-lg border px-4 py-2 font-semibold">QR code &amp; share</a><a href="{% url 'dashboard_profile' %}" class="rounded-lg border px-4 py-2 font-semibold">Edit profile</a></div>
+    <div class="mt-3 flex gap-2 text-sm"><a href="{% url 'dashboard_share' %}" class="rounded-lg border px-4 py-2 font-semibold">Share your page</a><a href="{% url 'dashboard_profile' %}" class="rounded-lg border px-4 py-2 font-semibold">Edit profile</a></div>
   </div>
 </div>
 <!-- Analytics -->
@@ -67,6 +67,6 @@
 
 <h2 class="mt-8 flex items-center justify-between font-bold">Latest bookings <a href="{% url 'pos_bookings' %}" class="text-sm font-normal text-primary">All bookings</a></h2>
 <div class="mt-2 divide-y rounded-2xl border">
-  {% for r in recent %}<div class="flex flex-wrap items-center justify-between gap-2 p-4 text-sm"><div><span class="font-semibold text-black">{{ r.name }}</span> · <a href="tel:{{ r.phone }}" class="text-gray-600">{{ r.phone }}</a><div class="text-xs text-gray-500">{{ r.service.name|default:"—" }}{% if r.staff %} with {{ r.staff.name }}{% endif %} · {{ r.date|date:"D j M" }} {{ r.time|time:"H:i" }}{% if r.note %} · {{ r.note }}{% endif %}</div></div><span class="rounded-full px-2 py-0.5 text-xs {% if r.status == 'requested' %}bg-orange-50 text-orange-700{% elif r.status == 'confirmed' %}bg-green-50 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ r.get_status_display }}</span></div>{% empty %}<p class="p-4 text-sm text-gray-500">Nothing yet. Share your page: <code class="rounded bg-gray-100 px-1">{{ request.scheme }}://{{ request.get_host }}{{ vendor.get_absolute_url }}</code></p>{% endfor %}
+  {% for r in recent %}<div class="flex flex-wrap items-center justify-between gap-2 p-4 text-sm"><div><span class="font-semibold text-black">{{ r.name }}</span> · <a href="tel:{{ r.phone }}" class="text-gray-600">{{ r.phone }}</a><div class="text-xs text-gray-500">{{ r.services_label }}{% if r.staff %} with {{ r.staff.name }}{% endif %} · {{ r.date|date:"D j M" }} {{ r.time|time:"H:i" }}{% if r.note %} · {{ r.note }}{% endif %}</div></div><span class="rounded-full px-2 py-0.5 text-xs {% if r.status == 'requested' %}bg-orange-50 text-orange-700{% elif r.status == 'confirmed' %}bg-green-50 text-green-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ r.get_status_display }}</span></div>{% empty %}<p class="p-4 text-sm text-gray-500">Nothing yet. Share your page: <code class="rounded bg-gray-100 px-1">{{ request.scheme }}://{{ request.get_host }}{{ vendor.get_absolute_url }}</code></p>{% endfor %}
 </div>
 {% endblock %}

@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 
 from accounts.models import User
-from vendors.forms import INPUT, IMAGE_EXT_VALIDATOR, clean_kenyan_mobile
+from vendors.forms import INPUT, clean_kenyan_mobile
 
 from .models import Booking, Branch, Commission, Expense, Staff, StaffPayout, StaffShift
 
@@ -22,29 +22,18 @@ class StaffForm(forms.Form):
     """Create/edit a team member: who they are, their login, and what they earn.
     The services they do (and any rate of their own on each) come in from the service rows on the same page."""
     first_name = forms.CharField(label="Full name", max_length=120)
-    role = forms.ChoiceField(label="Role", choices=[("staff", "Staff — does services, earns commission, sees their own sales"),
-                                                    ("cashier", "Cashier — runs the POS, takes payments, sees reports")],
+    role = forms.ChoiceField(label="Role", choices=[("staff", "Staff"), ("cashier", "Cashier")],
                              initial="staff", widget=forms.RadioSelect)
     job_title = forms.CharField(label="Job title", max_length=60, required=False,
-                                widget=forms.TextInput(attrs={"placeholder": "e.g. Senior stylist, Nail tech, Therapist"}))
-    branch = forms.ModelChoiceField(label="Branch", queryset=Branch.objects.none(), required=False,
-                                    help_text="Everything they do is filed under this branch.")
+                                widget=forms.TextInput(attrs={"placeholder": "e.g. Stylist"}))
+    branch = forms.ModelChoiceField(label="Branch", queryset=Branch.objects.none(), required=False)
     email = forms.EmailField(label="Login email")
     phone = forms.CharField(max_length=20)
     password = forms.CharField(widget=forms.PasswordInput, required=False)
-    national_id = forms.CharField(label="ID number", max_length=20, required=False)
     hired_on = forms.DateField(label="Start date", required=False, widget=forms.DateInput(attrs={"type": "date"}))
-    payout_phone = forms.CharField(label="M-Pesa number for pay", max_length=20, required=False,
-                                   help_text="Leave blank to use their phone number.")
     commission_type = forms.ChoiceField(label="Commission", choices=Commission.choices, initial=Commission.PERCENT)
-    commission_value = forms.DecimalField(label="Default rate", min_value=0, max_digits=10, decimal_places=2, initial=0,
-                                          help_text="Percent of each service (e.g. 30) or KES per service (e.g. 200). "
-                                                    "You can set a different rate on any service below.",
+    commission_value = forms.DecimalField(label="Rate", min_value=0, max_digits=10, decimal_places=2, initial=0,
                                           widget=forms.NumberInput(attrs={"step": "any", "inputmode": "decimal"}))
-    photo = forms.ImageField(required=False, validators=[IMAGE_EXT_VALIDATOR], widget=forms.FileInput(attrs={"accept": "image/*"}))
-    bio = forms.CharField(label="Short bio", max_length=200, required=False,
-                          widget=forms.TextInput(attrs={"placeholder": "Shown on your public page, e.g. 8 years in braids and locs"}))
-    show_on_site = forms.BooleanField(label="Show on the public page", required=False, initial=True)
 
     def __init__(self, *args, instance=None, vendor=None, branch=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,10 +50,8 @@ class StaffForm(forms.Form):
         if instance:
             u = instance.user
             self.initial.update({"first_name": u.first_name, "email": u.email, "phone": u.phone, "role": instance.role,
-                                 "job_title": instance.job_title, "national_id": instance.national_id,
-                                 "hired_on": instance.hired_on, "payout_phone": instance.payout_phone,
-                                 "commission_type": instance.commission_type, "commission_value": instance.commission_value,
-                                 "bio": instance.bio, "show_on_site": instance.show_on_site})
+                                 "job_title": instance.job_title, "hired_on": instance.hired_on,
+                                 "commission_type": instance.commission_type, "commission_value": instance.commission_value})
             if "branch" in self.fields and instance.branch_id:
                 self.initial["branch"] = instance.branch_id
             self.fields["password"].help_text = "Leave blank to keep the current password."
@@ -83,9 +70,6 @@ class StaffForm(forms.Form):
 
     def clean_phone(self):
         return clean_kenyan_mobile(self.cleaned_data["phone"], "phone number")
-
-    def clean_payout_phone(self):
-        return clean_kenyan_mobile(self.cleaned_data.get("payout_phone"), "M-Pesa number")
 
     def clean_password(self):
         pw = self.cleaned_data.get("password")
@@ -112,11 +96,8 @@ class StaffForm(forms.Form):
             st = Staff(user=u, vendor=vendor, branch=vendor.main_branch())
         st.role = d["role"]
         st.branch = d.get("branch") or st.branch or vendor.main_branch()
-        for f in ("job_title", "national_id", "hired_on", "payout_phone", "commission_type", "commission_value", "bio"):
+        for f in ("job_title", "hired_on", "commission_type", "commission_value"):
             setattr(st, f, d.get(f) if d.get(f) is not None else getattr(st, f))
-        st.show_on_site = bool(d.get("show_on_site"))
-        if d.get("photo"):
-            st.photo = d["photo"]
         st.save()
         return st
 
@@ -145,21 +126,30 @@ def save_staff_services(staff, post, services):
     staff.service_links.exclude(service_id__in=keep).delete()
 
 
+class _ServicesField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj.name} — KES {obj.sale_price:,.0f} · {obj.duration_label}"
+
+
 class BookingForm(forms.ModelForm):
-    """Owner, cashier or staff putting an appointment in the book."""
+    """Owner or cashier putting an appointment in the book: one or more services."""
+    services = _ServicesField(queryset=None, widget=forms.CheckboxSelectMultiple,
+                              error_messages={"required": "Pick at least one service."})
+
     class Meta:
         model = Booking
-        fields = ["service", "staff", "date", "time", "duration_min", "name", "phone", "email", "source", "note"]
+        fields = ["staff", "date", "time", "duration_min", "name", "phone", "email", "source", "note"]
         widgets = {"date": forms.DateInput(attrs={"type": "date"}), "time": forms.TimeInput(attrs={"type": "time"}),
                    "duration_min": forms.NumberInput(attrs={"min": 5, "step": 5}),
                    "note": forms.TextInput(attrs={"placeholder": "Hair length, colour, allergies…"})}
+        labels = {"duration_min": "Minutes (blank = add up the services)"}
 
     def __init__(self, *args, vendor=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.vendor = vendor
-        self.fields["service"].queryset = vendor.items.filter(is_available=True).order_by("name")
-        self.fields["service"].required = True
-        self.fields["service"].empty_label = "Choose a service"
+        self.fields["services"].queryset = vendor.items.filter(is_available=True, price_on_request=False).order_by("category__order", "name")
+        if self.instance.pk:
+            self.initial.setdefault("services", [l.service_id for l in self.instance.items.all() if l.service_id])
         self.fields["staff"].queryset = vendor.staff.filter(is_active=True, role=Staff.Role.STAFF).select_related("user")
         self.fields["staff"].label_from_instance = lambda s: s.name + (f" · {s.job_title}" if s.job_title else "")
         self.fields["staff"].empty_label = "Anyone available"
@@ -171,32 +161,40 @@ class BookingForm(forms.ModelForm):
 
     def clean(self):
         d = super().clean()
-        if not d.get("duration_min") and d.get("service"):
-            d["duration_min"] = d["service"].duration_min
-        staff, service = d.get("staff"), d.get("service")
-        if staff and service and staff.service_links.exists() and not staff.service_links.filter(service=service).exists():
-            self.add_error("staff", f"{staff.name} doesn't do {service.name}. Pick someone else or anyone available.")
+        staff, services = d.get("staff"), list(d.get("services") or [])
+        if staff and services and staff.service_links.exists():
+            missing = [s.name for s in services if not staff.service_links.filter(service=s).exists()]
+            if missing:
+                self.add_error("staff", f"{staff.name} doesn't do {', '.join(missing)}. Pick someone else or anyone available.")
         return d
+
+    def save(self, commit=True):
+        b = super().save(commit=commit)
+        if commit:
+            services = list(self.cleaned_data["services"])
+            b.set_services(services)
+            if self.cleaned_data.get("duration_min"):
+                b.duration_min = self.cleaned_data["duration_min"]
+                b.save(update_fields=["duration_min"])
+        return b
 
 
 class PublicBookingForm(forms.ModelForm):
-    """A client booking from the public page."""
+    """A client booking from the public page. The services come from the booking cart on the page."""
+    services = forms.ModelMultipleChoiceField(queryset=None, widget=forms.MultipleHiddenInput,
+                                              error_messages={"required": "Add at least one service to your booking."})
+
     class Meta:
         model = Booking
-        fields = ["service", "staff", "date", "time", "name", "phone", "note"]
+        fields = ["date", "time", "name", "phone", "note"]
         widgets = {"date": forms.DateInput(attrs={"type": "date"}), "time": forms.TimeInput(attrs={"type": "time"}),
                    "note": forms.TextInput(attrs={"placeholder": "Anything we should know? Hair length, allergies…"})}
-        labels = {"name": "Your name", "staff": "With", "note": "Note (optional)"}
+        labels = {"name": "Your name", "note": "Note (optional)"}
 
     def __init__(self, *args, vendor=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.vendor = vendor
-        self.fields["service"].queryset = vendor.items.filter(is_available=True).order_by("category__order", "name")
-        self.fields["service"].required = True
-        self.fields["service"].empty_label = "Choose a service"
-        self.fields["staff"].queryset = vendor.staff.filter(is_active=True, role=Staff.Role.STAFF, show_on_site=True).select_related("user")
-        self.fields["staff"].label_from_instance = lambda s: s.name
-        self.fields["staff"].empty_label = "Anyone available"
+        self.fields["services"].queryset = vendor.items.filter(is_available=True, price_on_request=False)
         _style(self)
 
     def clean_phone(self):

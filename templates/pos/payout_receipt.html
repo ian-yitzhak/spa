@@ -9,7 +9,7 @@
     <div class="text-right"><div class="text-xs text-gray-500">Commission payslip</div><div class="font-heading text-lg font-semibold">#{{ p.number }}</div><div class="text-xs text-gray-500">{{ p.paid_at|date:"j M Y H:i" }}</div></div>
   </div>
   <div class="mt-5 grid gap-3 rounded-xl bg-gray-50 p-4 sm:grid-cols-2">
-    <div><div class="text-xs text-gray-500">Paid to</div><div class="font-semibold">{{ p.staff.name }}</div><div class="text-xs text-gray-500">{{ p.staff.job_title }}{% if p.staff.national_id %} · ID {{ p.staff.national_id }}{% endif %}</div></div>
+    <div><div class="text-xs text-gray-500">Paid to</div><div class="font-semibold">{{ p.staff.name }}</div><div class="text-xs text-gray-500">{{ p.staff.job_title }}</div></div>
     <div><div class="text-xs text-gray-500">Period</div><div class="font-semibold">{% if p.period_from %}{{ p.period_from|date:"j M Y" }} – {{ p.period_to|date:"j M Y" }}{% else %}—{% endif %}</div><div class="text-xs text-gray-500">{{ p.services_count }} service{{ p.services_count|pluralize }}</div></div>
   </div>
   <table class="mt-5 w-full"><thead class="text-left text-xs text-gray-500"><tr><th class="py-1">Date</th><th class="py-1">Service</th><th class="py-1 text-right">Price</th><th class="py-1 text-right">Commission</th></tr></thead>

@@ -73,9 +73,9 @@ def reserve(request, type_slug, slug):
     if form.is_valid():
         b = form.save(commit=False)
         b.vendor = vendor
-        b.duration_min = b.service.duration_min if b.service else 60
-        b.branch = (b.staff.branch if b.staff and b.staff.branch_id else None) or vendor.main_branch()
+        b.branch = vendor.main_branch()
         b.save()
+        b.set_services(list(form.cleaned_data["services"]))
         Customer.touch(vendor, b.phone, b.name)
         return render(request, "partials/reservation_form.html", {"vendor": vendor, "sent": True, "res": b})
     return render(request, "partials/reservation_form.html", {"vendor": vendor, "res_form": form})

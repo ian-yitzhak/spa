@@ -11,7 +11,7 @@
     <div class="hero-in">
       <p class="text-sm font-semibold text-primary">Salons, spas, barbers, nails, makeup and wellness</p>
       <h1 class="mt-3 font-heading text-4xl font-bold leading-tight tracking-tight text-dark sm:text-5xl">Look good.<br><span class="text-primary">Book in a minute.</span></h1>
-      <p class="mt-4 max-w-md text-lg text-gray-700">See real prices, photos and the team — then pick a time and the stylist you want.</p>
+      <p class="mt-4 max-w-md text-lg text-gray-700">See real prices and photos, add the services you want, and pick a time.</p>
       <form action="{% url 'search' %}" method="get" role="search" class="mt-6 flex w-full items-center gap-1 rounded-2xl bg-white p-1.5 shadow-xl shadow-primary/10 sm:gap-2 sm:p-2">
         <label class="flex min-w-0 flex-1 items-center gap-1.5 px-1.5 sm:px-2">{% icon "search" "hidden h-5 w-5 flex-none text-primary sm:block" %}
           <input type="search" name="q" value="{{ q }}" placeholder="Braids, nails, massage or a salon name…" class="w-full min-w-0 bg-transparent py-2.5 text-sm text-dark placeholder-gray-400 focus:outline-none" autocomplete="off"></label>
@@ -34,8 +34,7 @@
           <div class="flex justify-between rounded-xl border px-3 py-2"><span>Knotless braids</span><span class="font-semibold">KES 4,500</span></div>
           <div class="flex justify-between rounded-xl border border-primary bg-primary/5 px-3 py-2"><span>Gel manicure <span class="rounded bg-green-100 px-1 text-[10px] text-green-700">20% off</span></span><span class="font-semibold">KES 1,200</span></div>
         </div>
-        <div class="mt-4 text-xs font-semibold text-gray-400">With</div>
-        <div class="mt-2 flex gap-2"><span class="grid h-10 w-10 place-items-center rounded-full bg-primary font-semibold text-white">A</span><span class="grid h-10 w-10 place-items-center rounded-full bg-accent/40 font-semibold">J</span><span class="grid h-10 w-10 place-items-center rounded-full bg-accent/40 font-semibold">W</span></div>
+        <div class="mt-3 flex justify-between px-1 text-sm font-semibold"><span>2 services · 6 hr</span><span>KES 5,700</span></div>
         <div class="mt-4 rounded-xl bg-primary py-2.5 text-center text-sm font-semibold text-white">Book for Thu 10:30</div>
       </div>
     </div>
@@ -76,7 +75,7 @@
     <ul class="stagger grid gap-3 text-sm sm:grid-cols-2">
       <li class="rounded-2xl bg-white/5 p-4"><strong class="block text-white">POS by staff</strong><span class="text-gray-400">Every service tagged to the person who did it.</span></li>
       <li class="rounded-2xl bg-white/5 p-4"><strong class="block text-white">Automatic commission</strong><span class="text-gray-400">Percent or fixed, per person or per service.</span></li>
-      <li class="rounded-2xl bg-white/5 p-4"><strong class="block text-white">Online bookings</strong><span class="text-gray-400">Clients pick the service, time and stylist.</span></li>
+      <li class="rounded-2xl bg-white/5 p-4"><strong class="block text-white">Online bookings</strong><span class="text-gray-400">Clients add services to one booking and pick a time.</span></li>
       <li class="rounded-2xl bg-white/5 p-4"><strong class="block text-white">Payslips &amp; HR</strong><span class="text-gray-400">Mark commission paid; staff see their payslip.</span></li>
     </ul>
   </div>

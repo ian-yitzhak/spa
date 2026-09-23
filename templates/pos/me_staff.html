@@ -10,7 +10,7 @@
   <section>
     <h2 class="flex items-center justify-between font-bold">Your upcoming bookings <a href="{% url 'pos_bookings' %}" class="text-sm font-normal text-primary">All</a></h2>
     <div class="mt-2 divide-y rounded-2xl border text-sm">{% for b in bookings %}
-      <div class="flex items-center justify-between gap-2 p-3"><div><div class="font-semibold">{{ b.date|date:"D j M" }}{% if b.date == today %} <span class="rounded-full bg-primary px-1.5 text-[10px] text-white">today</span>{% endif %} · {{ b.time|time:"H:i" }}–{{ b.ends_at|time:"H:i" }}</div><div class="text-gray-600">{{ b.service.name|default:"—" }} · {{ b.name }}</div></div>
+      <div class="flex items-center justify-between gap-2 p-3"><div><div class="font-semibold">{{ b.date|date:"D j M" }}{% if b.date == today %} <span class="rounded-full bg-primary px-1.5 text-[10px] text-white">today</span>{% endif %} · {{ b.time|time:"H:i" }}–{{ b.ends_at|time:"H:i" }}</div><div class="text-gray-600">{{ b.services_label }} · {{ b.name }}</div></div>
         <span class="rounded-full px-2 py-0.5 text-xs {% if b.status == 'confirmed' %}bg-green-50 text-green-700{% else %}bg-orange-50 text-orange-700{% endif %}">{{ b.get_status_display }}</span></div>
     {% empty %}<p class="p-4 text-gray-500">No bookings with you yet.</p>{% endfor %}</div>
   </section>

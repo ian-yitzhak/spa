@@ -180,39 +180,6 @@ def vendor_menu_only(request, type_slug, slug):
     return redirect(vendor.get_absolute_url(), permanent=True)
 
 
-def menu_by_token(request, token):
-    """QR landing: just the price list. Only reachable by the unguessable link on the QR."""
-    from pos.pricing import price_items
-    branch = None
-    vendor = get_object_or_404(Vendor.objects.select_related("county_loc", "area_loc"), menu_token=token)
-    if not vendor.is_live and (not request.user.is_authenticated or request.user != vendor.owner):
-        return render(request, "vendors/unavailable.html", status=404)
-    categories = vendor.categories.filter(items__is_available=True).distinct()  # tabs only for types that have dishes
-    cat = _uuid_or_none(request.GET.get("cat"))
-    mq = request.GET.get("mq", "").strip()[:60]
-    items = vendor.items.filter(is_available=True).select_related("category")
-    if cat:
-        items = items.filter(category_id=cat)
-    if mq:
-        items = items.filter(Q(name__icontains=mq) | Q(description__icontains=mq))
-    if vendor.menu_locked:
-        categories = categories.none()
-        first = vendor.items.filter(is_available=True).first()
-        items, menu_page, menu_qs = ([first] if first else []), None, ""
-    else:
-        menu_page, menu_qs = paginate(request, items, 30)
-        items = menu_page
-    items = price_items(items, branch)
-    ctx = {"vendor": vendor, "branch": branch, "categories": categories, "items": items, "active_cat": cat, "mq": mq,
-           "menu_page": menu_page, "menu_qs": menu_qs,
-           "menu_total": menu_page.paginator.count if menu_page else len(items), "menu_only": True,
-           "menu_base": vendor.get_menu_url(),
-           "canonical": request.build_absolute_uri(vendor.get_absolute_url())}
-    if request.htmx and request.htmx.target in ("menu-items", "menu-more"):
-        return render(request, "partials/menu_items.html", ctx)
-    return render(request, "vendors/menu_only.html", ctx)
-
-
 def vendor_og_image(request, type_slug, slug):
     """1200x630 JPEG social preview (cover, or logo on brand colour), cached on disk. WhatsApp/Facebook-friendly."""
     import io, os
@@ -254,29 +221,6 @@ def vendor_og_image(request, type_slug, slug):
     with open(out, "rb") as f:
         resp = HttpResponse(f.read(), content_type="image/jpeg")
     resp["Cache-Control"] = "public, max-age=86400"
-    return resp
-
-
-def vendor_qr_card(request, type_slug, slug):
-    """Printable QR card for the vendor's counter / table."""
-    vendor = get_object_or_404(Vendor, slug=slug)
-    if not vendor.is_live and (not request.user.is_authenticated or request.user != vendor.owner):
-        return render(request, "vendors/unavailable.html", status=404)
-    return render(request, "vendors/qr_card.html", {"vendor": vendor, "url": request.build_absolute_uri(vendor.get_absolute_url()),
-                                                    "menu_url": request.build_absolute_uri(vendor.get_menu_url())})
-
-
-def vendor_qr_png(request, type_slug, slug):
-    """Download a print-ready PNG QR (menu, or the reviews section with ?for=review)."""
-    import io
-    import qrcode
-    vendor = get_object_or_404(Vendor, slug=slug)
-    target = request.build_absolute_uri(vendor.get_absolute_url() + "#reviews" if request.GET.get("for") == "review" else vendor.get_menu_url())
-    img = qrcode.make(target, box_size=16, border=2)
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    resp = HttpResponse(buf.getvalue(), content_type="image/png")
-    resp["Content-Disposition"] = f'attachment; filename="{vendor.slug}-{"review" if request.GET.get("for") == "review" else "prices"}-qr.png"'
     return resp
 
 
@@ -334,9 +278,6 @@ def vendor_detail(request, type_slug, slug):
         "jsonld": vendor_jsonld(request, vendor),
         "canonical": request.build_absolute_uri(vendor.get_absolute_url()),
     }
-    from pos.models import Staff
-    ctx["team"] = list(vendor.staff.filter(is_active=True, role=Staff.Role.STAFF, show_on_site=True).select_related("user")
-                       .prefetch_related("service_links__service"))
     from .faq import CHIPS
     ctx["faq_chips"] = CHIPS
     ctx["similar"] = _similar_vendors(vendor)
@@ -355,15 +296,9 @@ def vendor_faq(request, type_slug, slug):
 
 
 def _booking_initial(vendor, get):
-    """Pre-fill the booking form from a "Book" link: ?service=<id>&staff=<id>."""
-    out = {}
+    """Services already in the booking cart when a "Book" link carries ?service=<id>."""
     sid = _uuid_or_none(get.get("service"))
-    if sid and vendor.items.filter(pk=sid, is_available=True).exists():
-        out["service"] = sid
-    tid = _uuid_or_none(get.get("staff"))
-    if tid and vendor.staff.filter(pk=tid, is_active=True).exists():
-        out["staff"] = tid
-    return out
+    return {"services": [sid]} if sid and vendor.items.filter(pk=sid, is_available=True, price_on_request=False).exists() else {}
 
 
 def _similar_vendors(vendor, limit=6):
@@ -544,7 +479,7 @@ def dashboard(request):
         "vendor": v, "score": score, "missing_items": missing, "needed_for_public": v.missing_for_public(),
         "unread": v.bookings.filter(status="requested", date__gte=timezone.localdate()).count(),
         "item_count": v.items.count(), "photo_count": v.photos.count(),
-        "recent": v.bookings.select_related("service", "staff__user").order_by("-created_at")[:5],
+        "recent": v.bookings.select_related("staff__user").prefetch_related("items").order_by("-created_at")[:5],
         "sales": sales, "orders": orders, "inquiries_s": inquiries, "top": top, "methods": methods,
         "week_total": wk, "week_n": week["n"] or 0, "week_change": (round((wk - pwk) / pwk * 100) if pwk else None),
         "has_pos_data": paid.exists(),
@@ -648,7 +583,7 @@ def menu_pdf(request):
     if gaps:
         messages.warning(request, "Complete your profile first: " + ", ".join(gaps) + ".")
         return redirect("dashboard_menu")
-    pdf = build_menu_pdf(v, request.build_absolute_uri(v.get_menu_url()), watermark=not v.is_premium)
+    pdf = build_menu_pdf(v, request.build_absolute_uri(v.get_absolute_url()), watermark=not v.is_premium)
     resp = HttpResponse(pdf, content_type="application/pdf")
     resp["Content-Disposition"] = f'{"inline" if request.GET.get("print") else "attachment"}; filename="{v.slug}-price-list.pdf"'
     return resp
@@ -826,12 +761,7 @@ def payments_page(request):
 @vendor_required
 def share(request):
     v = request.vendor
-    if request.method == "POST" and request.POST.get("action") == "rotate":
-        v.rotate_menu_token()
-        messages.success(request, "New QR link created. Reprint your QR — the old one no longer opens your price list.")
-        return redirect("dashboard_share")
-    return render(request, "dashboard/share.html", {"vendor": v, "url": request.build_absolute_uri(v.get_absolute_url()),
-                                                    "menu_url": request.build_absolute_uri(v.get_menu_url())})
+    return render(request, "dashboard/share.html", {"vendor": v, "url": request.build_absolute_uri(v.get_absolute_url())})
 
 
 @vendor_required
