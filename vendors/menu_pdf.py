@@ -15,7 +15,7 @@ M = 16 * mm
 
 
 def profile_gaps(vendor):
-    """What's missing before a menu PDF makes sense. Empty list = ready."""
+    """What's missing before a price-list PDF makes sense. Empty list = ready."""
     gaps = []
     if not vendor.logo:
         gaps.append("business logo")
@@ -26,7 +26,7 @@ def profile_gaps(vendor):
     if not vendor.hours.exclude(opens=None).exists():
         gaps.append("opening hours")
     if not vendor.items.filter(is_available=True).exists():
-        gaps.append("at least one menu item")
+        gaps.append("at least one service")
     return gaps
 
 
@@ -60,7 +60,7 @@ def _footer(c, vendor, page, watermark, menu_url):
 
 
 def build_menu_pdf(vendor, menu_url, watermark=True):
-    buf = io.BytesIO(); c = canvas.Canvas(buf, pagesize=A4); c.setTitle(f"{vendor.brand_name} menu")
+    buf = io.BytesIO(); c = canvas.Canvas(buf, pagesize=A4); c.setTitle(f"{vendor.brand_name} price list")
     page = 1
     # ── Cover band
     c.setFillColor(DARK); c.rect(0, H - 62 * mm, W, 62 * mm, fill=1, stroke=0)
@@ -87,10 +87,10 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
     # QR (top right)
     qr = qrcode.make(menu_url, box_size=6, border=1).convert("RGB"); from reportlab.lib.utils import ImageReader
     c.drawImage(ImageReader(qr), W - M - 28 * mm, H - 44 * mm, 28 * mm, 28 * mm)
-    c.setFont("Helvetica", 7); c.setFillColor(colors.white); c.drawCentredString(W - M - 14 * mm, H - 48 * mm, "Scan for menu & orders")
+    c.setFont("Helvetica", 7); c.setFillColor(colors.white); c.drawCentredString(W - M - 14 * mm, H - 48 * mm, "Scan to book")
     # ── Menu
     y = H - 74 * mm
-    c.setFillColor(RED); c.setFont("Helvetica-Bold", 16); c.drawString(M, y, "Menu")
+    c.setFillColor(RED); c.setFont("Helvetica-Bold", 16); c.drawString(M, y, "Services & prices")
     c.setStrokeColor(RED); c.setLineWidth(1.2); c.line(M, y - 2 * mm, M + 14 * mm, y - 2 * mm); y -= 9 * mm
     cats = list(vendor.categories.all()) + [None]
     blocks = []
@@ -109,7 +109,7 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
     def new_page():
         nonlocal page, y_cols
         _footer(c, vendor, page, watermark, menu_url); c.showPage(); page += 1
-        c.setFillColor(DARK); c.setFont("Helvetica-Bold", 12); c.drawString(M, H - M, f"{vendor.brand_name} — menu (continued)")
+        c.setFillColor(DARK); c.setFont("Helvetica-Bold", 12); c.drawString(M, H - M, f"{vendor.brand_name} — price list (continued)")
         y_cols = [H - M - 10 * mm, H - M - 10 * mm]
     def draw_block(col, name, items):
         nonlocal y_cols
@@ -121,7 +121,7 @@ def build_menu_pdf(vendor, menu_url, watermark=True):
             if y < bottom:
                 y_cols[col] = y; new_page(); y = y_cols[col]
             c.setFont("Helvetica", 9.5); c.setFillColor(DARK); nm = it.name[:38]; c.drawString(cx, y, nm)
-            price = "On request" if it.price_on_request else f"{it.price:,.0f}"; c.setFont("Helvetica-Bold", 9.5); c.drawRightString(cx + col_w, y, price)
+            price = "On request" if it.price_on_request else f"{it.sale_price:,.0f}"; c.setFont("Helvetica-Bold", 9.5); c.drawRightString(cx + col_w, y, price)
             nw = c.stringWidth(nm, "Helvetica", 9.5); pw = c.stringWidth(price, "Helvetica-Bold", 9.5)
             c.setStrokeColor(colors.HexColor("#d1d5db")); c.setDash(1, 2); c.line(cx + nw + 2 * mm, y + 1, cx + col_w - pw - 2 * mm, y + 1); c.setDash()
             y -= 6.2 * mm

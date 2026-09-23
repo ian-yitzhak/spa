@@ -2,11 +2,11 @@
 {% block title %}{{ vendor.seo_title }}{% endblock %}
 {% block meta_description %}{{ vendor.seo_description }}{% endblock %}
 {% block canonical %}{{ canonical }}{% endblock %}
-{% block og_type %}restaurant.restaurant{% endblock %}
-{% block og_title %}{{ vendor.brand_name }} — menu & prices{% if vendor.town %} in {{ vendor.town }}{% endif %}{% endblock %}
+{% block og_type %}business.business{% endblock %}
+{% block og_title %}{{ vendor.brand_name }} — services & prices{% if vendor.town %} in {{ vendor.town }}{% endif %}{% endblock %}
 {% block og_description %}{{ vendor.seo_description }}{% endblock %}
 {% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% url 'vendor_og_image' vendor.type_slug vendor.slug %}{% endblock %}
-{% block tw_title %}{{ vendor.brand_name }} — menu & prices{% endblock %}
+{% block tw_title %}{{ vendor.brand_name }} — services & prices{% endblock %}
 {% block tw_description %}{{ vendor.seo_description }}{% endblock %}
 {% block tw_image %}{{ request.scheme }}://{{ request.get_host }}{% url 'vendor_og_image' vendor.type_slug vendor.slug %}{% endblock %}
 {% block jsonld %}{% if vendor.is_live %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endif %}{% endblock %}
@@ -18,7 +18,7 @@
 </div>
 
 <div class="mx-auto max-w-6xl overflow-x-hidden px-4">
-  <nav class="truncate pt-4 text-xs text-gray-500" aria-label="Breadcrumb"><a href="{% url 'home' %}" class="hover:text-primary">BeautyFlow</a> › <a href="{% url 'types_index' vendor.type_plural_slug %}" class="hover:text-primary">{{ vendor.type_row.3 }}</a>{% if vendor.county_loc %} › <a href="{% url 'restaurants_in' vendor.type_plural_slug vendor.county_loc.slug %}" class="hover:text-primary">{{ vendor.county_loc.name }}</a>{% endif %}{% if vendor.area_loc and vendor.area_loc != vendor.county_loc %} › <a href="{% url 'restaurants_in' vendor.type_plural_slug vendor.area_loc.slug %}" class="hover:text-primary">{{ vendor.area_loc.name }}</a>{% endif %} › <span class="text-dark">{{ vendor.brand_name }}</span></nav>
+  <nav class="truncate pt-4 text-xs text-gray-500" aria-label="Breadcrumb"><a href="{% url 'home' %}" class="hover:text-primary">BeautyFlow</a> › <a href="{% url 'types_index' vendor.type_plural_slug %}" class="hover:text-primary">{{ vendor.type_row.3 }}</a>{% if vendor.county_loc %} › <a href="{% url 'places_in' vendor.type_plural_slug vendor.county_loc.slug %}" class="hover:text-primary">{{ vendor.county_loc.name }}</a>{% endif %}{% if vendor.area_loc and vendor.area_loc != vendor.county_loc %} › <a href="{% url 'places_in' vendor.type_plural_slug vendor.area_loc.slug %}" class="hover:text-primary">{{ vendor.area_loc.name }}</a>{% endif %} › <span class="text-dark">{{ vendor.brand_name }}</span></nav>
   <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 py-6">
     <div class="flex items-center gap-4">
       <div class="h-20 w-20 flex-none overflow-hidden rounded-xl border border-gray-200 bg-white md:h-24 md:w-24">
@@ -32,12 +32,12 @@
           {% if open_now is True %}<span class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">Open now</span>{% elif open_now is False %}<span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700">Closed now</span>{% endif %}
         </div>
         {% if vendor.tagline %}<p class="text-gray-600">{{ vendor.tagline }}</p>{% endif %}
-        <p class="mt-0.5 text-sm text-gray-500">{{ vendor.type_label }}{% if vendor.town %} · {{ vendor.town }}{% endif %}{% if vendor.county %}, {{ vendor.county }}{% endif %}{% if vendor.delivers %} · Delivery available{% endif %}{% with r=vendor.rating %}{% if r %} · <span class="text-accent">★</span> {{ r|floatformat:1 }} ({{ vendor.review_count }}){% endif %}{% endwith %}</p>
-        {% if vendor.tags.exists %}<div class="mt-2 flex flex-wrap gap-1">{% for t in vendor.tags.all %}<a href="{% url 'food_tag' t.slug %}" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-200">{{ t.name }}</a>{% endfor %}</div>{% endif %}
+        <p class="mt-0.5 text-sm text-gray-500">{{ vendor.type_label }}{% if vendor.town %} · {{ vendor.town }}{% endif %}{% if vendor.county %}, {{ vendor.county }}{% endif %}{% if vendor.home_service %} · Home visits{% endif %}{% with r=vendor.rating %}{% if r %} · <span class="text-accent">★</span> {{ r|floatformat:1 }} ({{ vendor.review_count }}){% endif %}{% endwith %}</p>
+        {% if vendor.tags.exists %}<div class="mt-2 flex flex-wrap gap-1">{% for t in vendor.tags.all %}<a href="{% url 'service_tag' t.slug %}" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-200">{{ t.name }}</a>{% endfor %}</div>{% endif %}
       </div>
     </div>
     <div class="flex gap-2">
-      <a href="#contact" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Contact &amp; book</a>
+      {% if vendor.accepts_bookings and not vendor.menu_locked %}<a href="#book" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Book now</a>{% else %}<a href="#contact" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Contact</a>{% endif %}
       <a href="#reviews" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50">Reviews</a>
     </div>
   </div>
@@ -68,7 +68,7 @@
 
       <section class="reveal min-w-0">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <h2 class="font-heading text-xl font-semibold text-black">Menu</h2>
+          <h2 class="font-heading text-xl font-semibold text-black">Services &amp; prices</h2>
         </div>
         {% if categories %}
         <div class="mt-3 flex w-full max-w-full gap-2 overflow-x-auto pb-1 text-sm [scrollbar-width:none]" id="menu-tabs">
@@ -81,12 +81,32 @@
         {% endif %}
         {% if not vendor.menu_locked %}
         <div class="mt-3 flex items-center gap-2">
-          <input type="search" name="mq" value="{{ mq }}" placeholder="Search this menu ({{ menu_total }} item{{ menu_total|pluralize }})…" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          <input type="search" name="mq" value="{{ mq }}" placeholder="Search {{ menu_total }} service{{ menu_total|pluralize }}…" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                  hx-get="{{ vendor.get_absolute_url }}{% if active_cat %}?cat={{ active_cat }}{% endif %}" hx-trigger="input changed delay:250ms, search" hx-target="#menu-items" hx-include="this">
         </div>
         {% endif %}
         <div id="menu-items" class="mt-2 divide-y divide-gray-100">{% include "partials/menu_items.html" %}</div>
       </section>
+
+      {% if team %}
+      <section class="reveal">
+        <h2 class="font-heading text-xl font-semibold text-black">Meet the team</h2>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          {% for s in team %}
+          <div class="flex gap-3 rounded-xl border border-gray-200 p-4">
+            <div class="h-16 w-16 flex-none overflow-hidden rounded-full bg-accent/30">{% if s.photo %}<img src="{{ s.photo.url }}" alt="{{ s.name }}" loading="lazy" class="h-full w-full object-cover">{% else %}<div class="grid h-full place-items-center font-heading text-xl font-semibold text-primary">{{ s.name|first }}</div>{% endif %}</div>
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-black">{{ s.name }}</div>
+              {% if s.job_title %}<div class="text-xs text-gray-500">{{ s.job_title }}</div>{% endif %}
+              {% if s.bio %}<p class="mt-1 text-sm text-gray-600">{{ s.bio }}</p>{% endif %}
+              {% with links=s.service_links.all %}{% if links %}<div class="mt-1 text-xs text-gray-500">{% for l in links|slice:":4" %}{{ l.service.name }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if links|length > 4 %} +{{ links|length|add:"-4" }}{% endif %}</div>{% endif %}{% endwith %}
+              {% if vendor.accepts_bookings and not vendor.menu_locked %}<button type="button" data-book-staff="{{ s.pk }}" class="mt-2 rounded-lg border border-primary px-3 py-1 text-xs font-semibold text-primary hover:bg-primary hover:text-white">Book with {{ s.name }}</button>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
 
       {% if photos %}
       <section class="reveal">
@@ -122,18 +142,10 @@
     </div>
 
     <aside class="stagger min-w-0 space-y-6 lg:sticky lg:top-20 lg:self-start">
-      {% if not vendor.menu_locked and vendor.whatsapp_link %}
-      <div id="cart" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm" data-vendor="{{ vendor.slug }}" data-wa="{{ vendor.whatsapp_link }}" data-brand="{{ vendor.brand_name }}" data-order="">
-        <div class="flex items-center justify-between"><h3 class="flex items-center gap-2 font-semibold text-black">{% icon "cart" "h-5 w-5" %}Your order</h3><span id="cart-count" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold">0</span></div>
-        <div id="cart-lines" class="mt-3 space-y-2 text-sm"><p class="text-gray-400">Add items from the menu.</p></div>
-        <div id="cart-total" class="mt-3 hidden items-center justify-between border-t pt-3 font-semibold text-black"><span>Total</span><span id="cart-sum">KES 0</span></div>
-        <a id="cart-checkout" href="{% url 'menu_inquire' vendor.type_slug vendor.slug %}" class="pointer-events-none mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white opacity-40 hover:bg-primary/90">{% icon "chat" "h-4 w-4" %}<span>Send inquiry</span></a>
-        <p class="mt-2 text-center text-xs text-gray-400">Pick what you want and send it as an inquiry — {{ vendor.brand_name }} gets back to you.</p>
-      </div>
-      {% if vendor.accepts_reservations and not vendor.menu_locked %}
-      <div id="reserve-box" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">{% include "partials/reservation_form.html" with res_form=res_form %}</div>
+      {% if vendor.accepts_bookings and not vendor.menu_locked %}
+      <div id="book" class="scroll-mt-24 rounded-xl border-2 border-primary/30 bg-white p-5 shadow-sm"><div id="reserve-box">{% include "partials/reservation_form.html" with res_form=res_form %}</div></div>
       {% endif %}
-      {% endif %}
+      <a href="{% url 'menu_inquire' vendor.type_slug vendor.slug %}" class="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white p-3 text-sm font-semibold hover:border-primary hover:text-primary">{% icon "chat" "h-4 w-4" %}Ask a question or get a quote</a>
 
       <div id="contact" class="scroll-mt-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h3 class="font-semibold text-black">Contact</h3>
@@ -163,7 +175,7 @@
       <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h3 class="font-semibold text-black">Share</h3>
         <div class="mt-3 flex flex-wrap gap-2 text-sm">
-          <a href="https://wa.me/?text={{ vendor.brand_name|urlencode }} menu %26 prices: {{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg bg-green-600 px-3 py-1.5 font-medium text-white">WhatsApp</a>
+          <a href="https://wa.me/?text={{ vendor.brand_name|urlencode }} — services %26 prices: {{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg bg-green-600 px-3 py-1.5 font-medium text-white">WhatsApp</a>
           <a href="https://www.facebook.com/sharer/sharer.php?u={{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg border px-3 py-1.5 font-medium">Facebook</a>
           <a href="https://twitter.com/intent/tweet?text={{ vendor.brand_name|urlencode }}&url={{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg border px-3 py-1.5 font-medium">X</a>
           <button onclick="navigator.clipboard.writeText('{{ canonical }}');this.textContent='Copied'" class="rounded-lg border px-3 py-1.5 font-medium">Copy link</button>
@@ -171,8 +183,8 @@
       </div>
 
       <div class="rounded-xl bg-gray-50 p-5 text-sm">
-        <h3 class="font-semibold text-black">NOTE: Do your due diligence</h3>
-        <p class="mt-2 text-gray-600">BeautyFlow only lists this vendor. Do not pay in advance before meeting them — all transactions happen outside this platform.</p>
+        <h3 class="font-semibold text-black">Paying</h3>
+        <p class="mt-2 text-gray-600">You pay {{ vendor.brand_name }} directly after your service. BeautyFlow never asks for money to confirm a booking — be careful with anyone who does.</p>
         <a href="{% url 'terms' %}" class="mt-2 inline-block text-xs font-medium text-gray-500 underline">Read our terms</a>
       </div>
     </aside>
@@ -188,32 +200,13 @@
 
 <script>
 (function(){
-  var box=document.getElementById('cart'); if(!box) return;
-  var key='beautyflow-cart-'+box.dataset.vendor, cart={};
-  try{cart=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){cart={}}
-  function save(){try{localStorage.setItem(key,JSON.stringify(cart))}catch(e){}}
-  function fmt(n){return 'KES '+Number(n).toLocaleString('en-KE',{maximumFractionDigits:2})}
-  function render(){
-    var lines=document.getElementById('cart-lines'),ids=Object.keys(cart),count=0,sum=0;
-    lines.innerHTML='';
-    if(!ids.length){lines.innerHTML='<p class="text-gray-400">Add items from the menu.</p>'}
-    ids.forEach(function(id){var it=cart[id];count+=it.qty;sum+=it.qty*it.price;
-      var row=document.createElement('div');row.className='flex items-center gap-2';
-      row.innerHTML='<div class="min-w-0 flex-1 truncate">'+it.name+'</div><div class="flex items-center rounded-lg border"><button data-d="-1" class="px-2 py-0.5">−</button><span class="w-6 text-center">'+it.qty+'</span><button data-d="1" class="px-2 py-0.5">+</button></div><div class="w-20 text-right font-medium">'+fmt(it.qty*it.price)+'</div>';
-      row.querySelectorAll('button').forEach(function(b){b.onclick=function(){change(id,it.name,it.price,+b.dataset.d)}});
-      lines.appendChild(row)});
-    document.getElementById('cart-count').textContent=count;
-    document.getElementById('cart-sum').textContent=fmt(sum);
-    document.getElementById('cart-total').classList.toggle('hidden',!ids.length);
-    document.getElementById('cart-total').classList.toggle('flex',!!ids.length);
-    var ck=document.getElementById('cart-checkout');ck.classList.toggle('pointer-events-none',!ids.length);ck.classList.toggle('opacity-40',!ids.length);
-    document.querySelectorAll('[data-add]').forEach(function(b){var q=(cart[b.dataset.add]||{}).qty||0;b.querySelector('span').textContent=q?('In cart · '+q):'Add to order'});
-  }
-  function change(id,name,price,d){var it=cart[id]||{name:name,price:+price,qty:0};it.qty+=d;if(it.qty<=0)delete cart[id];else cart[id]=it;save();render()}
-  function askQuote(name,wa){var box=document.getElementById('reserve-box');if(!box){if(wa)window.open(wa+'?text='+encodeURIComponent('Hi, I would like a quote for: '+name),'_blank');return}var f=box.querySelector('[name=note]');if(f&&!f.value){f.value='Quote for: '+name;}box.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){var n=box.querySelector('[name=name]');if(n)n.focus()},400)}
-  document.addEventListener('click',function(e){var a=e.target.closest('[data-ask]');if(a){e.preventDefault();askQuote(a.dataset.name,a.dataset.wa);return}var b=e.target.closest('[data-add]');if(b){e.preventDefault();change(b.dataset.add,b.dataset.name,b.dataset.price,1)}});
-  document.body.addEventListener('htmx:afterSwap',render);
-  render();
+  function form(){return document.querySelector('#reserve-box form')}
+  function pick(name,value){var f=form();if(!f)return false;var el=f.querySelector('[name='+name+']');if(el&&value){el.value=value}
+    document.getElementById('book').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){var d=f.querySelector('[name=date]');if(d)d.focus()},400);return true}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-book]');if(b){e.preventDefault();if(!pick('service',b.dataset.book)&&b.dataset.wa)window.open(b.dataset.wa+'?text='+encodeURIComponent('Hi, I would like to book: '+b.dataset.name),'_blank');return}
+    var s=e.target.closest('[data-book-staff]');if(s){e.preventDefault();pick('staff',s.dataset.bookStaff)}
+  });
 })();
 </script>
 {% if vendor.is_live %}

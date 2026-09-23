@@ -113,7 +113,7 @@ def verify_email(request):
                 ref.check_qualified()
             if getattr(user, "vendor", None) and user.phone:
                 from beautyflow.sms import send_sms
-                send_sms(user.phone, f"Welcome to BeautyFlow, {user.first_name or 'there'}! Your business {user.vendor.brand_name} is live. Add your menu & photos: beautyflow.co.ke/dashboard/ — help: WhatsApp 0717183416")
+                send_sms(user.phone, f"Welcome to BeautyFlow, {user.first_name or 'there'}! Your business {user.vendor.brand_name} is live. Add your services & team: beautyflow.co.ke/dashboard/ — help: WhatsApp 0717183416")
             messages.success(request, "Email verified. Welcome to BeautyFlow — set up your business profile.")
             return _finish_login(request, user)
         form.add_error("code", "That code is wrong or has expired.")

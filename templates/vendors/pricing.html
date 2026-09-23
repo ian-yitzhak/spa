@@ -1,44 +1,47 @@
-{% extends "base.html" %}{% block title %}Pricing — BeautyFlow{% endblock %}{% block meta_description %}BeautyFlow pricing for food vendors: free listing with menu, photos and WhatsApp orders; Premium monthly via M-Pesa for unlimited items and top placement.{% endblock %}
+{% extends "base.html" %}{% block title %}Pricing — BeautyFlow salon &amp; spa software{% endblock %}{% block meta_description %}BeautyFlow pricing for salons, spas and barbers in Kenya: free booking page, Premium for unlimited services, and the POS with staff commission and payouts. Pay monthly by card or M-Pesa.{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-4xl px-4 py-14 text-center">
-  <h1 class="font-heading text-3xl font-semibold md:text-4xl">Simple pricing for food vendors</h1>
-  <div class="mt-10 grid gap-6 text-left sm:grid-cols-3">
+<div class="mx-auto max-w-5xl px-4 py-14 text-center">
+  <h1 class="font-heading text-3xl font-semibold md:text-4xl">Simple monthly pricing</h1>
+  <p class="mx-auto mt-3 max-w-2xl text-gray-600">No commission on your sales, no contract. Pay by card or M-Pesa through Paystack and stop any time.</p>
+  <div class="mt-10 grid gap-6 text-left md:grid-cols-3">
     <div class="rounded-2xl border p-6">
       <h2 class="font-heading text-lg font-semibold">Free</h2>
       <p class="mt-2 font-heading text-4xl font-semibold">KES 0</p>
       <ul class="mt-5 space-y-2 text-sm text-gray-600">
-        <li>✓ Public business page with contacts &amp; location</li>
-        <li>✓ Up to {{ site.free_menu_limit }} menu items with prices</li>
-        <li>✓ Up to {{ site.free_photo_limit }} food photos</li>
-        <li>✓ WhatsApp orders &amp; bookings</li>
+        <li>✓ Public page with prices, photos &amp; location</li>
+        <li>✓ Up to {{ site.free_menu_limit }} services</li>
+        <li>✓ Up to {{ site.free_photo_limit }} service photos</li>
+        <li>✓ Online booking requests</li>
         <li>✓ Reviews &amp; ratings</li>
-        <li>✓ Your own menu QR code</li>
+        <li>✓ Your own QR code</li>
       </ul>
       <a href="{% url 'signup' %}" class="mt-6 block rounded-lg border py-2.5 text-center font-semibold hover:bg-gray-50">Get started</a>
     </div>
-    <div class="rounded-2xl border-2 border-primary p-6 shadow-lg shadow-primary/10">
-      <h2 class="font-heading text-lg font-semibold">Premium <span class="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs text-white">Most popular</span></h2>
+    <div class="rounded-2xl border p-6">
+      <h2 class="font-heading text-lg font-semibold">Premium</h2>
       <p class="mt-2 font-heading text-4xl font-semibold">KES {{ site.premium_fee|floatformat:"-2" }}<span class="text-base font-normal text-gray-500">/month</span></p>
       <ul class="mt-5 space-y-2 text-sm text-gray-600">
         <li>✓ Everything in Free</li>
-        <li>✓ <strong>Unlimited</strong> menu items &amp; photos</li>
-        <li>✓ Premium badge &amp; top placement in search</li>
-        <li>✓ Special offers promotion</li>
-        <li>✓ Pay by M-Pesa in seconds, receipt by email</li>
+        <li>✓ <strong>Unlimited</strong> services &amp; photos</li>
+        <li>✓ Premium badge &amp; top placement</li>
+        <li>✓ Offers on the Deals page</li>
+        <li>✓ Price-list PDF without a watermark</li>
       </ul>
-      <a href="{% url 'signup' %}" class="mt-6 block rounded-lg bg-primary py-2.5 text-center font-semibold text-white hover:bg-primary/90">Start free, upgrade anytime</a>
+      <a href="{% url 'signup' %}" class="mt-6 block rounded-lg border py-2.5 text-center font-semibold hover:bg-gray-50">Start free, upgrade anytime</a>
     </div>
-    <div class="rounded-2xl border p-6">
-      <h2 class="font-heading text-lg font-semibold">POS module <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs">Add-on</span></h2>
-      <p class="mt-2 font-heading text-4xl font-semibold">KES {{ site.pos_fee|floatformat:"-2" }}<span class="text-base font-normal text-gray-500">/month</span></p>
+    <div class="rounded-2xl border-2 border-primary p-6 shadow-lg shadow-primary/10">
+      <h2 class="font-heading text-lg font-semibold">Business <span class="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs text-white">Most popular</span></h2>
+      <p class="mt-2 font-heading text-4xl font-semibold">KES {{ site.pos_fee|floatformat:"-2" }}<span class="text-base font-normal text-gray-500">/month per branch</span></p>
       <ul class="mt-5 space-y-2 text-sm text-gray-600">
-        <li>✓ Counter POS built from your menu</li>
-        <li>✓ Tables &amp; rooms, kitchen order status</li>
-        <li>✓ Cash, M-Pesa &amp; card payments</li>
-        <li>✓ Branded receipts — print or WhatsApp</li>
-        <li>✓ Daily, weekly &amp; monthly sales reports</li>
+        <li>✓ <strong>Premium included</strong></li>
+        <li>✓ POS: every service tagged to the staff member</li>
+        <li>✓ Automatic commission, percent or fixed</li>
+        <li>✓ Payouts &amp; payslips, staff shifts</li>
+        <li>✓ Logins for staff and cashiers</li>
+        <li>✓ Bookings diary, clients, expenses</li>
+        <li>✓ Reports &amp; insights</li>
       </ul>
-      <a href="{% url 'signup' %}" class="mt-6 block rounded-lg border py-2.5 text-center font-semibold hover:bg-gray-50">Add to any plan</a>
+      <a href="{% url 'signup' %}" class="mt-6 block rounded-lg bg-primary py-2.5 text-center font-semibold text-white hover:bg-primary/90">Start free</a>
     </div>
   </div>
   <p class="mt-8 text-sm text-gray-500">Questions? <a href="https://wa.me/{{ site.support_whatsapp }}" class="text-primary">Chat with us on WhatsApp</a>.</p>

@@ -1,121 +1,35 @@
 {% extends "base.html" %}{% load icons %}
-{% block title %}Send an inquiry — {{ vendor.brand_name }} | BeautyFlow{% endblock %}
-{% block meta_description %}Ask {{ vendor.brand_name }} about their menu, prices and delivery.{% endblock %}
+{% block title %}Ask {{ vendor.brand_name }} a question | BeautyFlow{% endblock %}
+{% block meta_description %}Ask {{ vendor.brand_name }} about their services, prices and availability, or request a quote.{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-4xl px-4 py-8" id="inquire" data-vendor="{{ vendor.slug }}">
-  <a href="{{ vendor.get_absolute_url }}" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary">← Back to menu</a>
-  <h1 class="mt-2 font-heading text-2xl font-semibold text-black">Send an inquiry to {{ vendor.brand_name }}</h1>
-
+<div class="mx-auto max-w-xl px-4 py-8">
+  <a href="{{ vendor.get_absolute_url }}" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-primary">← Back to {{ vendor.brand_name }}</a>
+  <h1 class="mt-2 font-heading text-2xl font-semibold text-black">Ask {{ vendor.brand_name }}</h1>
+  <p class="mt-1 text-sm text-gray-500">A question about a service, a quote for a wedding or group, or a home visit. They'll reply on WhatsApp or by phone.</p>
   {% if sent %}
   <div class="mt-6 rounded-xl border border-green-200 bg-green-50 p-6">
-    <h2 class="font-heading text-xl font-semibold text-green-900">Inquiry sent</h2>
-    <p class="mt-1 text-sm text-green-800">{{ vendor.brand_name }} will get back to you on {{ sent.phone|slice:"3:"|add:"0"|default:sent.phone }}{% if sent.items %} about your {{ sent.items|length }} item{{ sent.items|length|pluralize }}{% endif %}.</p>
+    <h2 class="font-heading text-xl font-semibold text-green-900">Sent</h2>
+    <p class="mt-1 text-sm text-green-800">{{ vendor.brand_name }} will get back to you soon.</p>
     <div class="mt-4 flex flex-wrap gap-2">
       {% if wa_link %}<a href="{{ wa_link }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white">{% icon "whatsapp" "h-4 w-4" %}Also send on WhatsApp</a>{% endif %}
       <a href="{{ vendor.get_absolute_url }}" class="rounded-lg border px-5 py-2.5 text-sm font-semibold">Back to {{ vendor.brand_name }}</a>
     </div>
   </div>
-  <script>try{localStorage.removeItem('beautyflow-cart-{{ vendor.slug }}')}catch(e){}</script>
   {% else %}
-
-  <div id="inq-empty" class="mt-6 hidden rounded-xl border border-dashed p-6 text-center text-sm text-gray-500">Nothing picked from the menu yet — you can still write what you need below.</div>
-
-  <form method="post" class="mt-6 grid gap-6 lg:grid-cols-5">{% csrf_token %}
-    <input type="hidden" name="items" id="inq-items">
-    <!-- selection -->
-    <section class="order-2 rounded-xl border border-gray-200 bg-white p-5 lg:col-span-2 lg:order-2 lg:sticky lg:top-20 lg:self-start">
-      <h2 class="flex items-center gap-2 font-semibold text-black">{% icon "cart" "h-5 w-5" %}What you picked</h2>
-      <div id="inq-lines" class="mt-3 space-y-2 text-sm"></div>
-      <dl class="mt-4 space-y-1 border-t pt-3 text-sm">
-        <div class="flex justify-between"><dt class="text-gray-500">Subtotal</dt><dd id="inq-sub" class="font-medium">KES 0</dd></div>
-        <div id="inq-fee-row" class="hidden justify-between"><dt class="text-gray-500">Delivery <span id="inq-fee-area" class="text-gray-400"></span></dt><dd id="inq-fee" class="font-medium">KES 0</dd></div>
-        <div class="flex justify-between border-t pt-2 text-base font-bold text-black"><dt>Estimate</dt><dd id="inq-total">KES 0</dd></div>
-      </dl>
-      <p class="mt-2 text-xs text-gray-400">Prices shown are the menu prices. {{ vendor.brand_name }} confirms availability and the final amount with you.</p>
-      {% if error %}<p class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ error }}</p>{% endif %}
-      <div class="mt-3">{% include "partials/turnstile.html" %}</div>
-      <button class="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-semibold text-white hover:bg-primary/90">{% icon "chat" "h-5 w-5" %}Send inquiry</button>
-      <p class="mt-2 text-center text-xs text-gray-400">By sending this you agree to our <a href="{% url 'terms' %}" class="underline">terms</a>. BeautyFlow only lists this business.</p>
-    </section>
-
-    <!-- details -->
-    <section class="order-1 space-y-5 lg:col-span-3 lg:order-1">
-      <div class="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 class="font-semibold text-black">Your details</h2>
-        <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <div><label for="name" class="mb-1 block text-xs font-medium text-gray-600">Name <span class="text-primary">*</span></label><input id="name" name="name" required value="{{ form.name|default:'' }}" class="w-full rounded-lg border border-gray-300 px-3 py-2"></div>
-          <div><label for="phone" class="mb-1 block text-xs font-medium text-gray-600">Phone <span class="text-primary">*</span></label><input id="phone" name="phone" type="tel" inputmode="tel" required value="{{ form.phone|default:'' }}" placeholder="07XX XXX XXX" class="w-full rounded-lg border border-gray-300 px-3 py-2"></div>
-        </div>
-        <div class="mt-3">
-          <label for="message" class="mb-1 block text-xs font-medium text-gray-600">Message</label>
-          <textarea id="message" name="message" rows="3" placeholder="When you need it, how many people, anything special…" class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ form.message|default:'' }}</textarea>
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 class="font-semibold text-black">Delivery location <span class="text-xs font-normal text-gray-400">optional</span></h2>
-        {% if zones %}
-        <div class="relative mt-3">
-          <label for="zone-q" class="mb-1 block text-xs font-medium text-gray-600">Area</label>
-          <input type="hidden" name="zone" id="zone">
-          <input id="zone-q" autocomplete="off" value="{{ form.zone|default:'' }}" placeholder="Start typing your area…" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-          <div id="zone-list" class="absolute inset-x-0 top-full z-20 mt-1 hidden max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-            {% for z in zones %}<button type="button" data-zone="{{ z.area }}" class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-gray-50"><span>{{ z.area }}</span><span class="flex-none text-gray-500">{% if z.fee %}KES {{ z.fee|floatformat:"0" }}{% else %}Free{% endif %}</span></button>{% endfor %}
-          </div>
-          <p id="zone-none" class="mt-1 hidden text-xs text-red-600">Not in their delivery areas yet — describe it below and they will tell you.</p>
-          <p class="mt-1 text-xs text-gray-500">{% if vendor.delivery_eta %}Usually {{ vendor.delivery_eta }}. {% endif %}{% if vendor.free_delivery_over %}Free delivery above KES {{ vendor.free_delivery_over|floatformat:"0" }}.{% endif %}</p>
-        </div>
-        {% endif %}
-        <div class="mt-3">
-          <label for="address" class="mb-1 block text-xs font-medium text-gray-600">Street, building / house, landmark</label>
-          <input id="address" name="address" value="{{ form.address|default:'' }}" placeholder="e.g. Mpaka Road, Jacaranda Apts, house 4B" class="w-full rounded-lg border border-gray-300 px-3 py-2">
-        </div>
-      </div>
-    </section>
+  {% if error %}<p class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ error }}</p>{% endif %}
+  <form method="post" class="mt-6 space-y-4 rounded-xl border border-gray-200 bg-white p-5">{% csrf_token %}
+    <label class="block"><span class="mb-1 block text-sm font-medium">Service (optional)</span>
+      <select name="service" class="w-full rounded-lg border border-gray-300 px-3 py-2"><option value="">— not about a particular service —</option>{% for s in services %}<option value="{{ s.pk }}" {% if picked == s.pk|stringformat:'s' %}selected{% endif %}>{{ s.name }}{% if s.price_on_request %} (quote){% else %} — KES {{ s.sale_price|floatformat:"-2" }}{% endif %}</option>{% endfor %}</select></label>
+    <label class="block"><span class="mb-1 block text-sm font-medium">Your question</span>
+      <textarea name="message" rows="4" maxlength="1000" placeholder="e.g. How long do knotless braids take for waist length? Do you do bridal trials?" class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ form.message }}</textarea></label>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block"><span class="mb-1 block text-sm font-medium">Your name</span><input name="name" value="{{ form.name }}" required maxlength="80" class="w-full rounded-lg border border-gray-300 px-3 py-2"></label>
+      <label class="block"><span class="mb-1 block text-sm font-medium">Phone / WhatsApp</span><input name="phone" value="{{ form.phone }}" required inputmode="tel" placeholder="07XX XXX XXX" class="w-full rounded-lg border border-gray-300 px-3 py-2"></label>
+    </div>
+    {% include "partials/turnstile.html" %}
+    <button class="w-full rounded-lg bg-primary py-3 font-semibold text-white hover:bg-primary/90">Send</button>
   </form>
-
-  <script>
-  (function(){
-    var key='beautyflow-cart-{{ vendor.slug }}', cart={};
-    var FEES={{ fees_json|safe }}, FREE={{ free_over }};
-    try{cart=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){cart={}}
-    function save(){try{localStorage.setItem(key,JSON.stringify(cart))}catch(e){}}
-    function fmt(n){return 'KES '+Number(n).toLocaleString('en-KE',{maximumFractionDigits:2})}
-    function subtotal(){return Object.keys(cart).reduce(function(s,id){return s+cart[id].qty*cart[id].price},0)}
-    var hid=document.getElementById('zone'),q=document.getElementById('zone-q'),list=document.getElementById('zone-list'),none=document.getElementById('zone-none');
-    function fee(){var z=hid?hid.value:'';if(!z||!(z in FEES))return 0;if(FREE&&subtotal()>=FREE)return 0;return FEES[z]}
-    function render(){
-      var lines=document.getElementById('inq-lines'),ids=Object.keys(cart);
-      document.getElementById('inq-empty').classList.toggle('hidden',ids.length>0);
-      lines.innerHTML='';
-      ids.forEach(function(id){var it=cart[id];
-        var row=document.createElement('div');row.className='flex items-center gap-2';
-        row.innerHTML='<div class="min-w-0 flex-1"><div class="truncate">'+it.name+'</div><div class="text-xs text-gray-400">'+fmt(it.price)+' each</div></div>'+
-          '<div class="flex flex-none items-center rounded-lg border"><button type="button" data-d="-1" class="px-2 py-0.5">−</button><span class="w-6 text-center">'+it.qty+'</span><button type="button" data-d="1" class="px-2 py-0.5">+</button></div>'+
-          '<div class="w-20 flex-none text-right font-medium">'+fmt(it.qty*it.price)+'</div>';
-        row.querySelectorAll('button').forEach(function(b){b.onclick=function(){it.qty+=(+b.dataset.d);if(it.qty<=0)delete cart[id];save();render()}});
-        lines.appendChild(row)});
-      var s=subtotal(),f=fee();
-      document.getElementById('inq-sub').textContent=fmt(s);
-      var fr=document.getElementById('inq-fee-row');fr.classList.toggle('hidden',!(hid&&hid.value));fr.classList.toggle('flex',!!(hid&&hid.value));
-      document.getElementById('inq-fee').textContent=f?fmt(f):'Free';
-      document.getElementById('inq-fee-area').textContent=hid&&hid.value?('· '+hid.value):'';
-      document.getElementById('inq-total').textContent=fmt(s+f);
-      document.getElementById('inq-items').value=JSON.stringify(ids.map(function(id){return {id:id,qty:cart[id].qty}}));
-    }
-    if(q){
-      var opts=[].slice.call(list.querySelectorAll('[data-zone]'));
-      function show(o){list.classList.toggle('hidden',!o)}
-      function filter(){var t=q.value.trim().toLowerCase(),n=0;opts.forEach(function(o){var ok=!t||o.dataset.zone.toLowerCase().indexOf(t)>-1;o.hidden=!ok;if(ok)n++});show(n>0);none.classList.toggle('hidden',!(t&&n===0));if(hid.value&&hid.value.toLowerCase()!==t){hid.value='';render()}}
-      q.oninput=filter;q.onfocus=function(){filter();show(true)};
-      opts.forEach(function(o){o.onclick=function(){hid.value=o.dataset.zone;q.value=o.dataset.zone;show(false);none.classList.add('hidden');render()}});
-      document.addEventListener('click',function(e){if(!e.target.closest('#zone-q')&&!e.target.closest('#zone-list'))show(false)});
-      if(q.value){var m=opts.filter(function(o){return o.dataset.zone.toLowerCase()===q.value.trim().toLowerCase()})[0];if(m)hid.value=m.dataset.zone}
-    }
-    try{var me=JSON.parse(localStorage.getItem('beautyflow-me')||'{}');var n=document.getElementById('name');if(n&&!n.value)n.value=me.name||''}catch(e){}
-    render();
-  })();
-  </script>
   {% endif %}
 </div>
 {% endblock %}

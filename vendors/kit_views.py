@@ -91,8 +91,8 @@ def kit_image(request, kind):
         block = int(name_font.size * 1.15) + 16 + int(tag_font.size * 1.15); y0 = (520 - block) // 2  # name + tagline centred in the band
         _put(d, (x, y0), v.brand_name, W - x - 120, 150, WHITE)
         _put(d, (x, y0 + int(name_font.size * 1.15) + 16), tag, W - x - 120, 64, ORANGE, False)
-        _center(d, 700, "OUR MENU", _font(140), RED, W); _center(d, 880, "Scan to see dishes, prices & photos", _font(72, False), DARK, W)
-        q = _qr(url, 1500); img.paste(q, ((W - 1500) // 2, 1020)); _center(d, 2600, "Order on WhatsApp straight from the menu", _font(72, False), (80, 80, 80), W)
+        _center(d, 700, "OUR PRICES", _font(140), RED, W); _center(d, 880, "Scan to see services, prices & photos", _font(72, False), DARK, W)
+        q = _qr(url, 1500); img.paste(q, ((W - 1500) // 2, 1020)); _center(d, 2600, "Book your next appointment online", _font(72, False), (80, 80, 80), W)
         if v.phone: _center(d, 2720, f"Call / WhatsApp {v.phone}", _font(72), DARK, W)
         d.rectangle([0, H - 220, W, H], fill=RED); _center(d, H - 160, "Powered by BeautyFlow · beautyflow.co.ke", _font(72), WHITE, W)
     elif kind == "story":  # WhatsApp status / IG story 1080x1920
@@ -106,8 +106,8 @@ def kit_image(request, kind):
         if logo: img.paste(logo, (60, 660), logo)
         x = 270 if logo else 60
         _put(d, (x, 690), v.brand_name, W - x - 60, 84, WHITE); _put(d, (x, 800), tag, W - x - 60, 44, ORANGE, False)
-        _center(d, 980, "See our full menu & prices", _font(60), WHITE, W); q = _qr(url, 620); img.paste(q, ((W - 620) // 2, 1080))
-        _center(d, 1740, "Scan or tap the link · order on WhatsApp", _font(40, False), (200, 200, 200), W); _center(d, 1820, "beautyflow.co.ke", _font(40), ORANGE, W)
+        _center(d, 980, "See our services & prices", _font(60), WHITE, W); q = _qr(url, 620); img.paste(q, ((W - 620) // 2, 1080))
+        _center(d, 1740, "Scan or tap the link · book online", _font(40, False), (200, 200, 200), W); _center(d, 1820, "beautyflow.co.ke", _font(40), ORANGE, W)
     elif kind == "square":  # square social post 1080x1080
         W, H = 1080, 1080; img = Image.new("RGB", (W, H), WHITE); d = ImageDraw.Draw(img)
         if v.cover and os.path.exists(v.cover.path):
@@ -119,7 +119,7 @@ def kit_image(request, kind):
         x = 230 if logo else 60
         _put(d, (x, 600), v.brand_name, W - x - 60, 66, DARK); _put(d, (x, 690), tag, W - x - 60, 36, (90, 90, 90), False)
         q = _qr(url, 240); img.paste(q, (60, 770))  # own row: text sits to its right, never under it
-        _put(d, (340, 800), "Menu, prices & WhatsApp orders", W - 340 - 60, 44, RED); _put(d, (340, 870), "Scan the code or find us on beautyflow.co.ke", W - 340 - 60, 32, (90, 90, 90), False)
+        _put(d, (340, 800), "Services, prices & online booking", W - 340 - 60, 44, RED); _put(d, (340, 870), "Scan the code or find us on beautyflow.co.ke", W - 340 - 60, 32, (90, 90, 90), False)
         d.rectangle([0, H - 50, W, H], fill=RED)
     else:
         from django.http import Http404

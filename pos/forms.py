@@ -159,6 +159,7 @@ class BookingForm(forms.ModelForm):
         self.vendor = vendor
         self.fields["service"].queryset = vendor.items.filter(is_available=True).order_by("name")
         self.fields["service"].required = True
+        self.fields["service"].empty_label = "Choose a service"
         self.fields["staff"].queryset = vendor.staff.filter(is_active=True, role=Staff.Role.STAFF).select_related("user")
         self.fields["staff"].label_from_instance = lambda s: s.name + (f" · {s.job_title}" if s.job_title else "")
         self.fields["staff"].empty_label = "Anyone available"
@@ -192,6 +193,7 @@ class PublicBookingForm(forms.ModelForm):
         self.vendor = vendor
         self.fields["service"].queryset = vendor.items.filter(is_available=True).order_by("category__order", "name")
         self.fields["service"].required = True
+        self.fields["service"].empty_label = "Choose a service"
         self.fields["staff"].queryset = vendor.staff.filter(is_active=True, role=Staff.Role.STAFF, show_on_site=True).select_related("user")
         self.fields["staff"].label_from_instance = lambda s: s.name
         self.fields["staff"].empty_label = "Anyone available"

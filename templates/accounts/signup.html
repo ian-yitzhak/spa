@@ -1,7 +1,7 @@
-{% extends "base.html" %}{% block title %}List your business — BeautyFlow{% endblock %}{% block meta_description %}Create a free BeautyFlow vendor account: publish your menu, prices, photos and take orders on WhatsApp.{% endblock %}
+{% extends "base.html" %}{% block title %}List your business — BeautyFlow{% endblock %}{% block meta_description %}Create a free BeautyFlow account for your salon, spa, barbershop or studio: publish your services and prices, take bookings and run your team.{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-2xl px-4 py-10">
-  <h1 class="font-heading text-3xl font-normal text-black">Create your vendor account</h1>
+  <h1 class="font-heading text-3xl font-normal text-black">Create your business account</h1>
   <form method="post" enctype="multipart/form-data" class="mt-6 grid gap-4 sm:grid-cols-2">
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700 sm:col-span-2">{{ form.non_field_errors }}</div>{% endif %}

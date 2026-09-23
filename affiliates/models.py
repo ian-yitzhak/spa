@@ -110,7 +110,7 @@ class Referral(models.Model):
         return cls.objects.create(affiliate=aff, vendor=vendor, amount=SiteSettings.get().affiliate_fee, signup_ip=ip, flagged=flagged, flag_reason=reason)
 
     def check_qualified(self):
-        """Pending → qualified once the vendor is verified and has at least one menu item."""
+        """Pending → qualified once the vendor is verified and has at least one service."""
         if self.status == self.Status.PENDING and self.vendor.owner.email_verified and self.vendor.items.exists():
             self.status = self.Status.QUALIFIED
             self.qualified_at = timezone.now()

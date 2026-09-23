@@ -2,19 +2,17 @@ Hi {{ name }},
 
 {% if kind == 'welcome' %}Welcome to BeautyFlow, and thank you for listing {{ brand }}.{% else %}{{ brand }} has been on BeautyFlow for a week now. Here is what you are not using yet.{% endif %}
 
-BeautyFlow will help your business go digital with:
+Here is what BeautyFlow does for you:
 
-QR code menus: customers scan and view the menu instantly from their phones.
-Less printing: no constant cost of printing and replacing physical menus.
-Easy updates: change prices, dishes and offers instantly.
-Online ordering: customers can order directly from the digital menu.
-More visibility: your business can be discovered by more customers on BeautyFlow.
-Marketing: showcase your food, offers and promotions.
-More customers: makes it easier for new customers to discover and order.
-POS and sales: manage orders and track your sales.
+Online booking page: clients see your services, prices and team, and book a time.
+Staff commission: every service is tagged to the person who did it, and commission is worked out for you.
+Payslips: mark commission paid and your staff see the payslip in their own login.
+Staff shifts: plan the week's rota; everyone sees their own shifts.
+Discounts & offers: put a service on offer with an end date, or discount a bill at the till.
+Reports: top services, busiest days, best staff and profit after commission.
 
-{% if kind == 'welcome' %}Start here: add your dishes and prices, then print your QR code.
-{{ site_url }}/dashboard/menu/{% else %}The POS module is {{ pos_fee }} a month and includes the Premium listing at no extra cost: unlimited menu items and photos, your offers on the Deals page, and the point of sale with the kitchen screen, staff accounts, sales and reports.
+{% if kind == 'welcome' %}Start here: add your services and prices, then add your team.
+{{ site_url }}/dashboard/menu/{% else %}The Business plan is {{ pos_fee }} a month and includes Premium at no extra cost: unlimited services and photos, the POS with staff commission, payouts, shifts, bookings and reports.
 Upgrade here: {{ site_url }}/dashboard/upgrade/{% endif %}
 
 Your page: {{ site_url }}{{ url }}

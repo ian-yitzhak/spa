@@ -3,9 +3,9 @@ from django.urls import path, re_path
 from django.contrib.sitemaps.views import sitemap
 
 from . import client_views, kit_views, seo_views, views
-from .models import BUSINESS_TYPES
+from .models import ALL_TYPES, BUSINESS_TYPES
 
-PLURAL = "|".join(r[4] for r in BUSINESS_TYPES)
+PLURAL = "|".join([ALL_TYPES[4]] + [r[4] for r in BUSINESS_TYPES])
 SINGULAR = "|".join(r[2] for r in BUSINESS_TYPES)
 
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     path("deals/", views.deals, name="deals"),
     path("about/", views.about, name="about"),
     path("features/", views.features, name="features"),
+    path("pricing/", views.pricing, name="pricing"),
     path("privacy/", views.privacy, name="privacy"),
     path("terms/", views.terms, name="terms"),
     path("dashboard/", views.dashboard, name="dashboard"),
@@ -48,13 +49,13 @@ urlpatterns = [
     path("sitemap.xml", sitemap, {"sitemaps": seo_views.SITEMAPS}, name="sitemap"),
     path("healthz/", seo_views.healthz, name="healthz"),
     path("robots.txt", seo_views.robots, name="robots"),
-    path("food/", seo_views.food_index, name="food_index"),
-    path("food/<slug:tag_slug>/", seo_views.food_tag, name="food_tag"),
-    path("food/<slug:tag_slug>/<slug:loc_slug>/", seo_views.food_tag, name="food_tag_in"),
-    path("menus/", seo_views.menus_index, name="menus_index"),
+    path("services/", seo_views.services_index, name="services_index"),
+    path("services/<slug:tag_slug>/", seo_views.service_tag, name="service_tag"),
+    path("services/<slug:tag_slug>/<slug:loc_slug>/", seo_views.service_tag, name="service_tag_in"),
+    path("price-lists/", seo_views.price_lists, name="price_lists"),
     path("for-business/<slug:page>/", seo_views.owner_page, name="owner_page"),
     re_path(rf"^(?P<type_plural>{PLURAL})/$", seo_views.types_index, name="types_index"),
-    re_path(rf"^(?P<type_plural>{PLURAL})/(?P<loc_slug>[-a-z0-9]+)/$", seo_views.restaurants_in, name="restaurants_in"),
+    re_path(rf"^(?P<type_plural>{PLURAL})/(?P<loc_slug>[-a-z0-9]+)/$", seo_views.places_in, name="places_in"),
     # Vendor pages (canonical: /restaurant/<slug>/)
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/$", views.vendor_detail, name="vendor_detail"),
     re_path(rf"^(?P<type_slug>{SINGULAR})/(?P<slug>[-\w]+)/menu/$", views.vendor_menu_only, name="vendor_menu_only"),

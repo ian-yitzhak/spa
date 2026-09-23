@@ -54,6 +54,7 @@ BUSINESS_TYPES = [
     ("beauty_shop", "Beauty shop", "beauty-shop", "Beauty shops", "beauty-shops", "HealthAndBeautyBusiness"),
     ("wellness", "Wellness", "wellness", "Wellness centres", "wellness-centres", "HealthAndBeautyBusiness"),
 ]
+ALL_TYPES = ("all", "Beauty & wellness", "beauty", "Beauty & wellness", "beauty", "HealthAndBeautyBusiness")  # the umbrella directory
 BT = {row[0]: row for row in BUSINESS_TYPES}
 BT_BY_PLURAL_SLUG = {row[4]: row for row in BUSINESS_TYPES}
 BT_BY_SINGULAR_SLUG = {row[2]: row for row in BUSINESS_TYPES}
@@ -83,7 +84,7 @@ class Tag(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("food_tag", args=[self.slug])
+        return reverse("service_tag", args=[self.slug])
 
 
 class Location(models.Model):
@@ -118,7 +119,7 @@ class Location(models.Model):
         return county, area
 
     def get_absolute_url(self):
-        return reverse("restaurants_in", args=[BUSINESS_TYPES[0][4], self.slug])
+        return reverse("places_in", args=[ALL_TYPES[4], self.slug])
 
 
 class VendorQuerySet(models.QuerySet):

@@ -13,11 +13,11 @@
     <p class="mt-0.5 line-clamp-1 text-sm text-gray-500">{{ v.tagline|default:v.town }}</p>
     <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
       {% with r=v.rating %}{% if r %}<span class="text-accent">★</span> {{ r|floatformat:1 }} · {% endif %}{% endwith %}{{ v.type_label }}{% if v.town %} · {{ v.town }}{% elif v.county %} · {{ v.county }}{% endif %}
-      {% if v.delivers %}· Delivery{% endif %}
+      {% if v.home_service %}· Home visits{% endif %}
     </div>
   </div>
 </a>
 {% empty %}
-<p class="col-span-full py-10 text-center text-gray-500">No vendors found{% if q %} for “{{ q }}”{% endif %}.</p>
+<p class="col-span-full py-10 text-center text-gray-500">No places found{% if q %} for “{{ q }}”{% endif %}.</p>
 {% endfor %}
 {% if request.htmx %}<div id="vendors-pagination" hx-swap-oob="true">{% include "partials/pagination.html" %}</div>{% endif %}

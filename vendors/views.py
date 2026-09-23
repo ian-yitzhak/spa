@@ -15,7 +15,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import (HoursFormSet, InquiryForm, MenuCategoryForm, MenuItemForm, OfferForm, PhotoForm, ReviewCodeForm, ReviewForm,
                     VendorProfileForm)
-from .models import (STANDARD_MENU_TYPES, Customer, Inquiry, Location, MenuCategory, MenuItem, Offer, OpeningHours, Photo, Review,
+from .models import (BUSINESS_TYPES, STANDARD_MENU_TYPES, Customer, Inquiry, Location, MenuCategory, MenuItem, Offer, OpeningHours, Photo, Review,
                      SiteSettings, Tag, Vendor)
 from pos.forms import PublicBookingForm
 
@@ -111,15 +111,15 @@ def home(request):
         return render(request, "partials/vendor_cards.html", ctx)
     ctx.update(_home_seo_block(live))
     ctx.update({
-        "categories_cards": [
-            ("/restaurants/", "img/categories/restaurants.jpg", "Restaurants", "From local bites to fine dining", "menu"),
-            ("/hotels/", "img/categories/hotels.jpg", "Hotels", "Comfortable stays, great experiences", "bed"),
-            ("/chefs/", "img/categories/chefs.jpg", "Chefs", "Fresh meals, made with passion", "chef"),
-            ("/deals/", "img/categories/deals.jpg", "Deals", "Special offers, limited time", "tag"),
-        ],
-        "popular": ["Breakfast", "Lunch", "Supper", "Drinks", "Nyama choma", "Pilau", "Chapati"],
+        "type_cards": [(r[4], r[3], BLURBS.get(r[0], "")) for r in BUSINESS_TYPES],
+        "popular": ["Knotless braids", "Gel nails", "Haircut", "Facial", "Massage", "Lashes", "Locs"],
     })
     return render(request, "vendors/home.html", ctx)
+
+
+BLURBS = {"salon": "Braids, weaves, colour, blow-dry", "spa": "Massage, facials, steam & sauna", "barber": "Cuts, fades, shaves, beard care",
+          "nails": "Gel, acrylics, manicure, pedicure", "makeup": "Bridal, events, photoshoots", "massage": "Deep tissue, Swedish, hot stone",
+          "beauty_shop": "Hair, skin care & cosmetics", "wellness": "Yoga, physio, holistic care"}
 
 
 def _home_seo_block(live):
@@ -276,7 +276,7 @@ def vendor_qr_png(request, type_slug, slug):
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     resp = HttpResponse(buf.getvalue(), content_type="image/png")
-    resp["Content-Disposition"] = f'attachment; filename="{vendor.slug}-{"review" if request.GET.get("for") == "review" else "menu"}-qr.png"'
+    resp["Content-Disposition"] = f'attachment; filename="{vendor.slug}-{"review" if request.GET.get("for") == "review" else "prices"}-qr.png"'
     return resp
 
 
@@ -329,11 +329,14 @@ def vendor_detail(request, type_slug, slug):
         "photos": vendor.photos.all(),
         "hours": hours if any(h.opens for h in hours) else [],  # hide until the vendor sets real hours
         "offers": vendor.offers.none() if vendor.menu_locked else vendor.offers.filter(is_active=True).filter(Q(starts__isnull=True) | Q(starts__lte=today)).filter(Q(ends__isnull=True) | Q(ends__gte=today)),
-        "res_form": PublicBookingForm(vendor=vendor, initial=_ask_initial(vendor, request.GET.get("ask"))),
+        "res_form": PublicBookingForm(vendor=vendor, initial=_booking_initial(vendor, request.GET)),
         "today": today.weekday(),
         "jsonld": vendor_jsonld(request, vendor),
         "canonical": request.build_absolute_uri(vendor.get_absolute_url()),
     }
+    from pos.models import Staff
+    ctx["team"] = list(vendor.staff.filter(is_active=True, role=Staff.Role.STAFF, show_on_site=True).select_related("user")
+                       .prefetch_related("service_links__service"))
     from .faq import CHIPS
     ctx["faq_chips"] = CHIPS
     ctx["similar"] = _similar_vendors(vendor)
@@ -351,11 +354,16 @@ def vendor_faq(request, type_slug, slug):
     return render(request, "partials/faq_answer.html", {"vendor": vendor, "q": q, "answer": text, "suggest_wa": suggest_wa})
 
 
-def _ask_initial(vendor, ask):
-    """Pre-fill the inquiry box when a customer taps "Ask for a quote" on the menu-only page."""
-    item_id = _uuid_or_none(ask)
-    item = vendor.items.filter(pk=item_id, price_on_request=True).only("name").first() if item_id else None
-    return {"note": f"Quote for: {item.name}"[:200], "service": item.pk} if item else None
+def _booking_initial(vendor, get):
+    """Pre-fill the booking form from a "Book" link: ?service=<id>&staff=<id>."""
+    out = {}
+    sid = _uuid_or_none(get.get("service"))
+    if sid and vendor.items.filter(pk=sid, is_available=True).exists():
+        out["service"] = sid
+    tid = _uuid_or_none(get.get("staff"))
+    if tid and vendor.staff.filter(pk=tid, is_active=True).exists():
+        out["staff"] = tid
+    return out
 
 
 def _similar_vendors(vendor, limit=6):
@@ -642,7 +650,7 @@ def menu_pdf(request):
         return redirect("dashboard_menu")
     pdf = build_menu_pdf(v, request.build_absolute_uri(v.get_menu_url()), watermark=not v.is_premium)
     resp = HttpResponse(pdf, content_type="application/pdf")
-    resp["Content-Disposition"] = f'{"inline" if request.GET.get("print") else "attachment"}; filename="{v.slug}-menu.pdf"'
+    resp["Content-Disposition"] = f'{"inline" if request.GET.get("print") else "attachment"}; filename="{v.slug}-price-list.pdf"'
     return resp
 
 

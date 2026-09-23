@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{% if q or loc %}{{ q|default:"Restaurants" }}{% if loc %} in {{ loc }}{% endif %} — search | BeautyFlow{% else %}Search restaurants & food in Kenya | BeautyFlow{% endif %}{% endblock %}
-{% block meta_description %}Search BeautyFlow for restaurants, hotels, dishes and chefs across Kenya. Menus with prices and WhatsApp ordering.{% endblock %}
+{% block title %}{% if q or loc %}{{ q|default:"Beauty & wellness" }}{% if loc %} in {{ loc }}{% endif %} — search | BeautyFlow{% else %}Search salons, spas &amp; barbers in Kenya | BeautyFlow{% endif %}{% endblock %}
+{% block meta_description %}Search BeautyFlow for salons, spas, barbers, nail studios and services across Kenya. Prices, reviews and online booking.{% endblock %}
 {% block head %}{% if q or loc %}<meta name="robots" content="noindex, follow">{% endif %}{% endblock %}
 {% block content %}
 <div class="mx-auto max-w-6xl px-4 py-8">
   <form action="{% url 'search' %}" method="get" class="flex flex-col gap-2 rounded-2xl border bg-white p-2 sm:flex-row">
-    <input type="search" name="q" value="{{ q }}" placeholder="Restaurant, dish or chef…" class="min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
+    <input type="search" name="q" value="{{ q }}" placeholder="Salon, service or stylist…" class="min-w-0 flex-1 rounded-xl px-3 py-2.5 text-sm focus:outline-none">
     <div class="sm:w-48">{% include "partials/county_combo.html" with name="loc" value=loc label=loc options=locations placeholder="County (type to search)" all_label="Anywhere in Kenya" by_name=1 %}</div>
     <button class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white">Search</button>
   </form>
