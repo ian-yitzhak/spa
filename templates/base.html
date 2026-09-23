@@ -27,15 +27,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: {
-      colors: { primary: '#B0426C', dark: '#221A1F', accent: '#E8B4C4', gold: '#C9A227' },
-      borderRadius: { md: '3px', lg: '4px', xl: '5px', '2xl': '6px', '3xl': '8px' },
-      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], heading: ['Poppins', 'Inter', 'sans-serif'] },
-    } } }
-  </script>
-  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <link rel="stylesheet" href="{% static 'css/tw.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
   {% if TURNSTILE_SITE_KEY %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script>document.addEventListener('htmx:afterSwap',function(e){if(window.turnstile){e.detail.elt.querySelectorAll('.cf-turnstile:not([data-rendered])').forEach(function(w){w.setAttribute('data-rendered','1');turnstile.render(w)})}});</script>{% endif %}
   <link rel="stylesheet" href="{% static 'css/app.css' %}">

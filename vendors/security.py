@@ -13,6 +13,10 @@ SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 
 
 def client_ip(request):
+    """The visitor's address. Behind Cloudflare that is CF-Connecting-IP; a client can't set it through Cloudflare."""
+    cf = request.META.get("HTTP_CF_CONNECTING_IP")
+    if cf:
+        return cf.strip()
     xff = request.META.get("HTTP_X_FORWARDED_FOR")
     return (xff.split(",")[0].strip() if xff else request.META.get("REMOTE_ADDR", "")) or "0.0.0.0"
 
@@ -32,7 +36,13 @@ def turnstile_ok(request):
         return False
     if not data.get("success"):
         log.info("Turnstile rejected: %s", data.get("error-codes"))
-    return bool(data.get("success"))
+        return False
+    host = (data.get("hostname") or "").lower()
+    allowed = {h.strip().lower() for h in settings.ALLOWED_HOSTS}
+    if host and host not in allowed:              # a token solved on someone else's site
+        log.warning("Turnstile token for foreign hostname %s", host)
+        return False
+    return True
 
 
 def rate_limited(request, key, limit, window_seconds):

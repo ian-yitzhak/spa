@@ -20,6 +20,12 @@ Demo logins (from `seed.py`):
 - Staff: amina@beautyflow.co.ke, joy@beautyflow.co.ke / staff1234 → /pos/me/
 - Cashier: cashier@beautyflow.co.ke / staff1234 → /pos/me/
 
+## CSS
+Tailwind is compiled ahead of time into `static/css/tw.css` (committed). After changing classes in
+templates or Python, run `./bin/build-css` (downloads nothing — put the standalone Tailwind v3.4 CLI at
+`bin/tailwindcss` or on your PATH) and commit the result. Don't go back to `cdn.tailwindcss.com`: it
+compiles CSS in every visitor's browser and made pages slow.
+
 ## Roles
 - **Owner** — everything: services & prices (with discounts), service photos, offers, POS, bookings,
   sales, reports, insights, clients, expenses, staff (HR), staff shifts, payouts, branches, billing.

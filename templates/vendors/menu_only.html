@@ -6,9 +6,8 @@
   <meta name="robots" content="noindex, follow"><link rel="canonical" href="{{ canonical }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={theme:{extend:{colors:{primary:'#B0426C',dark:'#221A1F',accent:'#E8B4C4'},borderRadius:{md:'3px',lg:'4px',xl:'5px','2xl':'6px','3xl':'8px'},fontFamily:{sans:['Inter','sans-serif'],heading:['Poppins','Inter','sans-serif']}}}}</script>
-  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <link rel="stylesheet" href="{% static 'css/tw.css' %}">
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="min-h-screen bg-white text-dark antialiased">
