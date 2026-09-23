@@ -15,16 +15,7 @@
 {% endif %}
 <div class="mt-4 grid gap-4 lg:grid-cols-12">
   <div class="lg:col-span-7">
-    <div class="rounded-xl border bg-gray-50 p-3">
-      <div class="mb-2 text-xs font-semibold text-gray-500">Who is doing it?</div>
-      <div class="flex flex-wrap gap-2">
-        <a href="?staff=" class="rounded-full border px-3 py-1.5 text-sm {% if not picked %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">Pick on the ticket</a>
-        {% for s in team %}<a href="?staff={{ s.pk }}" class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm {% if picked and picked.pk == s.pk %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">{{ s.name }}</a>{% empty %}
-        <a href="{% url 'pos_staff' %}" class="text-sm text-primary underline">Add your staff first</a>{% endfor %}
-      </div>
-      {% if picked %}<p class="mt-2 text-xs text-gray-500">Services you tap go on the ticket as done by <strong>{{ picked.name }}</strong>{% if picked.service_links.exists %} — showing only what they do{% endif %}.</p>{% endif %}
-    </div>
-    <form class="mt-3 flex gap-2" onsubmit="return false" hx-get="{% url 'pos_home' %}" hx-target="#menu-grid" hx-trigger="input changed delay:200ms from:input, change from:select, search from:input" hx-push-url="true">
+    <form class="flex gap-2" onsubmit="return false" hx-get="{% url 'pos_home' %}" hx-target="#menu-grid" hx-trigger="input changed delay:200ms from:input, change from:select, search from:input" hx-push-url="true">
       <input type="search" name="q" value="{{ q }}" placeholder="Search services…" autofocus class="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm">
       {% if categories %}<select name="cat" class="rounded-lg border px-2 py-2 text-sm"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.pk }}" {% if cat == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>{% endif %}
     </form>

@@ -141,14 +141,18 @@ def _current_order(request, create=True):
     return order
 
 
-def _picked_staff(request):
+def _ticket_staff(request, order):
+    """Who is doing this ticket: whoever the services already carry, else the person picked before adding any."""
+    line = order.items.filter(staff__isnull=False).select_related("staff__user").first() if order else None
+    if line:
+        return line.staff
     sid = request.session.get(SESSION_STAFF)
     return request.vendor.staff.filter(pk=sid, is_active=True, role=Staff.Role.STAFF).select_related("user").first() if sid else None
 
 
 def _order_panel(request, order):
     return render(request, "pos/_order.html", _ctx(request, order=order, lines=order.items.select_related("staff__user", "menu_item"),
-                                                  team=_team(request.vendor)))
+                                                  team=_team(request.vendor), ticket_staff=_ticket_staff(request, order)))
 
 
 @till_required
@@ -157,9 +161,6 @@ def home(request):
     from .pricing import price_items
     v = request.vendor
     order = _current_order(request)
-    if "staff" in request.GET:
-        request.session[SESSION_STAFF] = request.GET.get("staff") or ""
-    picked = _picked_staff(request)
     cat = request.GET.get("cat", "")
     q = request.GET.get("q", "").strip()
     items = v.items.filter(is_available=True, price_on_request=False).select_related("category").order_by("category__order", "name")
@@ -167,13 +168,11 @@ def home(request):
         items = items.filter(category_id=cat) if cat != "none" else items.filter(category__isnull=True)
     if q:
         items = items.filter(name__icontains=q)
-    if picked is not None and picked.service_links.exists():
-        items = items.filter(staff_links__staff=picked)      # only what this person does
     page, qs_prefix = paginate(request, items, 30)
     today = timezone.localdate()
     ctx = _ctx(request, order=order, lines=order.items.select_related("staff__user", "menu_item"),
                categories=v.categories.all(), items=price_items(page, request.write_branch),
-               page=page, qs=qs_prefix, cat=cat, q=q, team=_team(v), picked=picked,
+               page=page, qs=qs_prefix, cat=cat, q=q, team=_team(v), ticket_staff=_ticket_staff(request, order),
                open_count=_scope(request, v.orders.filter(status=Order.Status.OPEN, paid_at__isnull=True)).count(),
                bookings_today=_scope(request, v.bookings.filter(date=today, status__in=[Booking.Status.REQUESTED, Booking.Status.CONFIRMED],
                                                                 order__isnull=True)).select_related("staff__user").prefetch_related("items")[:6])
@@ -187,10 +186,7 @@ def home(request):
 def add_item(request, pk):
     item = get_object_or_404(MenuItem, pk=pk, vendor=request.vendor, price_on_request=False)
     order = _current_order(request)
-    staff = _picked_staff(request)
-    if staff is not None and staff.service_links.exists() and not staff.service_links.filter(service=item).exists():
-        staff = None                                  # they don't do this one — leave it for the cashier to assign
-    OrderItem.add(order, item, staff=staff)
+    OrderItem.add(order, item, staff=_ticket_staff(request, order))
     return _order_panel(request, order)
 
 
@@ -214,20 +210,21 @@ def line_qty(request, pk, direction):
 
 @till_required
 @require_POST
-def line_staff(request, pk):
-    """Who did this service. Merges into an identical line if there is one."""
+def ticket_staff(request):
+    """One person does the whole ticket: every service on it, and anything added after, goes to them."""
     order = _current_order(request)
-    line = get_object_or_404(OrderItem, pk=pk, order=order)
     sid = request.POST.get("staff") or ""
     staff = request.vendor.staff.filter(pk=sid, is_active=True).first() if sid else None
-    twin = order.items.filter(menu_item=line.menu_item, staff=staff).exclude(pk=line.pk).first() if line.menu_item_id else None
-    if twin:
-        twin.qty += line.qty
-        twin.save()
-        line.delete()
-    else:
-        line.staff = staff
-        line.save(update_fields=["staff"])
+    request.session[SESSION_STAFF] = str(staff.pk) if staff else ""
+    for line in list(order.items.all()):
+        twin = order.items.filter(menu_item=line.menu_item, staff=staff).exclude(pk=line.pk).first() if line.menu_item_id else None
+        if twin:                                    # same service twice now reads as one line with qty 2
+            twin.qty += line.qty
+            twin.save()
+            line.delete()
+        else:
+            line.staff = staff
+            line.save(update_fields=["staff"])
     order.recalc()
     return _order_panel(request, order)
 
@@ -238,8 +235,7 @@ def set_client(request):
     order = _current_order(request)
     order.customer_name = (request.POST.get("customer_name") or "").strip()[:80]
     order.customer_phone = (request.POST.get("customer_phone") or "").strip()[:20]
-    order.notes = (request.POST.get("notes") or "").strip()[:200]
-    order.save(update_fields=["customer_name", "customer_phone", "notes", "updated_at"])
+    order.save(update_fields=["customer_name", "customer_phone", "updated_at"])
     return _order_panel(request, order)
 
 
@@ -247,14 +243,11 @@ def set_client(request):
 @require_POST
 def set_discount(request):
     order = _current_order(request)
-    kind = request.POST.get("discount_type") or ""
     try:
         value = max(Decimal((request.POST.get("discount_value") or "0").strip() or 0), Decimal(0))
     except InvalidOperation:
         value = Decimal(0)
-    if kind not in Order.Discount.values or not value:
-        kind, value = "", Decimal(0)
-    order.discount_type, order.discount_value = kind, value
+    order.discount_type, order.discount_value = (Order.Discount.AMOUNT, value) if value else ("", Decimal(0))
     order.save(update_fields=["discount_type", "discount_value"])
     order.recalc()
     return _order_panel(request, order)
@@ -267,6 +260,7 @@ def clear(request):
     if order and order.status == Order.Status.DRAFT:
         order.delete()
     request.session.pop(SESSION_ORDER, None)
+    request.session.pop(SESSION_STAFF, None)
     return _order_panel(request, _current_order(request))
 
 
@@ -280,6 +274,7 @@ def hold(request):
     if order.status == Order.Status.DRAFT:
         order.place()
     request.session.pop(SESSION_ORDER, None)
+    request.session.pop(SESSION_STAFF, None)
     messages.success(request, f"Ticket #{order.ref} for {order.label} is open. Take payment from Open tickets when they're done.")
     resp = HttpResponse()
     resp["HX-Redirect"] = "/pos/open/"
@@ -308,9 +303,8 @@ def pay(request):
     order = _current_order(request)
     if order.is_paid or not order.items.exists():
         raise Http404
-    missing = [l.name for l in order.items.filter(staff__isnull=True)]
-    if missing:
-        return HttpResponse(f"Pick who did: {', '.join(missing)}", status=400)
+    if order.items.filter(staff__isnull=True).exists():
+        return HttpResponse("Pick who did it (Done by) before taking payment.", status=400)
     method = request.POST.get("method")
     if method not in Order.Method.values:
         return HttpResponse("Choose a payment method", status=400)
@@ -330,6 +324,7 @@ def pay(request):
                     (request.POST.get("payer_name") or "").strip(), by=request.user)
     Booking.objects.filter(order=order).update(status=Booking.Status.DONE)
     request.session.pop(SESSION_ORDER, None)
+    request.session.pop(SESSION_STAFF, None)
     resp = HttpResponse()
     resp["HX-Redirect"] = f"/pos/receipt/{order.pk}/"
     return resp

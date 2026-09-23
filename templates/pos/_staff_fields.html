@@ -1,8 +1,7 @@
 {% load icons %}
 <div class="grid gap-3 sm:grid-cols-2">
   {% include "pos/_field.html" with f=form.first_name cls="" %}
-  <div><span class="mb-1 block text-sm font-medium">Role</span>
-    <div class="flex gap-2">{% for r in form.role %}<label class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+  {% include "pos/_field.html" with f=form.role cls="" %}
   {% include "pos/_field.html" with f=form.phone cls="" %}
   {% include "pos/_field.html" with f=form.job_title cls="" %}
   {% include "pos/_field.html" with f=form.email cls="" %}

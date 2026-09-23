@@ -90,7 +90,7 @@ class MenuCategoryForm(StyledForm):
 class MenuItemForm(StyledForm):
     class Meta:
         model = MenuItem
-        fields = ["name", "category", "net_price", "vat_mode", "duration_min", "discount_type", "discount_value", "discount_ends",
+        fields = ["name", "category", "net_price", "vat_mode", "duration_min", "discount_value", "discount_ends",
                   "price_on_request", "image", "description", "is_available"]
         widgets = {"vat_mode": forms.RadioSelect, "discount_ends": forms.DateInput(attrs={"type": "date"}),
                    "duration_min": forms.NumberInput(attrs={"min": "5", "step": "5", "inputmode": "numeric"})}
@@ -102,6 +102,9 @@ class MenuItemForm(StyledForm):
         self.fields["name"].label = "Service"
         self.fields["name"].widget.attrs["placeholder"] = "e.g. Knotless braids — mid-back"
         self.fields["discount_value"].required = False
+        self.fields["discount_value"].label = "Discount (KES off)"
+        self.fields["discount_value"].help_text = "Leave at 0 for no discount."
+        self.fields["discount_ends"].help_text = "Optional. The discount stops after this date."
         self.fields["discount_value"].widget.attrs.update({"min": "0", "step": "any", "inputmode": "decimal"})
         self.fields["net_price"].required = False
         self.fields["net_price"].widget.attrs.update({"min": "0", "step": "1", "inputmode": "numeric"})
@@ -114,10 +117,11 @@ class MenuItemForm(StyledForm):
             self.add_error("net_price", "Enter a price, or tick “Price on request”.")
         if data.get("discount_value") in (None, ""):
             data["discount_value"] = 0
-        if data.get("discount_type") == "percent" and data["discount_value"] > 100:
-            self.add_error("discount_value", "A percentage discount can't be more than 100.")
-        if data.get("discount_type") and not data["discount_value"]:
-            self.add_error("discount_value", "Enter how much to take off, or choose “No discount”.")
+        price = data.get("net_price") or 0
+        if data["discount_value"] and price and data["discount_value"] >= price:
+            self.add_error("discount_value", "The discount must be less than the price.")
+        # a discount is always KES off; no amount means no discount
+        self.instance.discount_type = "amount" if data["discount_value"] else ""
         return data
 
 

@@ -6,7 +6,7 @@ urlpatterns = [
     # POS (owner and cashier)
     path("", views.home, name="pos_home"),
     path("add/<uuid:pk>/", views.add_item, name="pos_add"),
-    path("line/<uuid:pk>/staff/", views.line_staff, name="pos_line_staff"),
+    path("staff/pick/", views.ticket_staff, name="pos_ticket_staff"),
     path("line/<uuid:pk>/<str:direction>/", views.line_qty, name="pos_line"),
     path("client/", views.set_client, name="pos_set_client"),
     path("discount/", views.set_discount, name="pos_discount"),

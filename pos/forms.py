@@ -22,8 +22,7 @@ class StaffForm(forms.Form):
     """Create/edit a team member: who they are, their login, and what they earn.
     The services they do (and any rate of their own on each) come in from the service rows on the same page."""
     first_name = forms.CharField(label="Full name", max_length=120)
-    role = forms.ChoiceField(label="Role", choices=[("staff", "Staff"), ("cashier", "Cashier")],
-                             initial="staff", widget=forms.RadioSelect)
+    role = forms.ChoiceField(label="Role", choices=[("staff", "Staff"), ("cashier", "Cashier")], initial="staff")
     job_title = forms.CharField(label="Job title", max_length=60, required=False,
                                 widget=forms.TextInput(attrs={"placeholder": "e.g. Stylist"}))
     branch = forms.ModelChoiceField(label="Branch", queryset=Branch.objects.none(), required=False)

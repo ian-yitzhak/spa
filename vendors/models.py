@@ -457,8 +457,7 @@ class MenuItem(models.Model):
     vat_mode = models.CharField("VAT", max_length=4, choices=Vat.choices, default=Vat.INCLUDED)
     duration_min = models.PositiveSmallIntegerField("Duration (minutes)", default=60)
     discount_type = models.CharField("Discount", max_length=8, choices=DISCOUNT_CHOICES, blank=True)
-    discount_value = models.DecimalField("Discount amount", max_digits=10, decimal_places=2, default=0,
-                                         help_text="Percent off (e.g. 20) or KES off (e.g. 500)")
+    discount_value = models.DecimalField("Discount (KES off)", max_digits=10, decimal_places=2, default=0)
     discount_ends = models.DateField("Discount ends", null=True, blank=True, help_text="Leave blank to keep it running")
     price_on_request = models.BooleanField("Price on request", default=False,
                                            help_text="No fixed price — clients ask for a quote (bridal, events, home visits).")

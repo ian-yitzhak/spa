@@ -20,7 +20,7 @@ class SalonCase(TestCase):
         self.v = Vendor.objects.create(owner=self.owner, brand_name="Test Salon")
         self.v.extend_pos(1)
         self.braids = MenuItem.objects.create(vendor=self.v, name="Braids", net_price=4000, duration_min=240)
-        self.nails = MenuItem.objects.create(vendor=self.v, name="Gel nails", net_price=1000, discount_type="percent", discount_value=10)
+        self.nails = MenuItem.objects.create(vendor=self.v, name="Gel nails", net_price=1000, discount_type="amount", discount_value=100)
         self.amina = self.staff("amina@t.co", Staff.Role.STAFF, "percent", 40)
         self.joy = self.staff("joy@t.co", Staff.Role.STAFF, "fixed", 300)
         self.cashier = self.staff("cash@t.co", Staff.Role.CASHIER)
@@ -31,15 +31,15 @@ class SalonCase(TestCase):
         u = make_user(email, User.Role.TEAM, first_name=email.split("@")[0].title())
         return Staff.objects.create(vendor=self.v, user=u, role=role, commission_type=kind, commission_value=rate)
 
-    def ring_up(self, *lines, discount=None):
-        """Cashier builds a ticket through the real POS views and takes cash."""
+    def ring_up(self, staff, *items, discount=None):
+        """Cashier builds a ticket through the real POS views: one person does it all, then cash."""
         self.client.force_login(self.cashier.user)
         self.client.get("/pos/")
-        for item, st in lines:
-            self.client.get(f"/pos/?staff={st.pk}")
+        self.client.post("/pos/staff/pick/", {"staff": staff.pk})
+        for item in items:
             self.client.post(f"/pos/add/{item.pk}/")
         if discount:
-            self.client.post("/pos/discount/", {"discount_type": discount[0], "discount_value": discount[1]})
+            self.client.post("/pos/discount/", {"discount_value": discount})
         r = self.client.post("/pos/pay/", {"method": "cash"})
         self.assertEqual(r.status_code, 200, r.content)
         return Order.objects.filter(vendor=self.v, paid_at__isnull=False).latest("paid_at")
@@ -47,44 +47,50 @@ class SalonCase(TestCase):
 
 class CommissionTests(SalonCase):
     def test_service_discount_and_commission(self):
-        o = self.ring_up((self.braids, self.amina), (self.nails, self.joy))
-        self.assertEqual(o.total, Decimal("4900.00"))                       # 4000 + 1000 less 10%
-        lines = {l.menu_item_id: l for l in o.items.all()}
-        self.assertEqual(lines[self.braids.pk].commission, Decimal("1600.00"))  # 40% of 4000
-        self.assertEqual(lines[self.nails.pk].commission, Decimal("450.00"))    # own rate: 50% of 900
+        o = self.ring_up(self.amina, self.braids)
+        self.assertEqual(o.items.get().commission, Decimal("1600.00"))      # 40% of 4000
         self.assertEqual(o.cashier, self.cashier.user)
+        o = self.ring_up(self.joy, self.nails)
+        self.assertEqual(o.total, Decimal("900.00"))                        # 1000 less KES 100
+        self.assertEqual(o.items.get().commission, Decimal("450.00"))       # own rate: 50% of 900
 
     def test_sale_discount_shared_by_commission(self):
-        o = self.ring_up((self.braids, self.amina), discount=("percent", "25"))
+        o = self.ring_up(self.amina, self.braids, discount="1000")
         self.assertEqual(o.total, Decimal("3000.00"))
         self.assertEqual(o.items.get().commission, Decimal("1200.00"))      # 40% of what was actually paid
 
     def test_fixed_commission_per_service(self):
         MenuItem.objects.filter(pk=self.nails.pk)
         StaffService.objects.filter(staff=self.joy).delete()
-        o = self.ring_up((self.nails, self.joy), (self.nails, self.joy))
+        o = self.ring_up(self.joy, self.nails, self.nails)
         line = o.items.get()
         self.assertEqual(line.qty, 2)
         self.assertEqual(line.commission, Decimal("600.00"))                # KES 300 x 2
 
     def test_cannot_pay_without_staff(self):
         self.client.force_login(self.cashier.user)
-        self.client.get("/pos/?staff=")
         self.client.post(f"/pos/add/{self.braids.pk}/")
         r = self.client.post("/pos/pay/", {"method": "cash"})
         self.assertEqual(r.status_code, 400)
-        self.assertIn(b"Braids", r.content)
+        self.assertIn(b"Done by", r.content)
 
-    def test_staff_filter_only_adds_their_services(self):
+    def test_one_staff_for_the_whole_ticket(self):
         self.client.force_login(self.cashier.user)
-        self.client.get(f"/pos/?staff={self.joy.pk}")
-        self.client.post(f"/pos/add/{self.braids.pk}/")                     # Joy doesn't do braids
-        self.assertIsNone(OrderItem.objects.get(menu_item=self.braids).staff)
+        self.client.post(f"/pos/add/{self.braids.pk}/")
+        self.client.post(f"/pos/add/{self.nails.pk}/")
+        self.client.post("/pos/staff/pick/", {"staff": self.amina.pk})      # picked after adding: both lines get her
+        self.assertEqual({l.staff for l in OrderItem.objects.all()}, {self.amina})
+        self.client.post(f"/pos/add/{self.braids.pk}/")                     # added after: goes to her too
+        self.client.post("/pos/staff/pick/", {"staff": self.joy.pk})        # switch the whole ticket
+        self.assertEqual({l.staff for l in OrderItem.objects.all()}, {self.joy})
+        self.assertEqual(OrderItem.objects.get(menu_item=self.braids).qty, 2)
+        r = self.client.post("/pos/pay/", {"method": "mpesa"})              # M-Pesa needs no code
+        self.assertEqual(r.status_code, 200)
 
 
 class PayoutTests(SalonCase):
     def test_owner_pays_staff_and_staff_sees_payslip(self):
-        o = self.ring_up((self.braids, self.amina))
+        o = self.ring_up(self.amina, self.braids)
         self.assertEqual(self.amina.balance(), Decimal("1600.00"))
         self.client.force_login(self.owner)
         line = o.items.get()
@@ -102,7 +108,7 @@ class PayoutTests(SalonCase):
         self.assertEqual(self.client.get(f"/pos/payouts/{p.pk}/").status_code, 404)
 
     def test_paid_out_sale_cannot_be_voided(self):
-        o = self.ring_up((self.braids, self.amina))
+        o = self.ring_up(self.amina, self.braids)
         StaffPayout.pay(self.amina, [o.items.get().pk], self.owner, "cash")
         self.client.force_login(self.owner)
         self.client.post(f"/pos/sales/{o.pk}/void/")
@@ -110,7 +116,7 @@ class PayoutTests(SalonCase):
         self.assertEqual(o.status, Order.Status.DONE)
 
     def test_void_removes_commission(self):
-        o = self.ring_up((self.braids, self.amina))
+        o = self.ring_up(self.amina, self.braids)
         self.client.force_login(self.owner)
         self.client.post(f"/pos/sales/{o.pk}/void/", {"note": "wrong client"})
         o.refresh_from_db()
@@ -120,7 +126,7 @@ class PayoutTests(SalonCase):
 
 class AccessTests(SalonCase):
     def test_staff_pages(self):
-        self.ring_up((self.braids, self.amina), (self.nails, self.joy))
+        self.ring_up(self.amina, self.braids); self.ring_up(self.joy, self.nails)
         self.client.force_login(self.amina.user)
         for url in ("/pos/me/", "/pos/sales/", "/pos/bookings/", "/pos/profile/"):
             self.assertEqual(self.client.get(url).status_code, 200, url)
@@ -139,7 +145,7 @@ class AccessTests(SalonCase):
             self.assertRedirects(self.client.get(url), "/pos/me/", fetch_redirect_response=False)
 
     def test_owner_pages(self):
-        self.ring_up((self.braids, self.amina))
+        self.ring_up(self.amina, self.braids)
         self.client.force_login(self.owner)
         for url in ("/dashboard/", "/dashboard/menu/", "/dashboard/menu/new/", f"/dashboard/menu/{self.nails.pk}/", "/dashboard/gallery/",
                     "/dashboard/inquiries/", "/dashboard/customers/", "/dashboard/upgrade/", "/dashboard/payments/",
