@@ -111,7 +111,7 @@ def home(request):
         return render(request, "partials/vendor_cards.html", ctx)
     ctx.update(_home_seo_block(live))
     ctx.update({
-        "type_cards": [(r[4], r[3], BLURBS.get(r[0], "")) for r in BUSINESS_TYPES],
+        "type_cards": [(r[4], r[3], BLURBS.get(r[0], ""), f"img/home/{r[0]}.webp") for r in BUSINESS_TYPES],
         "popular": ["Knotless braids", "Gel nails", "Haircut", "Facial", "Massage", "Lashes", "Locs"],
     })
     return render(request, "vendors/home.html", ctx)
