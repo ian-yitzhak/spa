@@ -1,0 +1,25 @@
+# secrets & local config
+.env
+.env.*
+!.env.example
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# django runtime data
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# design source files (web versions live in static/img)
+inspo.png
+logo.png
+categories/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% load icons %}
+{% block title %}{% block page_title %}Overview{% endblock %} · Admin — BeautyFlow{% endblock %}
+{% block meta_description %}BeautyFlow administration.{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+{% with u=request.resolver_match.url_name %}
+<div class="mx-auto max-w-7xl px-4 py-6 lg:grid lg:grid-cols-5 lg:gap-8 lg:py-8">
+  <div class="mb-4 flex items-center justify-between lg:hidden">
+    <span class="font-bold">Admin panel</span>
+    <button onclick="document.getElementById('side').classList.toggle('hidden')" class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium" aria-controls="side">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg> Admin menu</button>
+  </div>
+  <aside id="side" class="mb-6 hidden lg:mb-0 lg:block">
+    <div class="mb-4 rounded-2xl bg-dark p-4 text-white">
+      <div class="text-xs text-gray-400">Admin panel</div>
+      <div class="truncate font-bold">{{ user.first_name|default:user.email }}</div>
+    </div>
+    <nav class="flex flex-col gap-1 rounded-2xl border p-2 text-sm lg:border-0 lg:p-0" aria-label="Admin">
+      <a href="{% url 'ap_index' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_index' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "chart" %}Overview</a>
+      <a href="{% url 'ap_vendors' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_vendors' or u == 'ap_vendor' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "store" %}Vendors</a>
+      <a href="{% url 'ap_inquiries' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_inquiries' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "inbox" %}Inquiries</a>
+      <a href="{% url 'ap_reviews' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_reviews' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "star" %}Reviews</a>
+      <a href="{% url 'ap_payments' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_payments' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "card" %}Payments</a>
+      <a href="{% url 'ap_sales' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_sales' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "chart" %}Sales &amp; charts</a>
+      <a href="{% url 'ap_affiliates' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_affiliates' or u == 'ap_affiliate' or u == 'ap_referrals' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "link" %}Affiliates</a>
+      <a href="{% url 'ap_admins' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_admins' or u == 'ap_admin_new' or u == 'ap_admin_edit' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "users" %}Admins</a>
+      <a href="{% url 'ap_security' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_security' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "lock" %}Security log</a>
+      <a href="{% url 'ap_backups' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_backups' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "cube" %}Security log</a>
+      <a href="{% url 'ap_settings' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'ap_settings' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "cog" %}Plans &amp; settings</a>
+      <a href="{% url 'home' %}" target="_blank" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-100">{% icon "external" %}View site</a>
+    </nav>
+  </aside>
+  <div class="min-w-0 lg:col-span-4">{% block panel %}{% endblock %}</div>
+</div>
+{% endwith %}
+{% endblock %}

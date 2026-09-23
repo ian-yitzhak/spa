@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% load qr %}
+{% block title %}{% if order.is_paid %}Receipt{% else %}Bill{% endif %} #{{ order.ref }} — {{ vendor.brand_name }}{% endblock %}{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm px-4 py-8">
+  <div class="no-print mb-4 flex flex-wrap justify-between gap-2 text-sm">
+    {% if owner %}<a href="{% if user.is_team and user.staff_profile.role == 'staff' %}{% url 'pos_sales' %}{% else %}{% url 'pos_home' %}{% endif %}" class="text-gray-500 hover:text-primary">{% if user.is_team and user.staff_profile.role == 'staff' %}← My sales{% else %}← New sale{% endif %}</a>
+    <div class="flex gap-2"><button onclick="window.print()" class="rounded-lg bg-dark px-4 py-2 font-semibold text-white">Print / save PDF</button>
+      <a href="{% url 'pos_receipt_pdf' order.pk %}" class="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white">Download PDF</a></div>
+    {% else %}<span></span><div class="flex gap-2"><button onclick="window.print()" class="rounded-lg bg-dark px-4 py-2 font-semibold text-white">Print / save PDF</button></div>{% endif %}
+  </div>
+  <div class="rounded-2xl border p-6 font-mono text-sm" id="receipt">
+    <div class="text-center">
+      {% if vendor.logo %}<img src="{{ vendor.logo.url }}" alt="" class="mx-auto h-16 w-16 rounded-xl object-cover">{% endif %}
+      <div class="mt-2 font-heading text-lg font-semibold">{{ vendor.brand_name }}</div>
+      <div class="text-xs text-gray-500">{% if vendor.address %}{{ vendor.address }}, {% endif %}{{ vendor.town }}{% if vendor.phone %}<br>Tel {{ vendor.phone }}{% endif %}</div>
+    </div>
+    <div class="my-3 border-t border-dashed"></div>
+    <div class="flex justify-between"><span>{% if order.is_paid %}Receipt{% else %}Bill{% endif %}</span><strong>#{{ order.ref }}</strong></div>
+    <div class="flex justify-between"><span>Date</span><span>{{ order.paid_at|default:order.placed_at|date:"j M Y H:i" }}</span></div>
+    {% if order.customer_name %}<div class="flex justify-between"><span>Client</span><span>{{ order.customer_name }}</span></div>{% endif %}
+    {% if order.payment_method == 'split' %}<div class="flex justify-between"><span>M-Pesa</span><span>{{ order.paid_mpesa|floatformat:"-2" }}</span></div><div class="flex justify-between"><span>Cash</span><span>{{ order.paid_cash|floatformat:"-2" }}</span></div>{% endif %}
+    {% if order.status == 'cancelled' %}<div class="mt-2 rounded bg-red-50 p-2 text-center text-xs font-semibold text-red-700">VOIDED {{ order.reconciled_at|date:"j M H:i" }}{% if order.reconcile_note %} · {{ order.reconcile_note }}{% endif %}</div>{% endif %}
+    <div class="my-3 border-t border-dashed"></div>
+    {% for l in items %}<div class="flex justify-between gap-2"><span>{{ l.qty }} × {{ l.name }}{% if l.staff %}<span class="block text-xs text-gray-500">by {{ l.staff.name }}</span>{% endif %}</span><span>{{ l.line_total|floatformat:"-2" }}</span></div>{% endfor %}
+    <div class="my-3 border-t border-dashed"></div>
+    {% if order.discount %}<div class="flex justify-between"><span>Services</span><span>{{ order.gross|floatformat:"-2" }}</span></div><div class="flex justify-between"><span>Discount</span><span>−{{ order.discount|floatformat:"-2" }}</span></div>{% endif %}
+    <div class="flex justify-between"><span>Subtotal</span><span>{{ order.subtotal|floatformat:"-2" }}</span></div>
+    <div class="flex justify-between"><span>VAT (16%)</span><span>{{ order.tax|floatformat:"2" }}</span></div>
+    <div class="flex justify-between text-base font-bold"><span>TOTAL</span><span>KES {{ order.total|floatformat:"-2" }}</span></div>
+    {% if order.is_paid %}
+    <div class="mt-2 flex justify-between"><span>Paid via</span><span>{{ order.get_payment_method_display }}{% if order.payment_ref %} · {{ order.payment_ref }}{% endif %}</span></div>{% if order.payer_name %}<div class="flex justify-between"><span>Paid by</span><span>{{ order.payer_name }}</span></div>{% endif %}
+    {% if order.change_due and not order.amount_tendered %}<div class="flex justify-between"><span>Received</span><span>{{ order.received|floatformat:"-2" }}</span></div><div class="flex justify-between font-semibold"><span>Change</span><span>{{ order.change_due|floatformat:"-2" }}</span></div>{% endif %}
+    {% if order.amount_tendered %}<div class="flex justify-between"><span>Tendered</span><span>{{ order.amount_tendered|floatformat:"-2" }}</span></div><div class="flex justify-between"><span>Change</span><span>{{ order.change_due|floatformat:"-2" }}</span></div>{% endif %}
+    {% else %}<div class="mt-2 text-center font-bold text-primary">NOT PAID</div><div class="text-center text-xs text-gray-500">Awaiting payment</div>{% endif %}
+    <div class="my-3 border-t border-dashed"></div>
+    <div class="flex items-center justify-between gap-3 text-xs text-gray-500"><span>Thank you! Karibu tena.<br>Powered by BeautyFlow</span>{% qr_svg public_url 64 %}</div>
+  </div>
+  {% if can_void %}<details class="no-print mt-4 text-sm"><summary class="cursor-pointer text-gray-500 hover:text-primary">Void this sale</summary>
+    <form method="post" action="{% url 'pos_void' order.pk %}" class="mt-2 flex gap-2" onsubmit="return confirm('Void sale #{{ order.ref }}? It stops counting in sales and staff commission.')">{% csrf_token %}
+      <input name="note" placeholder="Why (refund, wrong entry…)" class="min-w-0 flex-1 rounded-lg border px-3 py-2"><button class="rounded-lg border border-primary px-4 py-2 font-semibold text-primary">Void</button></form></details>{% endif %}
+</div>
+{% endblock %}

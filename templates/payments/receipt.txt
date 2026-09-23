@@ -1,0 +1,20 @@
+BeautyFlow — Payment receipt
+
+Hi {{ vendor.owner.first_name|default:vendor.brand_name }},
+
+We received your {{ p.get_product_display }} subscription payment. Thank you!
+
+Business:        {{ vendor.brand_name }}
+Amount:          KES {{ p.amount|floatformat:"-2" }}
+Paid via:        {% if p.source == "manual" %}Recorded by BeautyFlow{% else %}Paystack{% if p.channel %} ({{ p.channel }}){% endif %}{% endif %}
+Reference:       {{ p.api_ref }}
+Date:            {{ p.applied_at|date:"j M Y H:i" }}
+Period:          {{ p.months }} month{{ p.months|pluralize }}
+Active until:    {{ p.expires_at|date:"j M Y" }}
+
+Your public page: {{ site_url }}{{ vendor.get_absolute_url }}
+Dashboard: {{ site_url }}/dashboard/
+
+Questions? WhatsApp +{{ site.support_whatsapp }} or email {{ site.support_email }}.
+
+— BeautyFlow

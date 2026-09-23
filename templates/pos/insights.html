@@ -1,0 +1,63 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Insights{% endblock %}{% block dash %}
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-black">Insights</h1>
+  <div class="flex items-center gap-2 text-sm">
+    <div class="flex rounded-lg bg-gray-100 p-1"><a href="?days=30" class="rounded-md px-3 py-1.5 font-medium {% if days == 30 %}bg-white shadow-sm{% endif %}">30 days</a><a href="?days=90" class="rounded-md px-3 py-1.5 font-medium {% if days == 90 %}bg-white shadow-sm{% endif %}">90 days</a></div>
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="regenerate"><button class="rounded-lg border px-3 py-1.5" {% if not regen_left %}disabled{% endif %} title="{{ regen_left }} refresh{{ regen_left|pluralize:'es' }} left today">Refresh</button></form>
+  </div>
+</div>
+<p class="mt-1 text-xs text-gray-500">Generated {{ rep.created_at|date:"j M H:i" }} from your own sales, staff, bookings, expenses, services and clients — nothing leaves BeautyFlow.</p>
+
+<!-- Headline + health -->
+<div class="mt-4 grid gap-4 lg:grid-cols-3">
+  <div class="rounded-2xl bg-dark p-5 text-white lg:col-span-2">
+    <div class="text-xs uppercase tracking-wide text-gray-400">This period in one line</div>
+    <p class="mt-2 font-heading text-xl font-semibold leading-snug">{{ r.headline }}</p>
+    <div class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+      <div class="rounded-xl bg-white/10 p-3"><div class="text-[11px] text-gray-400">Next 7 days (forecast)</div><div class="font-heading text-lg font-semibold">KES {{ r.forecast.next_7_days_sales|kes }}</div><div class="text-[11px] text-gray-400">{{ r.forecast.confidence }} confidence</div></div>
+      <div class="rounded-xl bg-white/10 p-3 sm:col-span-2"><div class="text-[11px] text-gray-400">Why</div><div class="text-sm text-gray-200">{{ r.forecast.basis }}</div></div>
+    </div>
+  </div>
+  <div class="rounded-2xl border p-5 text-center">
+    <div class="text-xs text-gray-500">Business health</div>
+    <svg viewBox="0 0 42 42" class="mx-auto mt-2 h-32 w-32"><circle r="15.915" cx="21" cy="21" fill="transparent" stroke="#f1f1f1" stroke-width="5"/><circle r="15.915" cx="21" cy="21" fill="transparent" stroke="{% if r.health_score >= 70 %}#16a34a{% elif r.health_score >= 45 %}#E8B4C4{% else %}#B0426C{% endif %}" stroke-width="5" pathLength="100" stroke-dasharray="{{ r.health_score }} 100" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:21px 21px"/><text x="21" y="23.5" text-anchor="middle" font-size="9" font-weight="700" fill="#221A1F">{{ r.health_score }}</text></svg>
+    <div class="text-xs text-gray-500">out of 100</div>
+  </div>
+</div>
+
+<!-- Insight cards -->
+<h2 class="mt-8 font-bold">What the numbers say</h2>
+<div class="mt-3 grid gap-3 md:grid-cols-2">
+  {% for i in r.insights %}
+  <div class="rounded-2xl border p-4 {% if i.kind == 'risk' %}border-l-4 border-l-primary{% elif i.kind == 'win' %}border-l-4 border-l-green-500{% elif i.kind == 'opportunity' %}border-l-4 border-l-accent{% else %}border-l-4 border-l-gray-400{% endif %}">
+    <div class="flex items-start justify-between gap-2"><h3 class="font-semibold text-black">{{ i.title }}</h3><span class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase {% if i.kind == 'risk' %}bg-red-50 text-primary{% elif i.kind == 'win' %}bg-green-50 text-green-700{% elif i.kind == 'opportunity' %}bg-orange-50 text-orange-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ i.kind }}</span></div>
+    <div class="mt-1 font-heading text-2xl font-semibold">{{ i.metric }}</div>
+    <p class="mt-1 text-sm text-gray-600">{{ i.detail }}</p>
+    <p class="mt-2 rounded-lg bg-gray-50 p-2 text-sm"><span class="font-semibold text-black">Do this:</span> {{ i.action }}</p>
+  </div>
+  {% empty %}<p class="text-sm text-gray-500 md:col-span-2">Not enough sales yet — ring a few sales through the POS and come back.</p>{% endfor %}
+</div>
+
+<!-- Service moves + tips -->
+<div class="mt-8 grid gap-6 lg:grid-cols-2">
+  <section class="rounded-2xl border p-5">
+    <h2 class="font-bold">Service moves</h2>
+    <ul class="mt-3 divide-y text-sm">{% for m in r.menu_moves %}<li class="flex items-start gap-3 py-2"><span class="mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase {% if m.move == 'promote' %}bg-green-50 text-green-700{% elif m.move == 'remove' %}bg-red-50 text-primary{% elif m.move == 'raise_price' %}bg-orange-50 text-orange-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ m.move|cut:"_" }}</span><span><strong>{{ m.item }}</strong> — {{ m.why }}</span></li>{% empty %}<li class="py-2 text-gray-500">No service suggestions yet.</li>{% endfor %}</ul>
+  </section>
+  <section class="space-y-4">
+    <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">Staffing</div><p class="mt-1 text-sm">{{ r.staffing_tip }}</p></div>
+    <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">Marketing</div><p class="mt-1 text-sm">{{ r.marketing_tip }}</p></div>
+  </section>
+</div>
+
+<!-- Ask your data -->
+<section class="mt-8 rounded-2xl border p-5">
+  <div class="flex items-center justify-between"><h2 class="font-bold">Ask your data</h2><span class="text-xs text-gray-500">{{ ask_left }} question{{ ask_left|pluralize }} left today</span></div>
+  <p class="mt-1 text-xs text-gray-500">e.g. "Which day should I run a promo?", "Is pilau worth keeping?", "How much did I make on M-Pesa last week?"</p>
+  <form hx-post="{% url 'pos_insights_ask' %}" hx-target="#answers" hx-swap="afterbegin" hx-indicator="#ask-spin" hx-on::after-request="this.reset()" class="mt-3 flex gap-2">{% csrf_token %}
+    <input name="q" maxlength="600" placeholder="Ask a question about your business…" required class="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm" {% if not ask_left %}disabled{% endif %}>
+    <button class="rounded-lg bg-dark px-4 py-2 text-sm font-semibold text-white" {% if not ask_left %}disabled{% endif %}>Ask <span id="ask-spin" class="htmx-indicator">…</span></button>
+  </form>
+  <div id="answers" class="mt-3 space-y-2">{% for qn in questions %}<div class="rounded-xl border p-3 text-sm"><div class="font-medium text-black">You: {{ qn.question }}</div><div class="mt-1 whitespace-pre-line text-gray-700">{{ qn.answer }}</div><div class="mt-1 text-[10px] text-gray-400">{{ qn.created_at|date:"j M H:i" }}</div></div>{% endfor %}</div>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "dashboard/base.html" %}{% block page_title %}Plan & renewal{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">{% if vendor.subscription_expired %}Renew Premium{% elif vendor.is_premium %}Plan &amp; renewal{% else %}Upgrade to Premium{% endif %}</h1>
+{% if vendor.pos_active %}<p class="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">Your POS module is active until <strong>{{ vendor.pos_expires_at|date:"j M Y" }}</strong> ({{ vendor.pos_days_left }} days left), and <strong>Premium is included</strong> — unlimited services and photos, offers on the Deals page, no separate payment.{% if vendor.branches_enabled %} Each branch has its own expiry — <a href="{% url 'pos_branches' %}" class="font-semibold underline">renew per branch</a>.{% endif %}</p>
+{% elif vendor.is_premium %}<p class="mt-2 rounded-lg bg-green-50 p-3 text-sm text-green-800">Premium is active until <strong>{{ vendor.premium_expires_at|date:"j M Y" }}</strong> ({{ vendor.premium_days_left }} days left). Pay before then to keep your benefits.</p>
+{% elif vendor.plan == 'premium' %}<p class="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">Your Premium expired on {{ vendor.premium_expires_at|date:"j M Y" }}. <strong>Your price list is hidden from the public</strong> until you renew below.</p>{% endif %}
+<div class="mt-6 grid gap-4 sm:grid-cols-2">
+  <div class="rounded-2xl border p-5"><h2 class="font-bold">Free</h2><p class="text-3xl font-black">KES 0</p>
+    <ul class="mt-3 space-y-1 text-sm text-gray-600"><li>✓ Business page & contacts</li><li>✓ Up to {{ site.free_menu_limit }} services</li><li>✓ Up to {{ site.free_photo_limit }} photos</li><li>✓ Online bookings & inquiries</li></ul></div>
+  <div class="rounded-2xl border-2 border-accent bg-orange-50/40 p-5"><h2 class="font-bold">Premium <span class="text-xs text-orange-700">monthly</span></h2><p class="text-3xl font-black">KES {{ site.premium_fee|floatformat:"-2" }}<span class="text-base font-normal text-gray-500">/month</span></p>
+    <ul class="mt-3 space-y-1 text-sm text-gray-600"><li>✓ Everything in Free</li><li>✓ Unlimited services & photos</li><li>✓ Premium badge & top placement</li><li>✓ Cancel anytime — just stop paying</li></ul></div>
+</div>
+<div class="mt-6 rounded-2xl bg-dark p-5 text-white">
+  {% include "payments/_pay_form.html" with product="premium" %}
+</div>
+<div class="mt-4 rounded-2xl border p-5 text-sm text-gray-600">
+  <h3 class="font-bold text-dark">Prefer to pay manually?</h3>
+  <p class="mt-2 text-sm text-gray-300">{{ site.payment_instructions|linebreaksbr }}</p>
+  <a href="https://wa.me/{{ site.support_whatsapp }}?text=Hi, Premium payment for {{ vendor.brand_name|urlencode }} — KES {{ site.premium_fee|floatformat:'-2' }} for 1 month" target="_blank" class="mt-4 inline-block rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold">Send payment confirmation on WhatsApp</a>
+</div>
+<p class="mt-6 text-sm text-gray-500">See all your payments on the <a href="{% url 'dashboard_payments' %}" class="text-primary">Billing</a> page.</p>
+{% endblock %}

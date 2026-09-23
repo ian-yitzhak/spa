@@ -1,0 +1,28 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Staff{% endblock %}{% block dash %}
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-black">Staff</h1>
+  {% if total_unpaid %}<a href="{% url 'pos_payouts' %}" class="rounded-lg bg-dark px-3 py-1.5 text-sm text-white">Commission owed: <strong>KES {{ total_unpaid|kes }}</strong></a>{% endif %}
+</div>
+<details class="mt-4 rounded-2xl border p-4" {% if form.errors %}open{% endif %}><summary class="cursor-pointer font-bold">+ Add a staff member or cashier</summary>
+  <form method="post" enctype="multipart/form-data" class="mt-4">{% csrf_token %}
+    {% if form.non_field_errors %}<p class="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ form.non_field_errors.0 }}</p>{% endif %}
+    {% include "pos/_staff_fields.html" with links=None %}
+    <div class="mt-5"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Create account</button></div>
+  </form>
+</details>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Name</th><th class="p-3">Role</th>{% if many_branches %}<th class="p-3">Branch</th>{% endif %}<th class="p-3">Commission</th><th class="p-3">This month</th><th class="p-3 text-right">Owed</th><th class="p-3">Status</th><th></th></tr></thead>
+  <tbody>{% for s in team %}<tr class="border-t {% if not s.is_active %}text-gray-400{% endif %}">
+    <td class="p-3"><a href="{% url 'pos_staff_detail' s.pk %}" class="flex items-center gap-2 font-semibold hover:text-primary">
+      <span class="h-8 w-8 flex-none overflow-hidden rounded-full bg-gray-100">{% if s.photo %}<img src="{{ s.photo.url }}" alt="" class="h-full w-full object-cover">{% endif %}</span>
+      <span>{{ s.name }}<span class="block text-xs font-normal text-gray-500">{{ s.job_title }}</span></span></a></td>
+    <td class="p-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium {% if s.role == 'cashier' %}bg-green-50 text-green-700{% else %}bg-accent/30 text-dark{% endif %}">{{ s.get_role_display }}</span></td>
+    {% if many_branches %}<td class="p-3 text-gray-600">{{ s.branch.name|default:"—" }}</td>{% endif %}
+    <td class="p-3">{% if s.role == 'staff' %}{{ s.rate_label }}<div class="text-xs text-gray-500">{{ s.n_services }} service{{ s.n_services|pluralize }}</div>{% else %}<span class="text-gray-300">—</span>{% endif %}</td>
+    <td class="p-3">{% if s.month %}{{ s.month.n }} services · KES {{ s.month.sales|kes }}{% else %}<span class="text-gray-300">—</span>{% endif %}</td>
+    <td class="p-3 text-right font-semibold">{% if s.unpaid %}KES {{ s.unpaid|kes }}{% else %}<span class="font-normal text-gray-300">0</span>{% endif %}</td>
+    <td class="p-3">{% if s.is_active %}<span class="rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">Active</span>{% else %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Disabled</span>{% endif %}</td>
+    <td class="p-3 text-right text-xs whitespace-nowrap"><a href="{% url 'pos_staff_detail' s.pk %}" class="rounded border px-2 py-1">{% if s.unpaid %}Pay{% else %}Open{% endif %}</a> <a href="{% url 'pos_staff_edit' s.pk %}" class="rounded border px-2 py-1">Edit</a></td>
+  </tr>{% empty %}<tr><td colspan="8" class="p-6 text-center text-gray-500">No staff yet. Add your stylists, therapists and cashier above — each gets their own login.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% endblock %}

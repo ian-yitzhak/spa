@@ -1,0 +1,38 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Dashboard{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Hello, {{ user.first_name|default:user.email }}</h1>
+<p class="mt-1 text-sm text-gray-500">{{ vendor.brand_name }}{% if me_staff.job_title %} · {{ me_staff.job_title }}{% endif %} · earning {{ me_staff.rate_label }} per service</p>
+<div class="mt-6 grid gap-3 sm:grid-cols-3">
+  <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">Today</div><div class="mt-1 font-heading text-3xl font-semibold">{{ agg_today.n|default:0 }} <span class="text-base font-normal text-gray-500">service{{ agg_today.n|default:0|pluralize }}</span></div><div class="text-sm text-gray-600">You earned <strong>KES {{ agg_today.c|default:0|kes }}</strong></div></div>
+  <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">This month</div><div class="mt-1 font-heading text-3xl font-semibold">KES {{ agg_month.c|default:0|kes }}</div><div class="text-sm text-gray-600">{{ agg_month.n|default:0 }} services · KES {{ agg_month.sales|default:0|kes }} in sales</div></div>
+  <a href="{% url 'pos_sales' %}?state=unpaid" class="rounded-2xl bg-dark p-5 text-white"><div class="text-xs text-gray-400">Owed to you</div><div class="mt-1 font-heading text-3xl font-semibold">KES {{ balance|kes }}</div><div class="text-sm text-gray-300">Not paid out yet</div></a>
+</div>
+<div class="mt-8 grid gap-6 lg:grid-cols-2">
+  <section>
+    <h2 class="flex items-center justify-between font-bold">Your upcoming bookings <a href="{% url 'pos_bookings' %}" class="text-sm font-normal text-primary">All</a></h2>
+    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for b in bookings %}
+      <div class="flex items-center justify-between gap-2 p-3"><div><div class="font-semibold">{{ b.date|date:"D j M" }}{% if b.date == today %} <span class="rounded-full bg-primary px-1.5 text-[10px] text-white">today</span>{% endif %} · {{ b.time|time:"H:i" }}–{{ b.ends_at|time:"H:i" }}</div><div class="text-gray-600">{{ b.service.name|default:"—" }} · {{ b.name }}</div></div>
+        <span class="rounded-full px-2 py-0.5 text-xs {% if b.status == 'confirmed' %}bg-green-50 text-green-700{% else %}bg-orange-50 text-orange-700{% endif %}">{{ b.get_status_display }}</span></div>
+    {% empty %}<p class="p-4 text-gray-500">No bookings with you yet.</p>{% endfor %}</div>
+  </section>
+  <section>
+    <h2 class="font-bold">Your shifts</h2>
+    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for s in shifts %}
+      <div class="flex items-center justify-between p-3"><span class="font-semibold">{{ s.date|date:"D j M" }}{% if s.date == today %} <span class="rounded-full bg-primary px-1.5 text-[10px] text-white">today</span>{% endif %}</span><span>{% if s.status == 'leave' %}On leave{% else %}{{ s.starts|time:"H:i" }}–{{ s.ends|time:"H:i" }}{% endif %}{% if s.note %} · <span class="text-gray-500">{{ s.note }}</span>{% endif %}</span></div>
+    {% empty %}<p class="p-4 text-gray-500">No shifts planned yet.</p>{% endfor %}</div>
+  </section>
+</div>
+<div class="mt-8 grid gap-6 lg:grid-cols-2">
+  <section>
+    <h2 class="flex items-center justify-between font-bold">Recent services <a href="{% url 'pos_sales' %}" class="text-sm font-normal text-primary">My sales</a></h2>
+    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for l in recent %}
+      <div class="flex items-center justify-between gap-2 p-3"><span>{{ l.name }} · {{ l.order.label }}<span class="block text-xs text-gray-500">{{ l.order.paid_at|date:"j M H:i" }}</span></span><span class="text-right"><strong>KES {{ l.commission|kes }}</strong><span class="block text-xs text-gray-500">of {{ l.line_total|kes }}</span></span></div>
+    {% empty %}<p class="p-4 text-gray-500">Nothing yet. Services show here once the cashier takes payment.</p>{% endfor %}</div>
+  </section>
+  <section>
+    <h2 class="flex items-center justify-between font-bold">Payouts <a href="{% url 'pos_profile' %}" class="text-sm font-normal text-primary">All payslips</a></h2>
+    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for p in payouts %}
+      <a href="{% url 'pos_payout' p.pk %}" class="flex items-center justify-between p-3 hover:bg-gray-50"><span>#{{ p.number }} · {{ p.paid_at|date:"j M Y" }}<span class="block text-xs text-gray-500">{{ p.services_count }} services · {{ p.get_method_display }}</span></span><strong>KES {{ p.amount|kes }}</strong></a>
+    {% empty %}<p class="p-4 text-gray-500">No payouts yet.</p>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

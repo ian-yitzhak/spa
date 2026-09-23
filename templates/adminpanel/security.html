@@ -1,0 +1,17 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Security log{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Security &amp; audit log</h1>
+<p class="mt-1 text-sm text-gray-500">Every admin action and security event: who, what, when, from which IP.</p>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search detail, admin email or IP" class="flex-1 rounded-lg border px-3 py-2">
+  <select name="action" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">All events</option>{% for a in actions %}<option value="{{ a }}" {% if action == a %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Filter</button>{% if q or action %}<a href="?" class="rounded-lg border px-4 py-2 text-sm">Clear</a>{% endif %}
+</form>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">When</th><th class="p-3">Event</th><th class="p-3">Detail</th><th class="p-3">By</th><th class="p-3">IP</th></tr></thead>
+  <tbody>{% for e in entries %}<tr class="border-t align-top {% if e.action == 'login_locked' or 'mismatch' in e.action or 'blocked' in e.action %}bg-red-50/40{% endif %}">
+    <td class="p-3 whitespace-nowrap text-gray-500">{{ e.created_at|date:"j M Y H:i:s" }}</td><td class="p-3"><code class="rounded bg-gray-100 px-1.5 py-0.5 text-xs">{{ e.action }}</code></td>
+    <td class="p-3">{{ e.detail }}</td><td class="p-3">{{ e.actor.email|default:"—" }}</td><td class="p-3 text-xs text-gray-500">{{ e.ip|default:"—" }}</td>
+  </tr>{% empty %}<tr><td colspan="5" class="p-6 text-center text-gray-500">Nothing logged yet.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

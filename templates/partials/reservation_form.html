@@ -1,0 +1,12 @@
+{% if sent %}
+<div><h3 class="font-semibold text-black">Inquiry sent</h3><p class="mt-1 text-sm text-gray-600">{{ vendor.brand_name }} will get back to you on WhatsApp ({{ res.phone }}) about {{ res.people }} {% if res.people == 1 %}person{% else %}people{% endif %} on {{ res.date|date:"D j M" }} at {{ res.time|time:"H:i" }}.</p></div>
+{% else %}
+<h3 class="font-semibold text-black">Send an inquiry</h3>
+<p class="mt-1 text-xs text-gray-500">Book a table, ask for a quote or plan an event.</p>
+<form hx-post="{% url 'reserve' vendor.type_slug vendor.slug %}" hx-target="#reserve-box" hx-swap="innerHTML" class="mt-3 grid grid-cols-2 gap-2">
+  {% csrf_token %}
+  {% for f in res_form %}<div class="{% if f.name == 'name' or f.name == 'phone' or f.name == 'note' %}col-span-2{% endif %}"><label class="mb-1 block text-xs font-medium text-gray-600">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>{% endfor %}
+  <div class="col-span-2">{% include "partials/turnstile.html" %}</div>
+  <button class="col-span-2 w-full rounded-lg bg-dark py-2.5 text-sm font-semibold text-white hover:bg-black">Send inquiry</button>
+</form>
+{% endif %}

@@ -1,0 +1,16 @@
+{% extends "dashboard/base.html" %}{% block page_title %}Reviews{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Reviews · {{ vendor.rating|floatformat:1 }}<span class="text-accent">★</span> <span class="text-base font-normal text-gray-500">({{ vendor.review_count }})</span></h1>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search reviews" class="flex-1 rounded-lg border px-3 py-2">
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Search</button>{% if q or False %}<a href="?" class="rounded-lg border px-4 py-2 text-sm">Clear</a>{% endif %}
+</form>
+<div class="mt-4 space-y-3">
+  {% for r in reviews %}
+  <div class="rounded-xl border p-3 {% if not r.is_approved %}opacity-50{% endif %}">
+    <div class="flex justify-between"><strong>{{ r.name }}</strong><span class="text-accent">{% for _ in "x"|rjust:r.stars %}★{% endfor %}</span></div>
+    <p class="mt-1 text-sm text-gray-600">{{ r.comment }}</p><p class="mt-1 text-xs text-gray-400">{{ r.created_at|date:"j M Y" }}{% if not r.is_approved %} · hidden by admin{% endif %}</p>
+  </div>
+  {% empty %}<p class="text-sm text-gray-500">No reviews yet.</p>{% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

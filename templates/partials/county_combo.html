@@ -1,0 +1,9 @@
+{# Searchable county picker. Params: name, value (slug or name), options (list of Location or names), placeholder, submit (bool) #}
+<div class="relative" data-ccombo data-submit="{% if submit %}1{% else %}0{% endif %}">
+  <input type="text" autocomplete="off" placeholder="{{ placeholder|default:'Type a county…' }}" value="{{ label|default:'' }}" class="w-full rounded-lg border px-3 py-2 text-sm" data-ccombo-input>
+  <input type="hidden" name="{{ name }}" value="{{ value|default:'' }}" data-ccombo-value>
+  <ul class="absolute z-20 mt-1 hidden max-h-56 w-full overflow-auto rounded-lg border bg-white shadow" data-ccombo-list>
+    <li data-v="" class="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-gray-100">{{ all_label|default:'All of Kenya' }}</li>
+    {% for o in options %}<li data-v="{% if by_name %}{{ o.name|default:o }}{% else %}{{ o.slug|default:o }}{% endif %}" class="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100">{{ o.name|default:o }}</li>{% endfor %}
+  </ul>
+</div>

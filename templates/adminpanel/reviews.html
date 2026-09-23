@@ -1,0 +1,13 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Reviews{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Reviews</h1>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search reviewer, comment or vendor" class="flex-1 rounded-lg border px-3 py-2">
+  <select name="status" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">Visible &amp; hidden</option><option value="visible" {% if status == 'visible' %}selected{% endif %}>Visible</option><option value="hidden" {% if status == 'hidden' %}selected{% endif %}>Hidden</option></select>
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Search</button>{% if q or status %}<a href="?" class="rounded-lg border px-4 py-2 text-sm">Clear</a>{% endif %}
+</form>
+<div class="mt-6 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Vendor</th><th class="p-3">Review</th><th class="p-3">Status</th><th class="p-3"></th></tr></thead>
+  <tbody>{% for r in reviews %}{% include "adminpanel/_review_row.html" %}{% empty %}<tr><td colspan="4" class="p-6 text-center text-gray-500">No reviews yet.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

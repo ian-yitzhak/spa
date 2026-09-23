@@ -1,0 +1,11 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Edit {{ st.name }}{% endblock %}{% block dash %}
+<a href="{% url 'pos_staff_detail' st.pk %}" class="text-sm text-gray-500 hover:text-primary">← {{ st.name }}</a>
+<h1 class="mt-2 text-2xl font-black">Edit {{ st.name }}</h1>
+<form method="post" enctype="multipart/form-data" class="mt-4 max-w-3xl">{% csrf_token %}
+  {% if form.non_field_errors %}<p class="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ form.non_field_errors.0 }}</p>{% endif %}
+  {% include "pos/_staff_fields.html" %}
+  <div class="mt-5 flex flex-wrap items-center gap-3"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Save</button></div>
+</form>
+<form method="post" action="{% url 'pos_staff_toggle' st.pk %}" class="mt-8 border-t pt-4" onsubmit="return confirm('{% if st.is_active %}Disable {{ st.name }}? They can no longer log in. Their sales and payslips are kept.{% else %}Let {{ st.name }} log in again?{% endif %}')">{% csrf_token %}
+  <button class="rounded-lg border px-4 py-2 text-sm {% if st.is_active %}text-primary{% endif %}">{% if st.is_active %}Disable this account{% else %}Enable this account{% endif %}</button></form>
+{% endblock %}

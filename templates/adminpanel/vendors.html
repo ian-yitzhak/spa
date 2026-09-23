@@ -1,0 +1,16 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Vendors{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Vendors</h1>
+<form class="mt-4 flex flex-wrap gap-2" hx-get="{% url 'ap_vendors' %}" hx-target="#rows" hx-select-oob="#rows-pagination" hx-trigger="input changed delay:300ms from:input, change from:select" hx-push-url="true">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search brand, email, phone or town" class="flex-1 rounded-lg border px-3 py-2">
+  <select name="plan" class="rounded-lg border px-3 py-2"><option value="">All plans</option><option value="free" {% if plan == 'free' %}selected{% endif %}>Free</option><option value="premium" {% if plan == 'premium' %}selected{% endif %}>Premium (active)</option><option value="expired" {% if plan == 'expired' %}selected{% endif %}>Premium expired</option></select>
+  <select name="status" class="rounded-lg border px-3 py-2"><option value="">Any status</option><option value="pending" {% if status == 'pending' %}selected{% endif %}>Awaiting approval</option><option value="unpublished" {% if status == 'unpublished' %}selected{% endif %}>Unpublished</option></select>
+</form>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Business</th><th class="p-3">Owner</th><th class="p-3">Items / Inq.</th><th class="p-3">Plan</th><th class="p-3">Status</th><th class="p-3">Actions</th></tr></thead>
+    <tbody id="rows">{% include "adminpanel/_vendor_rows.html" %}</tbody>
+  </table>
+</div>
+<div id="rows-pagination">{% include "partials/pagination.html" %}</div>
+<div id="rows-pagination">{% include "partials/pagination.html" %}</div>
+{% endblock %}

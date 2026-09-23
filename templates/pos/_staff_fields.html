@@ -1,0 +1,42 @@
+{% load icons %}
+<fieldset class="grid gap-3 sm:grid-cols-2">
+  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Who they are</legend>
+  {% include "pos/_field.html" with f=form.first_name cls="" %}
+  {% include "pos/_field.html" with f=form.job_title cls="" %}
+  <div class="sm:col-span-2"><span class="mb-1 block text-sm font-medium">Role</span>
+    <div class="grid gap-2 sm:grid-cols-2">{% for r in form.role %}<label class="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+  {% include "pos/_field.html" with f=form.phone cls="" %}
+  {% include "pos/_field.html" with f=form.national_id cls="" %}
+  {% include "pos/_field.html" with f=form.hired_on cls="" %}
+  {% if form.branch %}{% include "pos/_field.html" with f=form.branch cls="" %}{% endif %}
+  {% include "pos/_field.html" with f=form.photo cls="" %}
+  {% include "pos/_field.html" with f=form.bio cls="" %}
+  <label class="flex items-center gap-2 text-sm sm:col-span-2">{{ form.show_on_site }} {{ form.show_on_site.label }}</label>
+</fieldset>
+<fieldset class="mt-6 grid gap-3 sm:grid-cols-2">
+  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Login</legend>
+  {% include "pos/_field.html" with f=form.email cls="" %}
+  {% include "pos/_field.html" with f=form.password cls="" %}
+</fieldset>
+<fieldset class="mt-6 grid gap-3 sm:grid-cols-3">
+  <legend class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Pay</legend>
+  {% include "pos/_field.html" with f=form.commission_type cls="" %}
+  {% include "pos/_field.html" with f=form.commission_value cls="" %}
+  {% include "pos/_field.html" with f=form.payout_phone cls="" %}
+</fieldset>
+<fieldset class="mt-6">
+  <legend class="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Services they do</legend>
+  <p class="mb-2 text-xs text-gray-500">Tick what they do. Leave the rate blank to use their default, or set a different % or KES for that service. Cashiers don't need services.</p>
+  {% if services %}
+  <div class="mb-2 flex gap-2 text-xs"><button type="button" onclick="document.querySelectorAll('[data-svc]').forEach(function(c){c.checked=true})" class="rounded border px-2 py-1">Tick all</button><button type="button" onclick="document.querySelectorAll('[data-svc]').forEach(function(c){c.checked=false})" class="rounded border px-2 py-1">Untick all</button></div>
+  <div class="max-h-96 divide-y overflow-y-auto rounded-xl border">
+    {% for s in services %}{% with l=links|get_item:s.pk %}
+    <div class="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
+      <label class="flex min-w-0 flex-1 items-center gap-2"><input type="checkbox" name="svc:{{ s.pk }}" data-svc {% if l %}checked{% endif %} class="h-4 w-4 rounded border-gray-300 text-primary"><span class="truncate">{{ s.name }}</span><span class="text-xs text-gray-400">KES {{ s.price|kes }}</span></label>
+      <input name="svc_rate:{{ s.pk }}" type="number" min="0" step="any" inputmode="decimal" value="{% if l.has_own_rate %}{{ l.commission_value|floatformat:'-2' }}{% endif %}" placeholder="default" class="w-24 rounded-lg border px-2 py-1 text-sm">
+      <select name="svc_type:{{ s.pk }}" class="rounded-lg border px-2 py-1 text-sm"><option value="percent" {% if l.commission_type == 'percent' %}selected{% endif %}>%</option><option value="fixed" {% if l.commission_type == 'fixed' %}selected{% endif %}>KES</option></select>
+    </div>
+    {% endwith %}{% endfor %}
+  </div>
+  {% else %}<p class="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">No services yet. <a href="{% url 'item_new' %}" class="text-primary underline">Add your services</a> first, then attach them here.</p>{% endif %}
+</fieldset>

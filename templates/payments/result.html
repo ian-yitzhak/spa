@@ -1,0 +1,5 @@
+{% extends "dashboard/base.html" %}{% block page_title %}Payment{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Payment</h1>
+<div class="mt-4 max-w-xl">{% include "payments/_status.html" %}</div>
+<p class="mt-6 text-sm text-gray-500">All your payments are on the <a href="{% url 'dashboard_payments' %}" class="text-primary">Billing</a> page.</p>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Bookings{% endblock %}{% block dash %}
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <h1 class="text-2xl font-black">Bookings{% if pending %} <span class="align-middle rounded-full bg-primary px-2 py-0.5 text-sm text-white">{{ pending }} to confirm</span>{% endif %}</h1>
+</div>
+{% if can_edit %}
+<details class="mt-4 rounded-2xl border p-4" {% if form.errors %}open{% endif %}><summary class="cursor-pointer font-bold">+ New booking</summary>
+  <form method="post" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{% csrf_token %}
+    {% for f in form %}{% include "pos/_field.html" with f=f cls="" %}{% endfor %}
+    <div class="sm:col-span-2 lg:col-span-3"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Save booking</button> <span class="text-xs text-gray-500">Phone and walk-in bookings are saved as confirmed.</span></div>
+  </form>
+</details>
+{% endif %}
+<form method="get" class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+  <a href="?view=upcoming" class="rounded-lg border px-3 py-1.5 {% if view == 'upcoming' %}border-primary bg-primary text-white{% endif %}">Upcoming</a>
+  <a href="?date={{ today|date:'Y-m-d' }}" class="rounded-lg border px-3 py-1.5 {% if view == 'day' and date == today|date:'Y-m-d' %}border-primary bg-primary text-white{% endif %}">Today</a>
+  <a href="?view=past" class="rounded-lg border px-3 py-1.5 {% if view == 'past' %}border-primary bg-primary text-white{% endif %}">Past</a>
+  <input type="date" name="date" value="{{ date }}" onchange="this.form.submit()" class="rounded-lg border px-2 py-1.5">
+  <select name="status" onchange="this.form.submit()" class="rounded-lg border px-2 py-1.5"><option value="">Any status</option>{% for k, l in statuses %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  {% if not is_team or role == 'cashier' %}<select name="staff" onchange="this.form.submit()" class="rounded-lg border px-2 py-1.5"><option value="">Everyone</option><option value="none" {% if who == 'none' %}selected{% endif %}>Not assigned</option>{% for s in team %}<option value="{{ s.pk }}" {% if who == s.pk|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select>{% endif %}
+  {% if view != 'past' %}<input type="hidden" name="view" value="{{ view }}">{% endif %}
+</form>
+<div class="mt-3 space-y-2">
+  {% regroup bookings by date as days %}
+  {% for day in days %}
+  <h2 class="pt-2 text-sm font-semibold text-gray-500">{{ day.grouper|date:"l j F" }}{% if day.grouper == today %} · today{% endif %}</h2>
+  {% for b in day.list %}
+  <div class="flex flex-wrap items-start justify-between gap-3 rounded-2xl border p-4 text-sm {% if b.status == 'cancelled' or b.status == 'no_show' %}opacity-60{% endif %}">
+    <div class="min-w-0">
+      <div class="font-semibold">{{ b.time|time:"H:i" }}–{{ b.ends_at|time:"H:i" }} · {{ b.service.name|default:"Service removed" }}</div>
+      <div class="text-gray-600">{{ b.name }} · <a href="tel:{{ b.phone }}" class="hover:text-primary">{{ b.phone }}</a> · with <strong>{{ b.staff.name|default:"anyone available" }}</strong></div>
+      {% if b.note %}<div class="mt-1 text-xs text-gray-500">“{{ b.note }}”</div>{% endif %}
+      <div class="mt-1 text-xs text-gray-400">{{ b.get_source_display }} · booked {{ b.created_at|date:"j M H:i" }}</div>
+    </div>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if b.status == 'requested' %}bg-orange-50 text-orange-700{% elif b.status == 'confirmed' %}bg-green-50 text-green-700{% elif b.status == 'done' %}bg-gray-100 text-gray-600{% else %}bg-red-50 text-red-700{% endif %}">{{ b.get_status_display }}</span>
+      {% if can_edit %}
+        {% if b.status == 'requested' %}<form method="post" action="{% url 'pos_booking_status' b.pk %}">{% csrf_token %}<input type="hidden" name="status" value="confirmed"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">Confirm</button></form>{% endif %}
+        {% if b.is_open %}<a href="{{ b.wa_confirm_link }}" target="_blank" rel="noopener" class="rounded-lg border px-3 py-1.5 text-xs font-semibold">WhatsApp</a>
+        <form method="post" action="{% url 'pos_booking_start' b.pk %}">{% csrf_token %}<button class="rounded-lg bg-dark px-3 py-1.5 text-xs font-semibold text-white">{% if b.order_id %}Open ticket{% else %}Client arrived{% endif %}</button></form>{% endif %}
+        {% if b.order_id and b.order.paid_at %}<a href="{% url 'pos_receipt' b.order_id %}" class="rounded-lg border px-3 py-1.5 text-xs">Receipt</a>{% endif %}
+        <details class="relative"><summary class="cursor-pointer list-none rounded-lg border px-2 py-1.5 text-xs">⋯</summary>
+          <div class="absolute right-0 z-10 mt-1 w-40 rounded-lg border bg-white p-1 text-xs shadow">
+            <a href="{% url 'pos_booking_edit' b.pk %}" class="block rounded px-2 py-1.5 hover:bg-gray-100">Edit / move</a>
+            {% for k, l in statuses %}{% if k != b.status %}<form method="post" action="{% url 'pos_booking_status' b.pk %}">{% csrf_token %}<input type="hidden" name="status" value="{{ k }}"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="block w-full rounded px-2 py-1.5 text-left hover:bg-gray-100">Mark {{ l|lower }}</button></form>{% endif %}{% endfor %}
+          </div></details>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% empty %}<p class="rounded-2xl border border-dashed p-8 text-center text-gray-500">No bookings here.{% if can_edit %} Add one above, or share your page so clients can book themselves.{% endif %}</p>{% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

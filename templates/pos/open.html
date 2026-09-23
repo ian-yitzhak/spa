@@ -1,0 +1,17 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Open tickets{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Open tickets</h1>
+<p class="mt-1 text-sm text-gray-500">Clients still in service. Open a ticket to add services or take payment.</p>
+<div class="mt-4 grid gap-3 sm:grid-cols-2">
+  {% for o in tickets %}
+  <div class="rounded-2xl border p-4 text-sm">
+    <div class="flex items-start justify-between gap-2">
+      <div><div class="font-semibold">#{{ o.ref }} · {{ o.label }}</div>
+        <div class="text-xs text-gray-500">Started {{ o.placed_at|time:"H:i" }} · {{ o.placed_at|timesince }} ago{% if many_branches %} · {{ o.branch.name }}{% endif %}</div></div>
+      <strong>KES {{ o.total|kes }}</strong>
+    </div>
+    <ul class="mt-2 space-y-0.5 text-xs text-gray-600">{% for l in o.items.all %}<li>{{ l.qty }} × {{ l.name }} — <span class="{% if not l.staff %}font-semibold text-primary{% endif %}">{{ l.staff.name|default:"no staff yet" }}</span></li>{% endfor %}</ul>
+    <form method="post" action="{% url 'pos_resume' o.pk %}" class="mt-3">{% csrf_token %}<button class="w-full rounded-lg bg-dark py-2 font-semibold text-white">Open &amp; take payment</button></form>
+  </div>
+  {% empty %}<p class="rounded-2xl border border-dashed p-8 text-center text-gray-500 sm:col-span-2">No open tickets. On the POS, “Still in service — pay later” parks a client here.</p>{% endfor %}
+</div>
+{% endblock %}

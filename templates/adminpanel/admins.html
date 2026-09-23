@@ -1,0 +1,17 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Admins{% endblock %}{% block panel %}
+<div class="flex items-center justify-between"><h1 class="text-2xl font-black">Admins</h1><a href="{% url 'ap_admin_new' %}" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">+ Add admin</a></div>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name, email or phone" class="flex-1 rounded-lg border px-3 py-2">
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Search</button>{% if q or False %}<a href="?" class="rounded-lg border px-4 py-2 text-sm">Clear</a>{% endif %}
+</form>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Name</th><th class="p-3">Email</th><th class="p-3">Phone</th><th class="p-3"></th></tr></thead>
+  <tbody>{% for a in admins %}<tr class="border-t" id="a-{{ a.pk }}">
+    <td class="p-3 font-semibold">{{ a.first_name|default:"—" }}{% if a.is_superuser %} <span class="text-xs text-gray-400">super</span>{% endif %}{% if not a.is_active %} <span class="text-xs text-primary">inactive</span>{% endif %}</td>
+    <td class="p-3">{{ a.email }}</td><td class="p-3">{{ a.phone }}</td>
+    <td class="p-3 text-right text-xs"><a href="{% url 'ap_admin_edit' a.pk %}" class="rounded border px-2 py-1">Edit</a>
+      {% if a != user and not a.is_superuser %}<button hx-post="{% url 'ap_admin_delete' a.pk %}" hx-target="#a-{{ a.pk }}" hx-swap="outerHTML" hx-confirm="Remove this admin?" class="ml-1 rounded border px-2 py-1 text-primary">Delete</button>{% endif %}</td>
+  </tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

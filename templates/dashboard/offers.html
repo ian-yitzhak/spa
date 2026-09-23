@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}{% load icons %}{% block page_title %}Special offers{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Special offers</h1>
+<p class="mt-1 text-sm text-gray-500">Happy hours, combos, discounts. Live offers show at the top of your page{% if vendor.is_premium %} and on the <a href="{% url 'deals' %}" class="text-primary" target="_blank">Deals</a> page{% else %} — Premium listings also appear on the public <a href="{% url 'deals' %}" class="text-primary" target="_blank">Deals</a> page{% endif %}.</p>
+
+<div class="mt-5 grid gap-6 lg:grid-cols-5">
+  <form method="post" enctype="multipart/form-data" class="space-y-3 self-start rounded-2xl border p-5 lg:col-span-2" id="offer-form">{% csrf_token %}
+    <h2 class="font-bold">{% if editing %}Edit offer{% else %}New offer{% endif %}</h2>
+    {% for f in form %}{% if f.name == 'is_active' %}
+    <label class="flex items-center gap-2 text-sm">{{ f }} {{ f.label }}</label>
+    {% elif f.name == 'starts' %}<div class="grid grid-cols-2 gap-3"><div><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>
+    {% elif f.name == 'ends' %}<div><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div></div>
+    {% else %}<div><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>{% endif %}{% endfor %}
+    <p class="text-xs text-gray-500">Leave the dates empty for an ongoing offer. It disappears from your page automatically after the end date.</p>
+    <div class="flex gap-2 pt-1"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">{% if editing %}Save changes{% else %}Publish offer{% endif %}</button>
+    {% if editing %}<a href="{% url 'dashboard_offers' %}" class="rounded-lg border px-5 py-2 text-sm">Cancel</a>{% endif %}</div>
+  </form>
+
+  <div class="lg:col-span-3">
+    <h2 class="font-bold">Your offers</h2>
+    <div class="mt-2 space-y-3">
+      {% for offer in offers %}{% include "partials/offer_row.html" %}{% empty %}
+      <div class="rounded-2xl border border-dashed p-8 text-center text-sm text-gray-500">No offers yet. Try a weekday lunch combo or a happy hour — customers on your page see it immediately.</div>{% endfor %}
+    </div>
+    {% include "partials/pagination.html" %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,3 @@
+{% for v in vendors %}{% include "adminpanel/_vendor_row.html" %}{% empty %}<tr><td colspan="6" class="p-6 text-center text-gray-500">No vendors match.</td></tr>{% endfor %}
+{% if request.htmx %}<template><div id="rows-pagination" hx-swap-oob="true">{% include "partials/pagination.html" %}</div></template>{% endif %}
+{% if request.htmx %}<div id="rows-pagination" hx-swap-oob="true">{% include "partials/pagination.html" %}</div>{% endif %}

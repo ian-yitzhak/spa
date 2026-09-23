@@ -1,0 +1,239 @@
+{% extends "base.html" %}{% load icons %}
+{% block title %}{{ vendor.seo_title }}{% endblock %}
+{% block meta_description %}{{ vendor.seo_description }}{% endblock %}
+{% block canonical %}{{ canonical }}{% endblock %}
+{% block og_type %}restaurant.restaurant{% endblock %}
+{% block og_title %}{{ vendor.brand_name }} — menu & prices{% if vendor.town %} in {{ vendor.town }}{% endif %}{% endblock %}
+{% block og_description %}{{ vendor.seo_description }}{% endblock %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% url 'vendor_og_image' vendor.type_slug vendor.slug %}{% endblock %}
+{% block tw_title %}{{ vendor.brand_name }} — menu & prices{% endblock %}
+{% block tw_description %}{{ vendor.seo_description }}{% endblock %}
+{% block tw_image %}{{ request.scheme }}://{{ request.get_host }}{% url 'vendor_og_image' vendor.type_slug vendor.slug %}{% endblock %}
+{% block jsonld %}{% if vendor.is_live %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endif %}{% endblock %}
+{% block content %}
+{% if not vendor.is_live %}<div class="bg-dark py-2 text-center text-xs font-medium text-gray-300">Preview — this page is not public yet</div>{% endif %}
+
+<div class="h-52 w-full bg-gray-200 md:h-72">
+  {% if vendor.cover %}<img src="{{ vendor.cover.url }}" alt="" class="h-full w-full object-cover">{% else %}<div class="h-full w-full bg-gradient-to-br from-gray-100 to-gray-300"></div>{% endif %}
+</div>
+
+<div class="mx-auto max-w-6xl overflow-x-hidden px-4">
+  <nav class="truncate pt-4 text-xs text-gray-500" aria-label="Breadcrumb"><a href="{% url 'home' %}" class="hover:text-primary">BeautyFlow</a> › <a href="{% url 'types_index' vendor.type_plural_slug %}" class="hover:text-primary">{{ vendor.type_row.3 }}</a>{% if vendor.county_loc %} › <a href="{% url 'restaurants_in' vendor.type_plural_slug vendor.county_loc.slug %}" class="hover:text-primary">{{ vendor.county_loc.name }}</a>{% endif %}{% if vendor.area_loc and vendor.area_loc != vendor.county_loc %} › <a href="{% url 'restaurants_in' vendor.type_plural_slug vendor.area_loc.slug %}" class="hover:text-primary">{{ vendor.area_loc.name }}</a>{% endif %} › <span class="text-dark">{{ vendor.brand_name }}</span></nav>
+  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 py-6">
+    <div class="flex items-center gap-4">
+      <div class="h-20 w-20 flex-none overflow-hidden rounded-xl border border-gray-200 bg-white md:h-24 md:w-24">
+        {% if vendor.logo %}<img src="{{ vendor.logo.url }}" alt="{{ vendor.brand_name }}" class="h-full w-full object-cover">
+        {% else %}<div class="grid h-full place-items-center bg-dark text-3xl font-bold text-white">{{ vendor.brand_name|first }}</div>{% endif %}
+      </div>
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="font-heading text-2xl font-semibold text-black md:text-3xl">{{ vendor.brand_name }}</h1>
+          {% if vendor.is_approved %}<span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700" title="Verified by BeautyFlow"><svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>Verified</span>{% endif %}
+          {% if open_now is True %}<span class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">Open now</span>{% elif open_now is False %}<span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700">Closed now</span>{% endif %}
+        </div>
+        {% if vendor.tagline %}<p class="text-gray-600">{{ vendor.tagline }}</p>{% endif %}
+        <p class="mt-0.5 text-sm text-gray-500">{{ vendor.type_label }}{% if vendor.town %} · {{ vendor.town }}{% endif %}{% if vendor.county %}, {{ vendor.county }}{% endif %}{% if vendor.delivers %} · Delivery available{% endif %}{% with r=vendor.rating %}{% if r %} · <span class="text-accent">★</span> {{ r|floatformat:1 }} ({{ vendor.review_count }}){% endif %}{% endwith %}</p>
+        {% if vendor.tags.exists %}<div class="mt-2 flex flex-wrap gap-1">{% for t in vendor.tags.all %}<a href="{% url 'food_tag' t.slug %}" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-200">{{ t.name }}</a>{% endfor %}</div>{% endif %}
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <a href="#contact" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">Contact &amp; book</a>
+      <a href="#reviews" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50">Reviews</a>
+    </div>
+  </div>
+
+  <div class="grid min-w-0 gap-12 py-10 lg:grid-cols-3">
+    <div class="min-w-0 space-y-12 lg:col-span-2">
+      {% if offers %}
+      <section class="reveal">
+        <h2 class="font-heading text-xl font-semibold text-black">Special offers</h2>
+        <div class="mt-4 space-y-4">
+          {% for o in offers %}
+          <article class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:flex">
+            {% if o.image %}<div class="relative h-44 w-full flex-none sm:h-auto sm:w-52"><img src="{{ o.image.url }}" alt="{{ o.title }}" class="h-full w-full object-cover sm:absolute sm:inset-0"></div>{% endif %}
+            <div class="flex min-w-0 flex-1 flex-col p-5">
+              <span class="inline-flex w-fit items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">{% icon "tag" "h-3 w-3" %}Offer</span>
+              <h3 class="mt-2 font-heading text-lg font-semibold leading-snug text-black">{{ o.title }}</h3>
+              {% if o.details %}<p class="mt-1 line-clamp-3 text-sm text-gray-600">{{ o.details }}</p>{% endif %}
+              <div class="mt-auto flex flex-wrap items-center gap-3 pt-4 text-xs text-gray-500">
+                {% if o.ends %}<span class="inline-flex items-center gap-1">{% icon "clock" "h-4 w-4" %}Ends {{ o.ends|date:"D j M" }}</span>{% else %}<span>Ongoing</span>{% endif %}
+                {% if vendor.whatsapp_link %}<a href="{{ vendor.whatsapp_link }}?text={{ "Hi, I'm interested in your offer: "|add:o.title|urlencode }}" target="_blank" rel="noopener" class="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">{% icon "whatsapp" "h-4 w-4" %}Ask on WhatsApp</a>{% endif %}
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="reveal min-w-0">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="font-heading text-xl font-semibold text-black">Menu</h2>
+        </div>
+        {% if categories %}
+        <div class="mt-3 flex w-full max-w-full gap-2 overflow-x-auto pb-1 text-sm [scrollbar-width:none]" id="menu-tabs">
+          <a hx-get="{{ vendor.get_absolute_url }}" hx-target="#menu-items" hx-push-url="true" href="{{ vendor.get_absolute_url }}" data-tab class="flex-none cursor-pointer rounded-full border px-4 py-1.5 font-medium transition {% if not active_cat %}border-primary bg-primary text-white{% else %}border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary{% endif %}">All</a>
+          {% for c in categories %}
+          <a hx-get="{{ vendor.get_absolute_url }}?cat={{ c.pk }}" hx-target="#menu-items" hx-push-url="true" href="?cat={{ c.pk }}" data-tab class="flex-none cursor-pointer rounded-full border px-4 py-1.5 font-medium transition {% if active_cat == c.pk|stringformat:'s' %}border-primary bg-primary text-white{% else %}border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary{% endif %}">{{ c.name }}</a>
+          {% endfor %}
+        </div>
+        <script>document.getElementById('menu-tabs').addEventListener('click',function(e){var t=e.target.closest('[data-tab]');if(!t)return;this.querySelectorAll('[data-tab]').forEach(function(a){a.className=a.className.replace('border-primary bg-primary text-white','border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary')});t.className=t.className.replace('border-gray-200 bg-white text-gray-700 hover:border-primary hover:text-primary','border-primary bg-primary text-white');t.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})});</script>
+        {% endif %}
+        {% if not vendor.menu_locked %}
+        <div class="mt-3 flex items-center gap-2">
+          <input type="search" name="mq" value="{{ mq }}" placeholder="Search this menu ({{ menu_total }} item{{ menu_total|pluralize }})…" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                 hx-get="{{ vendor.get_absolute_url }}{% if active_cat %}?cat={{ active_cat }}{% endif %}" hx-trigger="input changed delay:250ms, search" hx-target="#menu-items" hx-include="this">
+        </div>
+        {% endif %}
+        <div id="menu-items" class="mt-2 divide-y divide-gray-100">{% include "partials/menu_items.html" %}</div>
+      </section>
+
+      {% if photos %}
+      <section class="reveal">
+        <h2 class="font-heading text-xl font-semibold text-black">Gallery</h2>
+        <div class="stagger mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {% for p in photos %}<button type="button" data-lb="{{ p.image.url }}" data-cap="{{ p.caption }}" class="group overflow-hidden rounded-lg"><img src="{{ p.image.url }}" alt="{{ p.caption }}" loading="lazy" class="aspect-square w-full object-cover transition group-hover:scale-105"></button>{% endfor %}
+        </div>
+      </section>
+      <div id="lightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true">
+        <button id="lb-close" class="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Close"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <button id="lb-prev" class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Previous"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="lb-next" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Next"><svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+        <figure class="max-h-full max-w-4xl text-center"><img id="lb-img" src="" alt="" class="max-h-[80vh] w-auto max-w-full rounded-lg object-contain"><figcaption id="lb-cap" class="mt-3 text-sm text-gray-200"></figcaption></figure>
+      </div>
+      <script>
+      (function(){var lb=document.getElementById('lightbox');if(!lb)return;var imgs=[].slice.call(document.querySelectorAll('[data-lb]')),i=0;
+        function show(n){i=(n+imgs.length)%imgs.length;document.getElementById('lb-img').src=imgs[i].dataset.lb;document.getElementById('lb-cap').textContent=imgs[i].dataset.cap||'';lb.classList.remove('hidden');lb.classList.add('flex');document.body.style.overflow='hidden'}
+        function hide(){lb.classList.add('hidden');lb.classList.remove('flex');document.body.style.overflow=''}
+        imgs.forEach(function(b,n){b.addEventListener('click',function(){show(n)})});
+        document.getElementById('lb-close').onclick=hide;document.getElementById('lb-prev').onclick=function(){show(i-1)};document.getElementById('lb-next').onclick=function(){show(i+1)};
+        lb.addEventListener('click',function(e){if(e.target===lb)hide()});
+        document.addEventListener('keydown',function(e){if(lb.classList.contains('hidden'))return;if(e.key==='Escape')hide();if(e.key==='ArrowLeft')show(i-1);if(e.key==='ArrowRight')show(i+1)});
+        var sx=0;lb.addEventListener('touchstart',function(e){sx=e.touches[0].clientX});lb.addEventListener('touchend',function(e){var d=e.changedTouches[0].clientX-sx;if(d>50)show(i-1);if(d<-50)show(i+1)});
+      })();
+      </script>
+      {% endif %}
+
+      {% if vendor.about %}
+      <section class="reveal"><h2 class="font-heading text-xl font-semibold text-black">About</h2><div class="prose prose-sm mt-3 max-w-none text-gray-700">{{ vendor.about|safe }}</div></section>
+      {% endif %}
+
+      <section id="reviews" class="reveal scroll-mt-24">{% include "partials/reviews.html" %}</section>
+    </div>
+
+    <aside class="stagger min-w-0 space-y-6 lg:sticky lg:top-20 lg:self-start">
+      {% if not vendor.menu_locked and vendor.whatsapp_link %}
+      <div id="cart" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm" data-vendor="{{ vendor.slug }}" data-wa="{{ vendor.whatsapp_link }}" data-brand="{{ vendor.brand_name }}" data-order="">
+        <div class="flex items-center justify-between"><h3 class="flex items-center gap-2 font-semibold text-black">{% icon "cart" "h-5 w-5" %}Your order</h3><span id="cart-count" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold">0</span></div>
+        <div id="cart-lines" class="mt-3 space-y-2 text-sm"><p class="text-gray-400">Add items from the menu.</p></div>
+        <div id="cart-total" class="mt-3 hidden items-center justify-between border-t pt-3 font-semibold text-black"><span>Total</span><span id="cart-sum">KES 0</span></div>
+        <a id="cart-checkout" href="{% url 'menu_inquire' vendor.type_slug vendor.slug %}" class="pointer-events-none mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white opacity-40 hover:bg-primary/90">{% icon "chat" "h-4 w-4" %}<span>Send inquiry</span></a>
+        <p class="mt-2 text-center text-xs text-gray-400">Pick what you want and send it as an inquiry — {{ vendor.brand_name }} gets back to you.</p>
+      </div>
+      {% if vendor.accepts_reservations and not vendor.menu_locked %}
+      <div id="reserve-box" class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">{% include "partials/reservation_form.html" with res_form=res_form %}</div>
+      {% endif %}
+      {% endif %}
+
+      <div id="contact" class="scroll-mt-24 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 class="font-semibold text-black">Contact</h3>
+        <dl class="mt-3 space-y-2 text-sm">
+          {% if vendor.address or vendor.town %}<div class="flex justify-between gap-4"><dt class="text-gray-500">Location</dt><dd class="text-right font-medium">{{ vendor.address }}{% if vendor.address and vendor.town %}, {% endif %}{{ vendor.town }}{% if vendor.county %}, {{ vendor.county }}{% endif %}</dd></div>{% endif %}
+        </dl>
+        <div id="contact-box">
+          <form hx-post="{% url 'reveal_contact' vendor.type_slug vendor.slug %}" hx-target="#contact-box" hx-swap="innerHTML" hx-indicator="#reveal-spin" class="mt-3">{% csrf_token %}
+            <button class="w-full rounded-lg bg-dark py-2.5 text-sm font-semibold text-white hover:bg-black">Reveal phone &amp; WhatsApp <span id="reveal-spin" class="htmx-indicator">…</span></button>
+          </form>
+        </div>
+        {% if vendor.map_link %}<a href="{{ vendor.map_link }}" target="_blank" rel="noopener" class="mt-4 block rounded-lg border border-gray-300 py-2 text-center text-sm font-medium hover:bg-gray-50">Open in Google Maps</a>{% endif %}
+      </div>
+
+      {% if hours %}
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 class="font-semibold text-black">Opening hours</h3>
+        <table class="mt-3 w-full text-sm">
+          {% for h in hours %}<tr class="{% if h.day == today %}font-semibold text-black{% else %}text-gray-600{% endif %}">
+            <td class="py-1">{{ h.get_day_display }}</td>
+            <td class="py-1 text-right {% if h.closed or not h.opens %}text-gray-400{% endif %}">{% if h.closed or not h.opens %}Closed{% elif h.all_day %}Open 24 hours{% else %}{{ h.opens|time:"H:i" }} – {{ h.closes|time:"H:i" }}{% endif %}</td>
+          </tr>{% endfor %}
+        </table>
+      </div>
+      {% endif %}
+
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 class="font-semibold text-black">Share</h3>
+        <div class="mt-3 flex flex-wrap gap-2 text-sm">
+          <a href="https://wa.me/?text={{ vendor.brand_name|urlencode }} menu %26 prices: {{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg bg-green-600 px-3 py-1.5 font-medium text-white">WhatsApp</a>
+          <a href="https://www.facebook.com/sharer/sharer.php?u={{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg border px-3 py-1.5 font-medium">Facebook</a>
+          <a href="https://twitter.com/intent/tweet?text={{ vendor.brand_name|urlencode }}&url={{ canonical|urlencode }}" target="_blank" rel="noopener" class="rounded-lg border px-3 py-1.5 font-medium">X</a>
+          <button onclick="navigator.clipboard.writeText('{{ canonical }}');this.textContent='Copied'" class="rounded-lg border px-3 py-1.5 font-medium">Copy link</button>
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-gray-50 p-5 text-sm">
+        <h3 class="font-semibold text-black">NOTE: Do your due diligence</h3>
+        <p class="mt-2 text-gray-600">BeautyFlow only lists this vendor. Do not pay in advance before meeting them — all transactions happen outside this platform.</p>
+        <a href="{% url 'terms' %}" class="mt-2 inline-block text-xs font-medium text-gray-500 underline">Read our terms</a>
+      </div>
+    </aside>
+  </div>
+  {% if similar %}
+  <section class="border-t border-gray-200 py-10">
+    <h2 class="font-display text-xl font-bold text-black">Similar places</h2>
+    <p class="mt-1 text-sm text-gray-500">More places like this{% if vendor.town %} around {{ vendor.town }}{% elif vendor.county %} in {{ vendor.county }}{% endif %}.</p>
+    <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{% with vendors=similar %}{% include "partials/vendor_cards.html" %}{% endwith %}</div>
+  </section>
+  {% endif %}
+</div>
+
+<script>
+(function(){
+  var box=document.getElementById('cart'); if(!box) return;
+  var key='beautyflow-cart-'+box.dataset.vendor, cart={};
+  try{cart=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){cart={}}
+  function save(){try{localStorage.setItem(key,JSON.stringify(cart))}catch(e){}}
+  function fmt(n){return 'KES '+Number(n).toLocaleString('en-KE',{maximumFractionDigits:2})}
+  function render(){
+    var lines=document.getElementById('cart-lines'),ids=Object.keys(cart),count=0,sum=0;
+    lines.innerHTML='';
+    if(!ids.length){lines.innerHTML='<p class="text-gray-400">Add items from the menu.</p>'}
+    ids.forEach(function(id){var it=cart[id];count+=it.qty;sum+=it.qty*it.price;
+      var row=document.createElement('div');row.className='flex items-center gap-2';
+      row.innerHTML='<div class="min-w-0 flex-1 truncate">'+it.name+'</div><div class="flex items-center rounded-lg border"><button data-d="-1" class="px-2 py-0.5">−</button><span class="w-6 text-center">'+it.qty+'</span><button data-d="1" class="px-2 py-0.5">+</button></div><div class="w-20 text-right font-medium">'+fmt(it.qty*it.price)+'</div>';
+      row.querySelectorAll('button').forEach(function(b){b.onclick=function(){change(id,it.name,it.price,+b.dataset.d)}});
+      lines.appendChild(row)});
+    document.getElementById('cart-count').textContent=count;
+    document.getElementById('cart-sum').textContent=fmt(sum);
+    document.getElementById('cart-total').classList.toggle('hidden',!ids.length);
+    document.getElementById('cart-total').classList.toggle('flex',!!ids.length);
+    var ck=document.getElementById('cart-checkout');ck.classList.toggle('pointer-events-none',!ids.length);ck.classList.toggle('opacity-40',!ids.length);
+    document.querySelectorAll('[data-add]').forEach(function(b){var q=(cart[b.dataset.add]||{}).qty||0;b.querySelector('span').textContent=q?('In cart · '+q):'Add to order'});
+  }
+  function change(id,name,price,d){var it=cart[id]||{name:name,price:+price,qty:0};it.qty+=d;if(it.qty<=0)delete cart[id];else cart[id]=it;save();render()}
+  function askQuote(name,wa){var box=document.getElementById('reserve-box');if(!box){if(wa)window.open(wa+'?text='+encodeURIComponent('Hi, I would like a quote for: '+name),'_blank');return}var f=box.querySelector('[name=note]');if(f&&!f.value){f.value='Quote for: '+name;}box.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){var n=box.querySelector('[name=name]');if(n)n.focus()},400)}
+  document.addEventListener('click',function(e){var a=e.target.closest('[data-ask]');if(a){e.preventDefault();askQuote(a.dataset.name,a.dataset.wa);return}var b=e.target.closest('[data-add]');if(b){e.preventDefault();change(b.dataset.add,b.dataset.name,b.dataset.price,1)}});
+  document.body.addEventListener('htmx:afterSwap',render);
+  render();
+})();
+</script>
+{% if vendor.is_live %}
+<button id="faq-fab" type="button" aria-label="Ask a question" class="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-primary text-white shadow-lg transition hover:bg-primary/90 active:scale-95">{% icon "chat" "h-7 w-7" %}</button>
+<div id="faq-panel" class="fixed bottom-24 right-5 z-40 hidden w-[calc(100vw-2.5rem)] max-w-sm overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl">
+  <div class="flex items-center justify-between bg-primary px-4 py-3 text-white">
+    <div><div class="font-semibold">Questions?</div><div class="text-xs text-white/80">Quick answers about {{ vendor.brand_name }}</div></div>
+    <button type="button" id="faq-close" aria-label="Close" class="rounded-full p-1 hover:bg-white/20"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+  </div>
+  <div class="max-h-[60vh] overflow-y-auto p-4">
+    <div class="flex flex-wrap gap-1.5">
+      {% for label, key in faq_chips %}<button hx-post="{% url 'vendor_faq' vendor.type_slug vendor.slug %}" hx-vals='{"q": "{{ label }}"}' hx-target="#faq-answer" hx-swap="innerHTML" class="rounded-full border border-gray-300 px-2.5 py-1 text-xs hover:border-primary hover:text-primary">{{ label }}</button>{% endfor %}
+    </div>
+    <div id="faq-answer" class="mt-3"></div>
+  </div>
+  <form hx-post="{% url 'vendor_faq' vendor.type_slug vendor.slug %}" hx-target="#faq-answer" hx-swap="innerHTML" class="flex gap-2 border-t border-gray-200 p-3">{% csrf_token %}
+    <input name="q" maxlength="160" placeholder="Type a question…" class="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm" autocomplete="off">
+    <button class="rounded-lg bg-dark px-3 py-2 text-sm font-semibold text-white">Ask</button>
+  </form>
+</div>
+<script>(function(){var f=document.getElementById('faq-fab'),p=document.getElementById('faq-panel'),c=document.getElementById('faq-close');f.onclick=function(){p.classList.toggle('hidden');if(!p.classList.contains('hidden')){var i=p.querySelector('input[name=q]');if(i&&window.innerWidth>640)i.focus()}};c.onclick=function(){p.classList.add('hidden')};document.addEventListener('keydown',function(e){if(e.key==='Escape')p.classList.add('hidden')})})();</script>
+{% endif %}
+{% endblock %}

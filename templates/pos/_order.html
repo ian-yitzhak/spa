@@ -1,0 +1,99 @@
+{% load icons %}
+<div class="rounded-2xl border bg-white shadow-sm">
+  <div class="flex items-center justify-between border-b px-3 py-2 text-sm">
+    <strong>{% if order.status == 'open' %}Ticket #{{ order.ref }}{% else %}New sale{% endif %}</strong>
+    {% if order.booking %}<span class="rounded-full bg-accent/30 px-2 py-0.5 text-xs">From booking</span>{% endif %}
+  </div>
+  <form hx-post="{% url 'pos_set_client' %}" hx-target="#order-panel" hx-swap="innerHTML" hx-trigger="change" class="grid gap-2 border-b p-3 sm:grid-cols-2">
+    {% csrf_token %}
+    <input name="customer_name" value="{{ order.customer_name }}" placeholder="Client name (optional)" class="rounded-lg border px-2 py-1.5 text-sm">
+    <input name="customer_phone" value="{{ order.customer_phone }}" placeholder="Phone (for their history)" inputmode="tel" class="rounded-lg border px-2 py-1.5 text-sm">
+    <input name="notes" value="{{ order.notes }}" placeholder="Note (colour code, length…)" class="rounded-lg border px-2 py-1.5 text-sm sm:col-span-2">
+  </form>
+  <div class="max-h-96 divide-y overflow-y-auto">
+    {% for l in lines %}
+    <div class="px-3 py-2 text-sm {% if not l.staff_id %}bg-red-50/60{% endif %}">
+      <div class="flex items-center gap-2">
+        <div class="min-w-0 flex-1"><div class="truncate font-medium">{{ l.name }}</div>
+          <div class="text-xs text-gray-500">{{ l.unit_price|kes }} each{% if l.discounted %} <span class="line-through">{{ l.list_price|kes }}</span>{% endif %}</div></div>
+        <div class="flex items-center rounded-lg border">
+          <button hx-post="{% url 'pos_line' l.pk 'dec' %}" hx-target="#order-panel" hx-swap="innerHTML" class="px-2 py-1 hover:bg-gray-100" aria-label="One less">−</button>
+          <span class="w-7 text-center font-semibold">{{ l.qty }}</span>
+          <button hx-post="{% url 'pos_line' l.pk 'inc' %}" hx-target="#order-panel" hx-swap="innerHTML" class="px-2 py-1 hover:bg-gray-100" aria-label="One more">+</button>
+        </div>
+        <div class="w-20 text-right font-semibold">{{ l.line_total|kes }}</div>
+      </div>
+      <label class="mt-1.5 flex items-center gap-2 text-xs"><span class="{% if l.staff_id %}text-gray-500{% else %}font-semibold text-primary{% endif %}">Done by</span>
+        <select name="staff" hx-post="{% url 'pos_line_staff' l.pk %}" hx-target="#order-panel" hx-swap="innerHTML" class="min-w-0 flex-1 rounded-lg border px-2 py-1 text-xs {% if not l.staff_id %}border-primary{% endif %}">
+          <option value="">— pick staff —</option>
+          {% for s in team %}<option value="{{ s.pk }}" {% if l.staff_id == s.pk %}selected{% endif %}>{{ s.name }}{% if s.job_title %} · {{ s.job_title }}{% endif %}</option>{% endfor %}
+        </select></label>
+    </div>
+    {% empty %}<p class="px-3 py-8 text-center text-sm text-gray-400">Tap a service to add it.</p>{% endfor %}
+  </div>
+  {% if lines %}
+  <form hx-post="{% url 'pos_discount' %}" hx-target="#order-panel" hx-swap="innerHTML" hx-trigger="change" class="flex items-center gap-2 border-t px-3 py-2 text-sm">
+    {% csrf_token %}<span class="text-gray-500">Discount</span>
+    <input name="discount_value" type="number" min="0" step="any" inputmode="decimal" value="{% if order.discount_value %}{{ order.discount_value|floatformat:'-2' }}{% endif %}" placeholder="0" class="w-24 rounded-lg border px-2 py-1">
+    <select name="discount_type" class="rounded-lg border px-2 py-1"><option value="">none</option><option value="percent" {% if order.discount_type == 'percent' %}selected{% endif %}>% off</option><option value="amount" {% if order.discount_type == 'amount' %}selected{% endif %}>KES off</option></select>
+  </form>
+  {% endif %}
+  <div class="space-y-1 border-t p-3 text-sm">
+    {% if order.discount %}<div class="flex justify-between text-gray-600"><span>Services</span><span>{{ order.gross|kes }}</span></div>
+    <div class="flex justify-between text-green-700"><span>Discount</span><span>−{{ order.discount|kes }}</span></div>{% endif %}
+    {% if order.tax %}<div class="flex justify-between text-gray-600"><span>incl. VAT (16%)</span><span>{{ order.tax|kes }}</span></div>{% endif %}
+    <div class="flex justify-between font-heading text-lg font-semibold"><span>Total</span><span>KES {{ order.total|kes }}</span></div>
+  </div>
+  {% if lines %}
+  <div class="border-t p-3">
+    <p id="pay-err" class="mb-2 hidden rounded-lg bg-red-50 p-2 text-xs text-red-700"></p>
+    <div class="grid grid-cols-2 gap-2 text-sm" id="pay-methods">
+      <button type="button" onclick="payForm('cash')" class="rounded-lg bg-green-600 py-3 font-semibold text-white hover:bg-green-700">Cash</button>
+      <button type="button" onclick="payForm('mpesa')" class="rounded-lg bg-dark py-3 font-semibold text-white hover:bg-black">M-Pesa</button>
+      <button type="button" onclick="payForm('split')" class="rounded-lg border-2 border-dark py-3 font-semibold hover:bg-gray-50">M-Pesa &amp; cash</button>
+      <button type="button" onclick="payForm('card')" class="rounded-lg border py-3 font-semibold hover:bg-gray-50">Card</button>
+    </div>
+    <form id="pay-form" hx-post="{% url 'pos_pay' %}" hx-confirm="Confirm payment?" hx-target="#pay-err" hx-swap="innerHTML" class="mt-2 hidden space-y-2 rounded-lg border bg-gray-50 p-3 text-sm">
+      {% csrf_token %}<input type="hidden" name="method" id="pay-method">
+      <div class="flex items-center justify-between"><strong id="pay-title"></strong><span class="text-gray-500">KES {{ order.total|kes }}</span></div>
+      <div id="pay-cash" class="hidden"><input name="tendered" type="number" step="any" inputmode="decimal" placeholder="Amount received (for change)" class="w-full rounded-lg border px-2 py-1.5"></div>
+      <div id="pay-split" class="hidden grid grid-cols-2 gap-2">
+        <label class="block"><span class="mb-1 block text-xs text-gray-500">M-Pesa</span><input name="mpesa_amount" type="number" step="any" inputmode="decimal" placeholder="0" class="w-full rounded-lg border px-2 py-1.5"></label>
+        <label class="block"><span class="mb-1 block text-xs text-gray-500">Cash</span><input name="cash_amount" type="number" step="any" inputmode="decimal" placeholder="0" class="w-full rounded-lg border px-2 py-1.5"></label>
+        <p id="split-left" class="col-span-2 text-xs text-gray-500"></p>
+      </div>
+      <div id="pay-ref" class="hidden"><input name="ref" id="pay-ref-input" placeholder="M-Pesa code / card slip no." class="w-full rounded-lg border px-2 py-1.5"></div>
+      <div class="flex gap-2"><button class="flex-1 rounded-lg bg-green-600 py-2 font-semibold text-white">Record payment</button><button type="button" onclick="document.getElementById('pay-form').classList.add('hidden')" class="rounded-lg border px-3 py-2">Cancel</button></div>
+    </form>
+    <script>
+    (function(){
+    var TOTAL={{ order.total|floatformat:"-2" }};
+    var form=document.getElementById('pay-form');
+    form.addEventListener('htmx:confirm',function(e){e.preventDefault();
+      var m=document.getElementById('pay-method').value,names={cash:'CASH',mpesa:'M-PESA',card:'CARD',split:'M-PESA & CASH'},extra='';
+      if(m==='split'){var mp=+(form.querySelector('[name=mpesa_amount]').value||0),ca=+(form.querySelector('[name=cash_amount]').value||0);
+        if(mp+ca<=0){alert('Enter the M-Pesa and cash amounts.');return}
+        extra='\nM-Pesa '+mp.toLocaleString()+' + cash '+ca.toLocaleString()+' = '+(mp+ca).toLocaleString();}
+      if(confirm('Record a '+names[m]+' payment of KES {{ order.total|kes }}?'+extra+'\n\nThis completes the sale and books the commission.'))e.detail.issueRequest(true)});
+    form.addEventListener('htmx:responseError',function(e){var box=document.getElementById('pay-err');box.textContent=e.detail.xhr.responseText;box.classList.remove('hidden')});
+    function splitLeft(){var mp=+(form.querySelector('[name=mpesa_amount]').value||0),ca=+(form.querySelector('[name=cash_amount]').value||0),left=TOTAL-mp-ca;
+      document.getElementById('split-left').textContent=left>0?('Remaining KES '+left.toLocaleString()):(left<0?('Change KES '+Math.abs(left).toLocaleString()):'Adds up to the total.')}
+    form.querySelectorAll('[name=mpesa_amount],[name=cash_amount]').forEach(function(i){i.oninput=splitLeft});
+    window.payForm=function(m){form.classList.remove('hidden');document.getElementById('pay-method').value=m;
+      document.getElementById('pay-title').textContent={cash:'Cash payment',mpesa:'M-Pesa payment',card:'Card payment',split:'M-Pesa and cash'}[m];
+      document.getElementById('pay-cash').classList.toggle('hidden',m!=='cash');
+      document.getElementById('pay-split').classList.toggle('hidden',m!=='split');
+      document.getElementById('pay-ref').classList.toggle('hidden',m!=='card'&&m!=='mpesa');
+      document.getElementById('pay-ref-input').required=(m==='card');
+      if(m==='split'){splitLeft();form.querySelector('[name=mpesa_amount]').focus()}
+      else if(m==='cash')form.querySelector('[name=tendered]').focus();
+      else document.getElementById('pay-ref-input').focus()};
+    })();
+    </script>
+    <div class="mt-2 flex gap-2 text-sm">
+      <button hx-post="{% url 'pos_hold' %}" class="flex-1 rounded-lg border border-primary py-2 font-semibold text-primary hover:bg-red-50">Still in service — pay later</button>
+      {% if order.status == 'draft' %}<button hx-post="{% url 'pos_clear' %}" hx-target="#order-panel" hx-swap="innerHTML" hx-confirm="Clear this sale?" class="rounded-lg border px-3 py-2 text-gray-500 hover:bg-gray-50">Clear</button>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>

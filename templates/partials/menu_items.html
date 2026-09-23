@@ -1,0 +1,30 @@
+{% load icons %}{% for i in items %}
+<div class="flex min-w-0 gap-3 py-4 sm:gap-4">
+  {% if i.image %}<img src="{{ i.image.url }}" alt="{{ i.name }}" loading="lazy" class="h-20 w-20 flex-none rounded-lg object-cover sm:h-24 sm:w-24">{% endif %}
+  <div class="min-w-0 flex-1">
+    <div class="flex items-baseline justify-between gap-2">
+      <h3 class="min-w-0 break-words font-semibold text-black">{{ i.name }}</h3>
+      <span class="whitespace-nowrap font-semibold text-black">{% if i.price_on_request %}<span class="text-sm text-gray-500">Price on request</span>{% else %}KES {{ i.shown_price|floatformat:"-2" }}{% endif %}</span>
+    </div>
+    {% if i.category %}<div class="text-xs text-gray-400">{{ i.category.name }}</div>{% endif %}
+    {% if i.description %}<div class="prose-sm mt-1 line-clamp-3 text-sm text-gray-600">{{ i.description|safe }}</div>{% endif %}
+    {% if i.price_on_request %}
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+      {% if menu_only %}<a href="{{ vendor.get_absolute_url }}?ask={{ i.pk }}#reserve-box" class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90">{% icon "chat" "h-4 w-4" %}<span>Ask for a quote</span></a>
+      {% else %}<button data-ask="{{ i.pk }}" data-name="{{ i.name }}" data-wa="{{ vendor.whatsapp_link }}" class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90">{% icon "chat" "h-4 w-4" %}<span>Ask for a quote</span></button>{% endif %}
+    </div>
+    {% elif vendor.whatsapp_link %}
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+      <button data-add="{{ i.pk }}" data-name="{{ i.name }}" data-price="{{ i.shown_price|floatformat:'2' }}" class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90">{% icon "cart" "h-4 w-4" %}<span>Add to order</span></button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<p class="py-6 text-sm text-gray-500">{% if mq %}Nothing on the menu matches “{{ mq }}”.{% else %}No menu items yet.{% endif %}</p>
+{% endfor %}
+{% if menu_page.has_next %}
+<div id="menu-more" class="py-4 text-center">
+  <button hx-get="{% if menu_only %}{{ menu_base }}{% else %}{{ vendor.get_absolute_url }}{% endif %}?{{ menu_qs }}page={{ menu_page.next_page_number }}" hx-target="#menu-more" hx-swap="outerHTML" class="rounded-lg border px-5 py-2 text-sm font-semibold hover:bg-gray-50">Show more ({{ menu_page.end_index }} of {{ menu_total }})</button>
+</div>
+{% endif %}

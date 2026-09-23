@@ -1,0 +1,29 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Payslip #{{ p.number }}{% endblock %}{% block dash %}
+<div class="no-print mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
+  <a href="{% if is_team %}{% url 'pos_profile' %}{% else %}{% url 'pos_staff_detail' p.staff_id %}{% endif %}" class="text-gray-500 hover:text-primary">← Back</a>
+  <button onclick="window.print()" class="rounded-lg bg-dark px-4 py-2 font-semibold text-white">Print / save PDF</button>
+</div>
+<div class="mx-auto max-w-2xl rounded-2xl border p-6 text-sm" id="payslip">
+  <div class="flex items-start justify-between gap-4">
+    <div><div class="font-heading text-lg font-semibold">{{ vendor.brand_name }}</div><div class="text-xs text-gray-500">{% if vendor.address %}{{ vendor.address }}, {% endif %}{{ vendor.town }}{% if vendor.phone %} · {{ vendor.phone }}{% endif %}</div></div>
+    <div class="text-right"><div class="text-xs uppercase tracking-wider text-gray-500">Commission payslip</div><div class="font-heading text-lg font-semibold">#{{ p.number }}</div><div class="text-xs text-gray-500">{{ p.paid_at|date:"j M Y H:i" }}</div></div>
+  </div>
+  <div class="mt-5 grid gap-3 rounded-xl bg-gray-50 p-4 sm:grid-cols-2">
+    <div><div class="text-xs text-gray-500">Paid to</div><div class="font-semibold">{{ p.staff.name }}</div><div class="text-xs text-gray-500">{{ p.staff.job_title }}{% if p.staff.national_id %} · ID {{ p.staff.national_id }}{% endif %}</div></div>
+    <div><div class="text-xs text-gray-500">Period</div><div class="font-semibold">{% if p.period_from %}{{ p.period_from|date:"j M Y" }} – {{ p.period_to|date:"j M Y" }}{% else %}—{% endif %}</div><div class="text-xs text-gray-500">{{ p.services_count }} service{{ p.services_count|pluralize }}</div></div>
+  </div>
+  <table class="mt-5 w-full"><thead class="text-left text-xs text-gray-500"><tr><th class="py-1">Date</th><th class="py-1">Service</th><th class="py-1 text-right">Price</th><th class="py-1 text-right">Commission</th></tr></thead>
+    <tbody>{% for l in lines %}<tr class="border-t"><td class="py-1.5 whitespace-nowrap text-gray-500">{{ l.order.paid_at|date:"j M" }}</td><td class="py-1.5">{% if l.qty > 1 %}{{ l.qty }}× {% endif %}{{ l.name }} <span class="text-xs text-gray-400">#{{ l.order.ref }}</span></td><td class="py-1.5 text-right">{{ l.line_total|kes }}</td><td class="py-1.5 text-right">{{ l.commission|kes }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <div class="mt-4 space-y-1 border-t pt-3">
+    <div class="flex justify-between"><span>Sales value</span><span>KES {{ p.sales_value|kes }}</span></div>
+    <div class="flex justify-between"><span>Commission</span><span>KES {{ p.commission|kes }}</span></div>
+    {% if p.bonus %}<div class="flex justify-between text-green-700"><span>Bonus / tips</span><span>+ KES {{ p.bonus|kes }}</span></div>{% endif %}
+    {% if p.deduction %}<div class="flex justify-between text-primary"><span>Deductions / advances</span><span>− KES {{ p.deduction|kes }}</span></div>{% endif %}
+    <div class="flex justify-between font-heading text-lg font-semibold"><span>Paid</span><span>KES {{ p.amount|kes }}</span></div>
+    <div class="flex justify-between text-gray-600"><span>Method</span><span>{{ p.get_method_display }}{% if p.reference %} · {{ p.reference }}{% endif %}</span></div>
+    {% if p.note %}<div class="text-gray-600">Note: {{ p.note }}</div>{% endif %}
+    {% if p.paid_by %}<div class="text-xs text-gray-400">Recorded by {{ p.paid_by.first_name|default:p.paid_by.email }}</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

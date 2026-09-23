@@ -1,0 +1,7 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Plans & settings{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Plans & settings</h1>
+<p class="mt-1 text-sm text-gray-500">Premium and the POS module are billed monthly and separately. Each payment you record adds 30 days; when it lapses the vendor drops back to Free limits automatically.</p>
+<form method="post" class="mt-6 max-w-lg space-y-4">{% csrf_token %}{% include "dashboard/_form.html" %}
+  <button class="rounded-lg bg-primary px-6 py-2.5 font-semibold text-white">Save settings</button>
+</form>
+{% endblock %}

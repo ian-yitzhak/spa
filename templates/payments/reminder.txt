@@ -1,0 +1,11 @@
+Hi {{ vendor.owner.first_name|default:vendor.brand_name }},
+
+{% if kind == 'expired' %}Your {{ label }} for {{ vendor.brand_name }} expired on {{ expires|date:"j M Y" }}.{% if label == 'Premium listing' %} Your menu is now hidden from customers — only the first item shows.{% else %} POS, orders, sales and reports are locked until you renew; your data is safe.{% endif %}
+{% else %}Your {{ label }} for {{ vendor.brand_name }} ends on {{ expires|date:"j M Y" }} ({% if kind == '1d' %}tomorrow{% else %}in {{ days }} days{% endif %}).{% if label == 'Premium listing' %} After that your menu is hidden from customers until you renew.{% else %} After that POS, orders, sales and reports are locked until you renew.{% endif %}
+{% endif %}
+Renew in a minute by card or M-Pesa (KES {{ fee|floatformat:"-2" }}/month, choose 1–12 months):
+{{ renew_url }}
+
+Questions? WhatsApp +{{ site.support_whatsapp }}
+
+— BeautyFlow

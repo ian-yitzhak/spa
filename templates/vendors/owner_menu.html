@@ -1,0 +1,16 @@
+{% extends "vendors/_owner_base.html" %}
+{% block h1 %}A digital QR-code menu for your restaurant — free{% endblock %}
+{% block lead %}Print one QR code for your tables, counter or packaging. Customers scan it, see your menu with photos and prices, and order on WhatsApp. Update prices from your phone; the QR never changes.{% endblock %}
+{% block body %}
+<h2>How the digital menu works</h2>
+<ul><li>Add your dishes with prices and photos in the BeautyFlow dashboard (VAT-inclusive or add 16% VAT).</li><li>Download or print your unique QR card from “QR code &amp; link”.</li><li>Customers scan → your menu opens in their browser, no app needed.</li><li>They tap “Add to order” and check out on WhatsApp, or tap the WhatsApp icon on any dish.</li></ul>
+<h2>Why a QR menu beats a printed one</h2>
+<p>Prices change; printed menus don't. A digital menu is always current, shows photos, works in every language your customers' phones support, and doubles as your Google-visible menu page — so the same page brings in new customers from search.</p>
+<h2>Who uses it</h2>
+<p>Restaurants, cafés, bars, hotels, kibandas, bakeries and caterers across Kenya. It is free on the Free plan; Premium removes menu-size limits.</p>
+{% endblock %}
+{% block faq %}
+<p><strong>Do I need special hardware?</strong> No — a printed QR card is enough. Customers use their own phones.</p>
+<p><strong>What if I change a price?</strong> Edit it in the dashboard; the QR code stays the same and shows the new price instantly.</p>
+{% endblock %}
+{% block faq_json %}{"@type":"Question","name":"Do I need special hardware for a QR menu?","acceptedAnswer":{"@type":"Answer","text":"No. A printed QR card is enough; customers scan it with their own phones."}},{"@type":"Question","name":"What happens when I change a price?","acceptedAnswer":{"@type":"Answer","text":"Edit it in your BeautyFlow dashboard. The QR code stays the same and shows the new price immediately."}}{% endblock %}

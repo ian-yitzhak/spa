@@ -1,0 +1,15 @@
+{% extends "dashboard/base.html" %}{% block page_title %}Opening hours{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Opening hours</h1>
+<form method="post" class="mt-6">{% csrf_token %}{{ formset.management_form }}
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500"><th class="py-2">Day</th><th>Opens</th><th>Closes</th><th>Closed</th></tr></thead>
+    {% for f in formset %}
+    <tr class="border-t">{{ f.id }}{{ f.day }}
+      <td class="py-2 font-medium">{{ f.instance.get_day_display }}</td>
+      <td class="pr-2">{{ f.opens }}</td><td class="pr-2">{{ f.closes }}</td><td>{{ f.closed }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <button class="mt-6 rounded-lg bg-primary px-6 py-2.5 font-semibold text-white">Save hours</button>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+<tr class="border-t align-top {% if not r.is_approved %}opacity-60{% endif %}" id="r-{{ r.pk }}">
+  <td class="p-3"><a href="{% url 'ap_vendor' r.vendor.pk %}" class="hover:text-primary">{{ r.vendor.brand_name }}</a></td>
+  <td class="p-3"><strong>{{ r.name }}</strong> <span class="text-accent">{% for _ in "x"|rjust:r.stars %}★{% endfor %}</span><div class="text-gray-600">{{ r.comment }}</div><div class="text-xs text-gray-400">{{ r.created_at|date:"j M Y" }}</div></td>
+  <td class="p-3 text-xs">{% if r.is_approved %}<span class="text-green-600">Visible</span>{% else %}<span class="text-gray-500">Hidden</span>{% endif %}</td>
+  <td class="p-3 text-right text-xs whitespace-nowrap">
+    <button hx-post="{% url 'ap_review_action' r.pk 'toggle' %}" hx-target="#r-{{ r.pk }}" hx-swap="outerHTML" class="rounded border px-2 py-1">{% if r.is_approved %}Hide{% else %}Show{% endif %}</button>
+    <button hx-post="{% url 'ap_review_action' r.pk 'delete' %}" hx-target="#r-{{ r.pk }}" hx-swap="outerHTML" hx-confirm="Delete review?" class="ml-1 rounded border px-2 py-1 text-primary">Delete</button>
+  </td>
+</tr>

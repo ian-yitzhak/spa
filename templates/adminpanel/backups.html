@@ -1,0 +1,14 @@
+{% extends "adminpanel/base.html" %}{% load icons %}{% block page_title %}Backups{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Backups</h1>
+{% if generated %}
+<p class="mt-1 text-sm text-gray-500">BeautyFlow: {{ count }} file{{ count|pluralize }} · {{ total_mb }} MB on the server, kept {{ keep_days }} days, copied to Cloudflare R2 encrypted. Last checked {{ generated }}.</p>
+{% for product, rows in groups %}
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">File</th><th class="p-3">Size</th><th class="p-3">Taken</th></tr></thead>
+  <tbody>{% for r in rows %}<tr class="border-t"><td class="p-3 font-mono text-xs">{{ r.file }}</td><td class="p-3">{{ r.mb }} MB</td><td class="p-3 text-gray-500">{{ r.when }}</td></tr>{% endfor %}</tbody></table>
+</div>
+{% endfor %}
+{% else %}
+<p class="mt-4 rounded-xl border border-dashed p-8 text-center text-sm text-gray-500">No BeautyFlow backups in the latest report. They appear after the next nightly run (02:30).</p>
+{% endif %}
+{% endblock %}

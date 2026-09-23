@@ -1,0 +1,16 @@
+{% extends "dashboard/base.html" %}{% load icons %}{% block page_title %}Payments{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Payments</h1>
+<p class="mt-1 text-sm text-gray-500">Every subscription payment for {{ vendor.brand_name }}. Premium {% if vendor.is_premium %}active until {{ vendor.premium_expires_at|date:"j M Y" }}{% else %}not active{% endif %} · POS {% if vendor.pos_active %}active until {{ vendor.pos_expires_at|date:"j M Y" }}{% else %}not active{% endif %}.</p>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Date</th><th class="p-3">For</th><th class="p-3">Amount</th><th class="p-3">Method</th><th class="p-3">Status</th><th class="p-3">Reference</th></tr></thead>
+  <tbody>{% for p in payments %}<tr class="border-t align-top">
+    <td class="p-3 whitespace-nowrap">{{ p.created_at|date:"j M Y H:i" }}</td>
+    <td class="p-3">{{ p.get_product_display }} · {{ p.months }} month{{ p.months|pluralize }}</td>
+    <td class="p-3 font-semibold">KES {{ p.amount|kes }}</td>
+    <td class="p-3">{% if p.source == 'manual' %}Recorded by BeautyFlow{% else %}Paystack{% if p.channel %} · {{ p.channel|cut:"_"|title }}{% endif %}{% endif %}</td>
+    <td class="p-3"><span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if p.state == 'COMPLETE' %}bg-green-50 text-green-700{% elif p.state == 'FAILED' %}bg-red-50 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ p.get_state_display }}</span>{% if p.failed_reason %}<div class="mt-1 max-w-xs text-xs text-gray-500">{{ p.failed_reason }}</div>{% endif %}</td>
+    <td class="p-3 text-xs text-gray-500">{{ p.api_ref|default:"—" }}{% if p.note %}<div>{{ p.note }}</div>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="6" class="p-6 text-center text-gray-500">No payments yet.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

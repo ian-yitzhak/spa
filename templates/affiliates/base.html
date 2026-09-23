@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load icons %}
+{% block title %}{% block page_title %}Affiliate{% endblock %} — BeautyFlow{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+{% with u=request.resolver_match.url_name %}
+<div class="mx-auto max-w-6xl px-4 py-6 lg:grid lg:grid-cols-4 lg:gap-8 lg:py-8">
+  <div class="mb-4 flex items-center justify-between lg:hidden"><span class="font-bold">Affiliate</span>
+    <button onclick="document.getElementById('side').classList.toggle('hidden')" class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg> Menu</button></div>
+  <aside id="side" class="mb-6 hidden lg:mb-0 lg:block">
+    <div class="mb-4 rounded-2xl bg-dark p-4 text-white"><div class="text-xs text-gray-400">Affiliate</div><div class="truncate font-bold">{{ user.first_name|default:user.email }}</div><div class="mt-1 font-mono text-xs text-accent">{{ aff.code }}</div></div>
+    <nav class="flex flex-col gap-1 rounded-2xl border p-2 text-sm lg:border-0 lg:p-0">
+      <a href="{% url 'aff_home' %}" class="flex items-center gap-2 rounded-lg px-3 py-2 {% if u == 'aff_home' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "home" %}Dashboard</a>
+      <a href="{% url 'aff_signups' %}" class="flex items-center gap-2 rounded-lg px-3 py-2 {% if u == 'aff_signups' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "users" %}Sign-ups</a>
+      <a href="{% url 'aff_payout' %}" class="flex items-center gap-2 rounded-lg px-3 py-2 {% if u == 'aff_payout' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "cash" %}Payment details{% if not aff.has_payout_details %}<span class="ml-auto h-2 w-2 rounded-full bg-primary" title="Not set"></span>{% endif %}</a>
+      <a href="{% url 'aff_profile' %}" class="flex items-center gap-2 rounded-lg px-3 py-2 {% if u == 'aff_profile' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "id" %}Profile</a>
+      <a href="{% url 'change_password' %}" class="flex items-center gap-2 rounded-lg px-3 py-2 {% if u == 'change_password' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "lock" %}Change password</a>
+    </nav>
+  </aside>
+  <div class="min-w-0 lg:col-span-3">{% block aff %}{% endblock %}</div>
+</div>
+{% endwith %}
+{% endblock %}

@@ -1,0 +1,16 @@
+<div class="flex gap-4 rounded-2xl border p-4 {% if offer.status != 'live' %}bg-gray-50{% endif %}" id="offer-{{ offer.pk }}">
+  {% if offer.image %}<img src="{{ offer.image.url }}" alt="" class="h-20 w-20 flex-none rounded-lg object-cover">{% else %}<div class="grid h-20 w-20 flex-none place-items-center rounded-lg bg-gray-100 text-gray-300">{% load icons %}{% icon "tag" "h-7 w-7" %}</div>{% endif %}
+  <div class="min-w-0 flex-1">
+    <div class="flex flex-wrap items-center gap-2">
+      <h3 class="font-semibold text-black">{{ offer.title }}</h3>
+      {% with s=offer.status %}<span class="rounded-full px-2 py-0.5 text-[11px] font-medium {% if s == 'live' %}bg-green-50 text-green-700{% elif s == 'scheduled' %}bg-blue-50 text-blue-700{% elif s == 'expired' %}bg-gray-200 text-gray-600{% else %}bg-orange-50 text-orange-700{% endif %}">{% if s == 'live' %}Live{% elif s == 'scheduled' %}Starts {{ offer.starts|date:"j M" }}{% elif s == 'expired' %}Expired{% else %}Paused{% endif %}</span>{% endwith %}
+    </div>
+    {% if offer.details %}<p class="mt-1 line-clamp-2 text-sm text-gray-600">{{ offer.details }}</p>{% endif %}
+    <p class="mt-1 text-xs text-gray-500">{% if offer.starts or offer.ends %}{% if offer.starts %}{{ offer.starts|date:"j M Y" }}{% else %}Now{% endif %} → {% if offer.ends %}{{ offer.ends|date:"j M Y" }}{% else %}ongoing{% endif %}{% else %}Ongoing{% endif %}</p>
+    <div class="mt-2 flex flex-wrap gap-2 text-xs">
+      <a href="{% url 'offer_edit' offer.pk %}#offer-form" class="rounded-lg border px-3 py-1.5 font-medium hover:bg-gray-50">Edit</a>
+      <button hx-post="{% url 'offer_toggle' offer.pk %}" hx-target="#offer-{{ offer.pk }}" hx-swap="outerHTML" class="rounded-lg border px-3 py-1.5 font-medium hover:bg-gray-50">{% if offer.is_active %}Pause{% else %}Resume{% endif %}</button>
+      <button hx-post="{% url 'offer_delete' offer.pk %}" hx-target="#offer-{{ offer.pk }}" hx-swap="outerHTML" hx-confirm="Delete this offer?" class="rounded-lg border px-3 py-1.5 font-medium text-primary hover:bg-red-50">Delete</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+{% extends "adminpanel/base.html" %}{% block page_title %}Referrals{% endblock %}{% block panel %}
+<a href="{% url 'ap_affiliates' %}" class="text-sm text-gray-500 hover:text-primary">← Affiliates</a>
+<h1 class="mt-2 text-2xl font-black">Referrals &amp; payouts</h1>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Business, owner email, affiliate, code or payment ref" class="flex-1 rounded-lg border px-3 py-2">
+  <select name="affiliate" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">All affiliates</option>{% for a in affiliates %}<option value="{{ a.pk }}" {% if aff_id == a.pk|stringformat:'s' %}selected{% endif %}>{{ a.user.first_name }} ({{ a.code }})</option>{% endfor %}</select>
+  <select name="status" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">All statuses</option>{% for k,l in statuses %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ l }}</option>{% endfor %}<option value="flagged" {% if status == 'flagged' %}selected{% endif %}>⚑ Flagged</option></select>
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Filter</button>{% if q or status or aff_id %}<a href="?" class="rounded-lg border px-4 py-2 text-sm">Clear</a>{% endif %}
+</form>
+{% include "adminpanel/_referral_table.html" %}
+{% endblock %}

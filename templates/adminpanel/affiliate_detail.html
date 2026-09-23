@@ -1,0 +1,21 @@
+{% extends "adminpanel/base.html" %}{% load icons %}{% block page_title %}Affiliate{% endblock %}{% block panel %}
+<a href="{% url 'ap_affiliates' %}" class="text-sm text-gray-500 hover:text-primary">← Affiliates</a>
+<div class="mt-2 flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-black">{{ aff.user.first_name }} <span class="font-mono text-base font-normal text-gray-500">{{ aff.code }}</span></h1>
+  <form method="post">{% csrf_token %}<input type="hidden" name="_form" value="toggle"><button class="rounded-lg border px-3 py-1.5 text-sm {% if aff.is_active %}text-primary{% endif %}">{% if aff.is_active %}Disable{% else %}Enable{% endif %}</button></form></div>
+<p class="text-sm text-gray-500">{{ aff.user.email }} · {{ aff.user.phone }} · joined {{ aff.created_at|date:"j M Y" }}{% if aff.notes %} · {{ aff.notes }}{% endif %}</p>
+<p class="mt-1 text-sm"><span class="text-gray-500">Pay to:</span> {% if aff.has_payout_details %}<strong>{{ aff.payout_summary }}</strong>{% else %}<span class="text-primary">no payment details yet</span>{% endif %}</p>
+<p class="mt-1 break-all text-xs text-gray-500">Link: {{ link }}</p>
+<div class="mt-4 grid gap-3 sm:grid-cols-5 text-sm">
+  <div class="rounded-2xl border p-3"><div class="text-xs text-gray-500">Sign-ups</div><div class="text-xl font-semibold">{{ st.signups }}</div></div>
+  <div class="rounded-2xl border p-3"><div class="text-xs text-gray-500">Qualified</div><div class="text-xl font-semibold">{{ st.qualified }}</div></div>
+  <div class="rounded-2xl border p-3"><div class="text-xs text-gray-500">Unpaid</div><div class="text-xl font-semibold text-orange-700">KES {{ st.unpaid|kes }}</div></div>
+  <div class="rounded-2xl border p-3"><div class="text-xs text-gray-500">Paid</div><div class="text-xl font-semibold text-green-700">KES {{ st.paid|kes }}</div></div>
+  <div class="rounded-2xl border p-3"><div class="text-xs text-gray-500">Flagged</div><div class="text-xl font-semibold {% if st.flagged %}text-primary{% endif %}">{{ st.flagged }}</div></div>
+</div>
+<details class="mt-4 rounded-2xl border p-4" {% if form.errors %}open{% endif %}><summary class="cursor-pointer font-bold">Edit account</summary>
+  <form method="post" class="mt-3 grid gap-3 sm:grid-cols-2">{% csrf_token %}<input type="hidden" name="_form" value="edit">
+    {% for f in form %}<div class="{% if f.name == 'notes' %}sm:col-span-2{% endif %}"><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.help_text %}<p class="text-xs text-gray-400">{{ f.help_text }}</p>{% endif %}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>{% endfor %}
+    <div class="sm:col-span-2"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Save</button></div></form></details>
+<h2 class="mt-6 font-bold">Referrals</h2>
+{% include "adminpanel/_referral_table.html" %}
+{% endblock %}

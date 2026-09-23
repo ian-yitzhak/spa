@@ -1,0 +1,25 @@
+Hi {{ name }},
+
+{% if kind == 'welcome' %}Welcome to BeautyFlow, and thank you for listing {{ brand }}.{% else %}{{ brand }} has been on BeautyFlow for a week now. Here is what you are not using yet.{% endif %}
+
+BeautyFlow will help your business go digital with:
+
+QR code menus: customers scan and view the menu instantly from their phones.
+Less printing: no constant cost of printing and replacing physical menus.
+Easy updates: change prices, dishes and offers instantly.
+Online ordering: customers can order directly from the digital menu.
+More visibility: your business can be discovered by more customers on BeautyFlow.
+Marketing: showcase your food, offers and promotions.
+More customers: makes it easier for new customers to discover and order.
+POS and sales: manage orders and track your sales.
+
+{% if kind == 'welcome' %}Start here: add your dishes and prices, then print your QR code.
+{{ site_url }}/dashboard/menu/{% else %}The POS module is {{ pos_fee }} a month and includes the Premium listing at no extra cost: unlimited menu items and photos, your offers on the Deals page, and the point of sale with the kitchen screen, staff accounts, sales and reports.
+Upgrade here: {{ site_url }}/dashboard/upgrade/{% endif %}
+
+Your page: {{ site_url }}{{ url }}
+
+Need a hand? WhatsApp us on +{{ support_whatsapp }}.
+
+BeautyFlow
+{{ site_url }}

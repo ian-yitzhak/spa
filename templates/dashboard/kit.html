@@ -1,0 +1,10 @@
+{% extends "dashboard/base.html" %}{% block page_title %}Marketing kit{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">Marketing kit</h1>
+<p class="mt-1 text-sm text-gray-500">Ready-to-print and ready-to-post images with your logo, cover photo and price-list QR code. Generated fresh each time from your profile.</p>
+<div class="mt-5 grid gap-4 sm:grid-cols-2">
+  <div class="rounded-2xl border p-5"><h2 class="font-bold">A4 price-list poster</h2><p class="mt-1 text-sm text-gray-500">"Scan to see our services, prices & photos". For the wall, mirror or reception. 300 dpi print quality.</p><a href="{% url 'kit_image' 'poster' %}" class="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Download PNG</a></div>
+  <div class="rounded-2xl border p-5"><h2 class="font-bold">WhatsApp status / Instagram story</h2><p class="mt-1 text-sm text-gray-500">1080×1920 with your cover photo and QR code. Post it weekly.</p><a href="{% url 'kit_image' 'story' %}" class="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Download PNG</a></div>
+  <div class="rounded-2xl border p-5"><h2 class="font-bold">Square social post</h2><p class="mt-1 text-sm text-gray-500">1080×1080 for Instagram, Facebook and WhatsApp groups.</p><a href="{% url 'kit_image' 'square' %}" class="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Download PNG</a></div>
+</div>
+<div class="mt-6 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600"><strong class="text-dark">Tip:</strong> add a tagline and a good cover photo in <a href="{% url 'dashboard_profile' %}" class="text-primary">Business profile</a> — they appear on every image.</div>
+{% endblock %}

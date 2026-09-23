@@ -1,0 +1,12 @@
+{% load icons %}<div class="flex items-center gap-3 p-3 {% if not item.is_available %}opacity-50{% endif %}" id="item-{{ item.pk }}">
+  <div class="h-14 w-14 flex-none overflow-hidden rounded-lg bg-gray-100">{% if item.image %}<img src="{{ item.image.url }}" class="h-full w-full object-cover" alt="">{% endif %}</div>
+  <div class="min-w-0 flex-1">
+    <div class="font-semibold">{{ item.name }} <span class="text-primary">{% if item.price_on_request %}Price on request{% elif item.discount_live %}KES {{ item.sale_price|kes }} <span class="text-xs font-normal text-gray-400 line-through">{{ item.price|kes }}</span>{% else %}KES {{ item.price|kes }}{% endif %}</span>{% if item.discount_live %} <span class="rounded-full bg-green-100 px-1.5 text-xs font-semibold text-green-700">{{ item.discount_label }}{% if item.discount_ends %} to {{ item.discount_ends|date:"j M" }}{% endif %}</span>{% endif %}</div>
+    <div class="text-xs text-gray-500">{% if item.branch_price_count %}<span class="rounded bg-gray-100 px-1.5 font-medium text-gray-700">{{ item.branch_price_count }} branch price{{ item.branch_price_count|pluralize }}</span> · {% endif %}{{ item.category.name|default:"No category" }} · {{ item.duration_label }}{% if item.vat_mode == 'add' %} · {{ item.net_price|kes }} + 16% VAT{% endif %}</div>
+  </div>
+  <div class="flex gap-1 text-xs">
+    <button hx-post="{% url 'item_toggle' item.pk %}" hx-target="#item-{{ item.pk }}" hx-swap="outerHTML" class="rounded border px-2 py-1">{% if item.is_available %}Offered{% else %}Paused{% endif %}</button>
+    <a href="{% url 'item_edit' item.pk %}" class="rounded border px-2 py-1">Edit</a>
+    <button hx-post="{% url 'item_delete' item.pk %}" hx-target="#item-{{ item.pk }}" hx-swap="outerHTML" hx-confirm="Delete {{ item.name }}? Past sales keep their record." class="rounded border px-2 py-1 text-primary">Delete</button>
+  </div>
+</div>

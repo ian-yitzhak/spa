@@ -1,0 +1,112 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Reports{% endblock %}{% block dash %}
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-xl font-bold">Reports</h1>
+  <button onclick="window.print()" class="no-print rounded-lg border px-3 py-1.5 text-sm">Print</button>
+</div>
+
+<h2 class="mt-6 text-lg font-bold">{{ period|title }} sales report</h2>
+<div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+  <div class="flex rounded-lg bg-gray-100 p-1">
+    <a href="?period=daily" class="rounded-md px-3 py-1.5 font-medium {% if period == 'daily' %}bg-white shadow-sm{% endif %}">Daily</a>
+    <a href="?period=weekly" class="rounded-md px-3 py-1.5 font-medium {% if period == 'weekly' %}bg-white shadow-sm{% endif %}">Weekly</a>
+    <a href="?period=monthly" class="rounded-md px-3 py-1.5 font-medium {% if period == 'monthly' %}bg-white shadow-sm{% endif %}">Monthly</a>
+  </div>
+  <div class="flex items-center gap-1 rounded-lg border">
+    <a href="?period={{ period }}&date={{ prev }}" class="px-3 py-1.5 hover:bg-gray-50" aria-label="Previous">‹</a>
+    <span class="px-2 font-semibold">{% if period == 'daily' %}{{ start|date:"D j M Y" }}{% else %}{{ start|date:"j M" }} – {{ end|date:"j M Y" }}{% endif %}</span>
+    <a href="?period={{ period }}&date={{ next }}" class="px-3 py-1.5 hover:bg-gray-50" aria-label="Next">›</a>
+  </div>
+</div>
+<div class="mt-3 grid gap-4 sm:grid-cols-3">
+  <div class="rounded-2xl bg-dark p-5 text-white"><div class="text-xs text-gray-400">Total sales</div><div class="mt-1 font-heading text-3xl font-semibold">KES {{ summary.total|default:0|kes }}</div></div>
+  <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">Paid visits</div><div class="mt-1 font-heading text-3xl font-semibold">{{ summary.n|default:0 }}</div><div class="text-xs text-gray-500">avg KES {{ avg|kes }}{% if summary.discount %} · KES {{ summary.discount|kes }} in discounts{% endif %}</div></div>
+  <div class="rounded-2xl border p-5"><div class="text-xs text-gray-500">Staff commission</div><div class="mt-1 font-heading text-3xl font-semibold">KES {{ commission|kes }}</div><div class="text-xs text-gray-500">VAT collected KES {{ summary.tax|default:0|kes }}</div></div>
+</div>
+
+{% if pnl %}
+<section class="mt-6 rounded-2xl border p-5">
+  <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold">Profit &amp; loss</h2><a href="{% url 'pos_expenses' %}" class="text-sm text-primary">Record expenses →</a></div>
+  <div class="mt-3 grid gap-3 sm:grid-cols-4">
+    <div class="rounded-xl bg-gray-50 p-4"><div class="text-xs text-gray-500">Sales</div><div class="font-heading text-2xl font-semibold text-green-700">+ KES {{ pnl.sales|kes }}</div></div>
+    <div class="rounded-xl bg-gray-50 p-4"><div class="text-xs text-gray-500">Staff commission</div><div class="font-heading text-2xl font-semibold text-primary">− KES {{ pnl.commission|kes }}</div></div>
+    <div class="rounded-xl bg-gray-50 p-4"><div class="text-xs text-gray-500">Expenses ({{ pnl.n }})</div><div class="font-heading text-2xl font-semibold text-primary">− KES {{ pnl.expenses|kes }}</div></div>
+    <div class="rounded-xl p-4 {% if pnl.profit >= 0 %}bg-green-600 text-white{% else %}bg-primary text-white{% endif %}"><div class="text-xs opacity-80">{% if pnl.profit >= 0 %}Profit{% else %}Loss{% endif %}{% if pnl.margin is not None %} · {{ pnl.margin }}% margin{% endif %}</div><div class="font-heading text-2xl font-semibold">KES {{ pnl.profit|kes }}</div></div>
+  </div>
+  {% if pnl.by_cat %}<ul class="mt-4 space-y-2 text-sm">{% for c in pnl.by_cat %}<li><div class="flex justify-between"><span>{{ c.label }} <span class="text-gray-400">· {{ c.n }}</span></span><span class="font-semibold">KES {{ c.total|kes }}</span></div><div class="mt-1 h-1.5 w-full rounded-full bg-gray-100"><div class="h-1.5 rounded-full bg-primary/70" style="width:{{ c.pct }}%"></div></div></li>{% endfor %}</ul>
+  {% else %}<p class="mt-3 text-sm text-gray-500">No expenses recorded for this period.</p>{% endif %}
+</section>
+{% endif %}
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+  <section class="rounded-2xl border p-5">
+    <h2 class="font-bold">Payment breakdown</h2>
+    {% if by_method %}
+    <div class="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-gray-100">{% for m in by_method %}<div style="width:{{ m.pct }}%" class="{% if m.payment_method == 'cash' %}bg-green-500{% elif m.payment_method == 'mpesa' %}bg-dark{% else %}bg-accent{% endif %}" title="{{ m.label }} {{ m.pct }}%"></div>{% endfor %}</div>
+    <ul class="mt-3 space-y-2 text-sm">{% for m in by_method %}<li class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full {% if m.payment_method == 'cash' %}bg-green-500{% elif m.payment_method == 'mpesa' %}bg-dark{% else %}bg-accent{% endif %}"></span>{{ m.label }} <span class="text-gray-400">· {{ m.n }} sale{{ m.n|pluralize }}</span></span><span class="font-semibold">KES {{ m.total|kes }} <span class="text-xs text-gray-400">{{ m.pct }}%</span></span></li>{% endfor %}</ul>
+    {% else %}<p class="mt-3 text-sm text-gray-500">No paid sales in this period.</p>{% endif %}
+  </section>
+  <section class="rounded-2xl border p-5">
+    <h2 class="font-bold">Top services</h2>
+    {% if top_items %}<ul class="mt-3 space-y-2 text-sm">{% for t in top_items %}<li><div class="flex justify-between"><span>{{ t.name }}</span><span class="text-gray-500">{{ t.qty }} done · <span class="font-semibold text-dark">KES {{ t.total|kes }}</span></span></div><div class="mt-1 h-1.5 w-full rounded-full bg-gray-100"><div class="h-1.5 rounded-full bg-primary" style="width:{{ t.pct }}%"></div></div></li>{% endfor %}</ul>
+    {% else %}<p class="mt-3 text-sm text-gray-500">Nothing sold yet in this period.</p>{% endif %}
+  </section>
+  {% if by_staff %}
+  <section class="rounded-2xl border p-5 lg:col-span-2">
+    <h2 class="font-bold">Staff earnings</h2>
+    <div class="mt-3 overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-gray-500"><tr><th class="py-2">Staff</th><th class="py-2 text-right">Services</th><th class="py-2">Sales</th><th class="py-2 text-right">Commission</th><th class="py-2 text-right">Still owed</th></tr></thead>
+    <tbody>{% for c in by_staff %}<tr class="border-t"><td class="py-2 font-medium">{% if forloop.first %}<span class="mr-1 rounded-full bg-accent/40 px-2 text-[11px] font-semibold">Top</span>{% endif %}{% if role == 'owner' %}<a href="{% url 'pos_staff_detail' c.id %}" class="hover:text-primary">{{ c.name }}</a>{% else %}{{ c.name }}{% endif %}{% if c.title %}<span class="block text-xs font-normal text-gray-500">{{ c.title }}</span>{% endif %}</td>
+      <td class="py-2 text-right">{{ c.n }}</td>
+      <td class="py-2"><div class="flex items-center gap-2"><div class="h-2 w-24 rounded-full bg-gray-100"><div class="h-2 rounded-full bg-dark" style="width:{{ c.pct }}%"></div></div>KES {{ c.sales|kes }}</div></td>
+      <td class="py-2 text-right font-semibold">KES {{ c.commission|kes }}</td>
+      <td class="py-2 text-right {% if c.unpaid %}text-primary{% else %}text-gray-400{% endif %}">{{ c.unpaid|kes }}</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+  {% endif %}
+  {% if by_day and period != 'daily' %}
+  <section class="rounded-2xl border p-5 lg:col-span-2">
+    <h2 class="font-bold">Sales by day</h2>
+    <div class="mt-4 flex h-40 items-end gap-2">{% for d in by_day %}<div class="flex flex-1 flex-col items-center gap-1"><span class="text-[10px] text-gray-500">{{ d.total|floatformat:"0" }}</span><div class="w-full rounded-t-md bg-primary/80" style="height:{{ d.pct }}%" title="{{ d.day|date:'D j M' }}: KES {{ d.total|kes }}"></div><span class="text-[10px] text-gray-500">{{ d.day|date:"D j" }}</span></div>{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+<!-- Analytics -->
+<h2 class="mt-8 font-heading text-xl font-semibold text-black">Analytics <span class="text-sm font-normal text-gray-500">· last 30 days</span></h2>
+<div class="mt-3 grid gap-6 lg:grid-cols-3">
+  <section class="rounded-2xl border p-5 lg:col-span-2">
+    <div class="flex items-center justify-between"><h3 class="font-bold">Sales{% if trend.expenses %} vs expenses{% endif %} trend</h3><div class="flex gap-3 text-xs text-gray-500"><span class="flex items-center gap-1"><span class="h-2 w-4 rounded bg-primary"></span>Sales</span>{% if trend.expenses %}<span class="flex items-center gap-1"><span class="h-2 w-4 rounded bg-gray-800"></span>Expenses</span>{% endif %}</div></div>
+    <svg viewBox="0 0 600 170" class="mt-3 h-48 w-full" preserveAspectRatio="none">
+      <defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#B0426C" stop-opacity=".3"/><stop offset="1" stop-color="#B0426C" stop-opacity="0"/></linearGradient></defs>
+      {% for y in "1234"|make_list %}<line x1="0" x2="600" y1="{{ y }}0" y2="{{ y }}0" stroke="#f1f1f1" transform="scale(1,4)"/>{% endfor %}
+      <polygon points="{{ trend.sales_area }}" fill="url(#ga)"/>
+      <polyline points="{{ trend.sales }}" fill="none" stroke="#B0426C" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      {% if trend.expenses %}<polyline points="{{ trend.expenses }}" fill="none" stroke="#221A1F" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>{% endif %}
+    </svg>
+    <div class="flex justify-between text-[10px] text-gray-400"><span>{{ trend.first|date:"j M" }}</span><span>{{ trend.mid|date:"j M" }}</span><span>Today</span></div>
+  </section>
+  <section class="rounded-2xl border p-5">
+    <h3 class="font-bold">Payment mix</h3>
+    {% if pay_donut %}
+    <div class="mt-3 flex items-center gap-4">
+      <svg viewBox="0 0 42 42" class="h-32 w-32 flex-none">{% for d in pay_donut %}<circle r="15.915" cx="21" cy="21" fill="transparent" stroke="{{ d.color }}" stroke-width="7" pathLength="100" stroke-dasharray="{{ d.dash }} 100" style="transform:rotate(calc({{ d.offset }} * 3.6deg - 90deg));transform-origin:21px 21px"/>{% endfor %}<text x="21" y="22.5" text-anchor="middle" font-size="5" font-weight="700" fill="#221A1F">{{ summary.n|default:0 }}</text><text x="21" y="27" text-anchor="middle" font-size="2.6" fill="#6b7280">sales</text></svg>
+      <ul class="space-y-1.5 text-sm">{% for d in pay_donut %}<li class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full" style="background:{{ d.color }}"></span>{{ d.label }} <strong>{{ d.pct }}%</strong></li>{% endfor %}</ul>
+    </div>{% else %}<p class="mt-3 text-sm text-gray-500">No paid sales in this period.</p>{% endif %}
+  </section>
+  <section class="rounded-2xl border p-5">
+    <h3 class="font-bold">Busiest hours</h3>{% if peak_hour %}<p class="text-xs text-gray-500">Peak at <strong class="text-dark">{{ peak_hour.label }}:00</strong></p>{% endif %}
+    <div class="mt-3 flex h-28 items-end gap-[3px]">{% for h in by_hour %}<div class="flex flex-1 flex-col items-center"><div class="w-full rounded-t {% if peak_hour and h.h == peak_hour.h %}bg-primary{% else %}bg-primary/40{% endif %}" style="height:{{ h.pct }}%;min-height:2px" title="{{ h.label }}:00 — KES {{ h.total|kes }}"></div></div>{% endfor %}</div>
+    <div class="mt-1 flex justify-between text-[10px] text-gray-400"><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div>
+  </section>
+  <section class="rounded-2xl border p-5">
+    <h3 class="font-bold">Best days</h3>{% if best_day %}<p class="text-xs text-gray-500">Strongest day: <strong class="text-dark">{{ best_day.label }}</strong></p>{% endif %}
+    <div class="mt-3 flex h-28 items-end gap-2">{% for d in by_weekday %}<div class="flex flex-1 flex-col items-center gap-1"><div class="w-full rounded-t {% if best_day and d.label == best_day.label %}bg-dark{% else %}bg-gray-300{% endif %}" style="height:{{ d.pct }}%;min-height:2px" title="{{ d.label }} — KES {{ d.total|kes }}"></div><span class="text-[10px] text-gray-500">{{ d.label }}</span></div>{% endfor %}</div>
+  </section>
+  <section class="rounded-2xl border p-5">
+    <h3 class="font-bold">What sells</h3>
+    {% if item_donut %}
+    <div class="mt-3 flex items-center gap-4">
+      <svg viewBox="0 0 42 42" class="h-28 w-28 flex-none">{% for d in item_donut %}<circle r="15.915" cx="21" cy="21" fill="transparent" stroke="{{ d.color }}" stroke-width="7" pathLength="100" stroke-dasharray="{{ d.dash }} 100" style="transform:rotate(calc({{ d.offset }} * 3.6deg - 90deg));transform-origin:21px 21px"/>{% endfor %}</svg>
+      <ul class="space-y-1 text-xs">{% for d in item_donut %}<li class="flex items-center gap-2"><span class="h-2.5 w-2.5 flex-none rounded-full" style="background:{{ d.color }}"></span><span class="truncate">{{ d.label }}</span> <strong class="ml-auto">{{ d.pct }}%</strong></li>{% endfor %}</ul>
+    </div>{% else %}<p class="mt-3 text-sm text-gray-500">Nothing sold yet.</p>{% endif %}
+  </section>
+</div>
+
+{% if unpaid.n %}<div class="mt-6 flex items-center justify-between rounded-2xl border border-accent bg-accent/10 p-4 text-sm"><span>{{ unpaid.n }} open ticket{{ unpaid.n|pluralize }} not yet paid · KES {{ unpaid.total|kes }}</span><a href="{% url 'pos_open' %}" class="font-semibold underline">Open tickets</a></div>{% endif %}
+{% endblock %}

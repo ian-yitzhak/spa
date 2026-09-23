@@ -1,0 +1,19 @@
+<tr class="border-t align-top" id="v-{{ v.pk }}">
+  <td class="p-3"><a href="{% url 'ap_vendor' v.pk %}" class="font-semibold hover:text-primary">{{ v.brand_name }}</a><div class="text-xs text-gray-500">{{ v.town|default:"—" }} · <a href="{{ v.get_absolute_url }}" target="_blank" class="hover:text-primary">/{{ v.slug }}</a></div></td>
+  <td class="p-3">{{ v.owner.first_name }}<div class="text-xs text-gray-500">{{ v.owner.email }}<br>{{ v.owner.phone }}</div></td>
+  <td class="p-3">{{ v.n_items }} / {{ v.n_inq }}</td>
+  <td class="p-3">{% if v.is_premium %}<span class="rounded-full bg-accent/20 px-2 py-0.5 text-xs font-semibold text-orange-700">Premium</span><div class="mt-1 text-xs {% if v.premium_days_left <= 7 %}text-primary{% else %}text-gray-500{% endif %}">{{ v.premium_days_left }} days left<br>to {{ v.premium_expires_at|date:"j M" }}</div>
+    {% elif v.plan == 'premium' %}<span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-primary">Expired</span><div class="mt-1 text-xs text-gray-500">{{ v.premium_expires_at|date:"j M" }}</div>
+    {% else %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs">Free</span>{% endif %}
+    <div class="mt-1 text-xs">{% if v.pos_active %}<span class="font-semibold text-green-700">POS</span> · {{ v.pos_days_left }}d{% elif v.pos_expired %}<span class="text-primary">POS expired</span>{% else %}<span class="text-gray-400">No POS</span>{% endif %}</div></td>
+  <td class="p-3 text-xs">{% if not v.is_approved %}<span class="text-primary">Pending approval</span>{% elif not v.is_published %}<span class="text-gray-500">Unpublished</span>{% else %}<span class="text-green-600">Live</span>{% endif %}</td>
+  <td class="p-3">
+    <div class="flex flex-wrap gap-1 text-xs">
+      <button hx-post="{% url 'ap_vendor_action' v.pk 'premium' %}" hx-target="#v-{{ v.pk }}" hx-swap="outerHTML" hx-confirm="Record 1 month Premium payment for {{ v.brand_name }}?" class="rounded bg-accent px-2 py-1 font-semibold text-dark">{% if v.is_premium %}+1 month{% else %}Activate Premium{% endif %}</button>
+      <button hx-post="{% url 'ap_vendor_action' v.pk 'pos' %}" hx-target="#v-{{ v.pk }}" hx-swap="outerHTML" hx-confirm="Record 1 month POS payment for {{ v.brand_name }}?" class="rounded border border-green-600 px-2 py-1 font-semibold text-green-700">{% if v.pos_active %}POS +1 month{% else %}Activate POS{% endif %}</button>
+      {% if v.plan == 'premium' %}<button hx-post="{% url 'ap_vendor_action' v.pk 'free' %}" hx-target="#v-{{ v.pk }}" hx-swap="outerHTML" hx-confirm="Downgrade to Free?" class="rounded border px-2 py-1">Downgrade</button>{% endif %}
+      <button hx-post="{% url 'ap_vendor_action' v.pk 'approve' %}" hx-target="#v-{{ v.pk }}" hx-swap="outerHTML" class="rounded border px-2 py-1">{% if v.is_approved %}Suspend{% else %}Approve{% endif %}</button>
+      <button hx-post="{% url 'ap_vendor_action' v.pk 'delete' %}" hx-target="#v-{{ v.pk }}" hx-swap="outerHTML" hx-confirm="Delete {{ v.brand_name }} and its owner account permanently?" class="rounded border px-2 py-1 text-primary">Delete</button>
+    </div>
+  </td>
+</tr>

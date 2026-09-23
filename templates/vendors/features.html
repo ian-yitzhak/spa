@@ -1,0 +1,129 @@
+{% extends "base.html" %}{% load icons %}
+{% block title %}Features — everything BeautyFlow does for your food business{% endblock %}
+{% block meta_description %}Digital menu with QR ordering, waiter codes, kitchen screen, point of sale, delivery zones, inquiries, reviews, marketing kit and a directory page that Google can find. All in one place for restaurants, cafés, hotels, chefs and caterers in Kenya.{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 py-12">
+  <div class="max-w-2xl">
+    <h1 class="font-heading text-3xl font-bold text-black md:text-4xl">Everything a food business needs, in one place</h1>
+    <p class="mt-3 text-lg text-gray-600">From the page people find on Google to the screen in your kitchen. Start free, add the paid modules when you need them.</p>
+  </div>
+
+  <h2 class="mt-12 font-heading text-xl font-semibold text-black">Get found</h2>
+  <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "search" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">A page Google can find</h3>
+      <p class="mt-2 text-sm text-gray-600">Your own page with your menu, prices, photos, opening hours and location. Built to rank for searches like restaurants in Westlands and your name plus menu.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "menu" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Menu with real prices</h3>
+      <p class="mt-2 text-sm text-gray-600">Add dishes by menu type, with photos and VAT handled either way. Dishes without a fixed price show as price on request and customers ask for a quote.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "star" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Verified reviews</h3>
+      <p class="mt-2 text-sm text-gray-600">Every review is confirmed by email before it shows, one per customer. You reply from your dashboard and the rating shows on your page and in search.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "tag" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Special offers</h3>
+      <p class="mt-2 text-sm text-gray-600">Happy hours, combos and discounts with start and end dates. They appear on your page and, for Premium listings, on the public Deals page.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "chat" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Questions answered on your page</h3>
+      <p class="mt-2 text-sm text-gray-600">A chat button answers the usual questions from your own listing: are you open, where are you, how much is the pilau, do you deliver. Anything else goes to WhatsApp.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-primary text-white">{% icon "inbox" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Inquiries and bookings</h3>
+      <p class="mt-2 text-sm text-gray-600">Visitors pick from your menu and send an inquiry with their name, phone and delivery area. Table bookings and quote requests land in the same inbox.</p>
+    </div>
+  </div>
+
+  <h2 class="mt-12 font-heading text-xl font-semibold text-black">Take orders in the restaurant</h2>
+  <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "qr" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">QR menu that only works at your tables</h3>
+      <p class="mt-2 text-sm text-gray-600">Each business gets a private QR link. Customers scan it, pick their dishes and order from their phone. Nobody outside the room can use it, and you can replace the link at any time.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "id" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Waiter codes</h3>
+      <p class="mt-2 text-sm text-gray-600">Every waiter has a five digit code. The customer types it at checkout and the order goes straight to that waiter, the same way a paper slip would. The receipt shows who served them.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "chef" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Kitchen screen</h3>
+      <p class="mt-2 text-sm text-gray-600">A cooking screen for a tablet by the pass. New orders arrive in red, the kitchen taps start and then ready, and the waiter is told the moment food is up.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "table" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Tables and live order status</h3>
+      <p class="mt-2 text-sm text-gray-600">Orders are attached to a table and a waiter. Your orders page updates on its own every ten seconds, so the counter, the floor and the kitchen all see the same thing.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "clipboard" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Order tracking and receipts</h3>
+      <p class="mt-2 text-sm text-gray-600">Every order has a tracking page the customer can watch from received to served. Once paid, they can view or download their receipt without asking anyone.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-dark text-white">{% icon "whatsapp" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">WhatsApp when it helps</h3>
+      <p class="mt-2 text-sm text-gray-600">Customers can send you their order or inquiry on WhatsApp in one tap, with everything already written. No app to install, and nothing you have to pay per message.</p>
+    </div>
+  </div>
+
+  <h2 class="mt-12 font-heading text-xl font-semibold text-black">Run the business</h2>
+  <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "pos" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Point of sale</h3>
+      <p class="mt-2 text-sm text-gray-600">Ring up counter sales, send orders to the kitchen and take payment in cash, M-Pesa or card, with the transaction code and the payer's name on record.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "users" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Staff accounts that see only their part</h3>
+      <p class="mt-2 text-sm text-gray-600">Waiters see their own orders. The kitchen sees what to cook. Cashiers take payments and see sales. You see everything, including who sold what.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "cash" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Sales, expenses and profit</h3>
+      <p class="mt-2 text-sm text-gray-600">Daily, weekly and monthly sales by item, by waiter and by payment method. Log expenses and read your profit and loss without a spreadsheet.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "chart" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Insights</h3>
+      <p class="mt-2 text-sm text-gray-600">Plain language findings from your own numbers: what sells, what is slipping, your quiet days and what to try next week. Nothing leaves your account.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "pin" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Delivery zones</h3>
+      <p class="mt-2 text-sm text-gray-600">Tick the areas you deliver to from a list of suburbs in your county and set your own fee for each. The fee shows when someone asks for delivery.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "pin" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">More than one branch</h3>
+      <p class="mt-2 text-sm text-gray-600">Run every outlet from one account. Staff are attached to a branch and see only its work, while you switch between branches or view them all together. One menu and price list, separate tills, stock and reports. Each extra branch is paid for on its own.</p>
+    </div>
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <div class="grid h-11 w-11 place-items-center rounded-lg bg-accent text-white">{% icon "photo" "h-5 w-5" %}</div>
+      <h3 class="mt-4 font-semibold text-black">Marketing kit and printable menu</h3>
+      <p class="mt-2 text-sm text-gray-600">A print ready poster, a WhatsApp status image and a square post with your logo and QR code, plus a branded menu PDF you can print or send.</p>
+    </div>
+  </div>
+
+  <div class="mt-14 rounded-xl border border-gray-200 bg-white p-8 md:flex md:items-center md:justify-between">
+    <div>
+      <h2 class="font-heading text-xl font-semibold text-black">Free to list. Pay only for what you use.</h2>
+      <p class="mt-2 max-w-xl text-sm text-gray-600">The listing, menu, inquiries and reviews are free. Premium removes the item limit and puts your offers on the Deals page. The point of sale module adds the kitchen screen, staff accounts, orders, sales and reports. Both are monthly, paid by M-Pesa, cancel any time.</p>
+    </div>
+    <div class="mt-5 flex flex-none gap-2 md:mt-0">
+      <a href="{% url 'signup' %}" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90">List your business</a>
+      <a href="https://wa.me/{{ site.support_whatsapp }}" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold hover:bg-gray-50">Talk to us</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

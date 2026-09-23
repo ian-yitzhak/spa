@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}About BeautyFlow — Kenya's restaurant & food directory{% endblock %}
+{% block meta_description %}BeautyFlow is Kenya's restaurant directory: menus with prices from restaurants, hotels, cafés, chefs and caterers in Nairobi, Mombasa, Kisumu and every county — with WhatsApp ordering. Free listings for food businesses.{% endblock %}
+{% block jsonld %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"BeautyFlow","url":"{{ request.scheme }}://{{ request.get_host }}/","logo":"{{ request.scheme }}://{{ request.get_host }}/static/img/logo.png","areaServed":"KE","contactPoint":{"@type":"ContactPoint","contactType":"customer support","telephone":"+{{ site.support_whatsapp }}","email":"{{ site.support_email }}"},"sameAs":[]}</script>{% endblock %}
+{% block content %}
+<div class="reveal mx-auto max-w-3xl px-4 py-12 [&_h2]:mt-10 [&_h2]:font-heading [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-black [&_p]:mt-3 [&_p]:text-gray-700 [&_li]:mt-2 [&_li]:text-gray-700 [&_ul]:list-disc [&_ul]:pl-5">
+  <h1 class="font-heading text-3xl font-bold text-black md:text-4xl">About BeautyFlow</h1>
+  <p class="text-lg">BeautyFlow is Kenya's restaurant and food directory. We help people find <strong>restaurants near them</strong>, browse <strong>restaurant menus with prices</strong>, and order or book directly on WhatsApp — and we give every food business in Kenya a page that Google can find.</p>
+  <h2>What you can do on BeautyFlow</h2>
+  <ul>
+    <li><strong>Discover places to eat</strong> — restaurants in Nairobi, Mombasa, Kisumu, Nakuru, Eldoret and every county, from kibandas and cafés to hotels and fine dining.</li>
+    <li><strong>Read the menu before you go</strong> — real menus and prices published by the businesses themselves, with photos, opening hours and location.</li>
+    <li><strong>Search by dish</strong> — nyama choma, pilau, biryani, pizza, seafood, Indian, Ethiopian, Swahili and more.</li>
+    <li><strong>Order on WhatsApp</strong> — build your order on the menu page and send it in one message. No app to install.</li>
+    <li><strong>Find deals</strong> — special offers and discounts from restaurants across Kenya.</li>
+  </ul>
+  <h2>For restaurants, hotels, chefs and caterers</h2>
+  <p>Listing your business on BeautyFlow is free. You get a menu page optimised for searches like “restaurants in Westlands” and “<em>your name</em> menu”, a QR-code digital menu, WhatsApp orders and inquiries, customer reviews and verified-business badge. Premium adds unlimited menu items, photos and top placement; an optional POS module handles counter orders, receipts, sales reports. <a href="{% url 'owner_page' 'list-your-restaurant' %}" class="text-primary">List your restaurant →</a></p>
+  <h2>Our promise</h2>
+  <p>BeautyFlow is a directory, not a middleman. We never take a cut of your order, and we never sell your data. Every listing is verified by our team before it shows the Verified badge, and menus are updated by the businesses so prices stay current.</p>
+  <h2>By the numbers</h2>
+  <p>{{ vendor_count }} listed food businesses across {{ county_count }} count{{ county_count|pluralize:"y,ies" }} — and growing every day.</p>
+  <h2>Contact</h2>
+  <p>WhatsApp <a href="https://wa.me/{{ site.support_whatsapp }}" class="text-primary">+{{ site.support_whatsapp }}</a> · Email <a href="mailto:{{ site.support_email }}" class="text-primary">{{ site.support_email }}</a> · Nairobi, Kenya.</p>
+</div>
+{% endblock %}

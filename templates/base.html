@@ -1,0 +1,180 @@
+{% load static qr icons %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BeautyFlow — Find food vendors near you{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Discover local food vendors, menus, prices and offers across Kenya. Order or book via WhatsApp.{% endblock %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+  <link rel="icon" type="image/png" sizes="512x512" href="{% static 'img/favicon-512.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon-180.png' %}">
+  <link rel="canonical" href="{% block canonical %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+  <meta property="og:site_name" content="BeautyFlow">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:locale" content="en_KE">
+  <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+  <meta property="og:title" content="{% block og_title %}BeautyFlow — Restaurants in Kenya: menus, prices & WhatsApp orders{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{% block meta_description_og %}Discover restaurants, hotels, cafés and food vendors across Kenya. Browse menus with prices and order on WhatsApp.{% endblock %}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}{% endblock %}">
+  <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+  <meta name="twitter:description" content="{% block tw_description %}{% block meta_description_tw %}Discover restaurants, hotels, cafés and food vendors across Kenya.{% endblock %}{% endblock %}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% block tw_title %}BeautyFlow — Restaurants in Kenya: menus, prices & WhatsApp orders{% endblock %}">
+  <meta name="twitter:image" content="{% block tw_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/logo.png' %}{% endblock %}">
+  {% block jsonld %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"BeautyFlow","url":"{{ request.scheme }}://{{ request.get_host }}/","potentialAction":{"@type":"SearchAction","target":"{{ request.scheme }}://{{ request.get_host }}/?q={search_term_string}","query-input":"required name=search_term_string"}}</script>{% endblock %}
+  <meta name="theme-color" content="#B0426C">
+  <meta name="google-site-verification" content="mIADTvGxPucMXkNsx7xx4B16QojvsfjkOHP7-VaoG20" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { primary: '#B0426C', dark: '#221A1F', accent: '#E8B4C4', gold: '#C9A227' },
+      borderRadius: { md: '3px', lg: '4px', xl: '5px', '2xl': '6px', '3xl': '8px' },
+      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], heading: ['Poppins', 'Inter', 'sans-serif'] },
+    } } }
+  </script>
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  {% if TURNSTILE_SITE_KEY %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>document.addEventListener('htmx:afterSwap',function(e){if(window.turnstile){e.detail.elt.querySelectorAll('.cf-turnstile:not([data-rendered])').forEach(function(w){w.setAttribute('data-rendered','1');turnstile.render(w)})}});</script>{% endif %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-white text-dark antialiased" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<header class="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+    <a href="{% url 'home' %}" class="flex items-center" aria-label="BeautyFlow home">
+      <img src="{% static 'img/logo.png' %}" alt="BeautyFlow" class="h-9 w-auto md:h-10">
+    </a>
+    {% with u=request.resolver_match.url_name %}
+    <nav class="hidden items-center gap-1 text-sm font-medium lg:flex">
+      <a href="{% url 'home' %}" class="border-b-2 px-3 py-2 {% if u == 'home' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">Home</a>
+      <a href="{% url 'types_index' 'salons' %}" class="border-b-2 px-3 py-2 {% if u == 'types_index' or u == 'restaurants_in' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">Salons</a>
+      <a href="{% url 'types_index' 'spas' %}" class="border-b-2 border-transparent px-3 py-2 hover:text-primary">Spas</a>
+      <a href="{% url 'types_index' 'barbers' %}" class="border-b-2 border-transparent px-3 py-2 hover:text-primary">Barbers</a>
+      <a href="{% url 'food_index' %}" class="border-b-2 px-3 py-2 {% if u == 'food_index' or u == 'food_tag' or u == 'food_tag_in' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">Services</a>
+      <a href="{% url 'deals' %}" class="border-b-2 px-3 py-2 {% if u == 'deals' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">Deals</a>
+      <a href="{% url 'features' %}" class="border-b-2 px-3 py-2 {% if u == 'features' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">Features</a>
+      <a href="{% url 'about' %}" class="border-b-2 px-3 py-2 {% if u == 'about' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}">About</a>
+    </nav>
+    {% endwith %}
+    <div class="flex items-center gap-1 text-sm font-medium sm:gap-2">
+      <a href="{% url 'search' %}" class="hidden rounded-lg p-2 hover:bg-gray-100 lg:block" aria-label="Search">{% icon "search" "h-5 w-5" %}</a>
+      {% if user.is_authenticated %}
+        {% if user.is_admin_role %}<a href="{% url 'ap_index' %}" class="rounded-lg bg-primary px-3 py-2 text-white sm:px-4">Admin</a>{% endif %}
+        {% if user.is_vendor %}<a href="{% url 'dashboard' %}" class="rounded-lg bg-primary px-3 py-2 text-white sm:px-4">Dashboard</a>{% endif %}
+        {% if user.is_team %}<a href="{% url 'pos_me' %}" class="rounded-lg bg-primary px-3 py-2 text-white sm:px-4">My dashboard</a>{% endif %}
+        {% if user.is_affiliate %}<a href="{% url 'aff_home' %}" class="rounded-lg bg-primary px-3 py-2 text-white sm:px-4">Affiliate</a>{% endif %}
+        <form method="post" action="{% url 'logout' %}" class="hidden lg:block">{% csrf_token %}<button class="rounded-lg px-3 py-2 hover:bg-gray-100">Log out</button></form>
+      {% else %}
+        <a href="{% url 'login' %}" class="hidden rounded-lg px-3 py-2 hover:bg-gray-100 lg:block">Sign in</a>
+        <a href="{% url 'signup' %}" class="whitespace-nowrap rounded-lg bg-primary px-3 py-2 text-white hover:bg-primary/90 sm:px-4">List your business</a>
+      {% endif %}
+      <button class="rounded-lg p-2 hover:bg-gray-100 lg:hidden" aria-label="Menu" aria-controls="mnav" onclick="document.getElementById('mnav').classList.toggle('hidden')">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav id="mnav" class="hidden border-t border-gray-100 px-4 py-2 text-sm font-medium lg:hidden">
+    <a href="{% url 'home' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Home</a>
+    <a href="{% url 'search' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Search</a>
+    <a href="{% url 'types_index' 'salons' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Salons</a>
+    <a href="{% url 'types_index' 'spas' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Spas</a>
+    <a href="{% url 'types_index' 'barbers' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Barbers</a>
+    <a href="{% url 'food_index' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Services</a>
+    <a href="{% url 'deals' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Deals</a>
+    <a href="{% url 'features' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">Features</a>
+    <a href="{% url 'about' %}" class="block rounded-lg px-3 py-2 hover:bg-gray-100">About</a>
+    <div class="my-2 border-t"></div>
+    {% if user.is_authenticated %}<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="block w-full rounded-lg px-3 py-2 text-left hover:bg-gray-100">Log out</button></form>
+    {% else %}<a href="{% url 'login' %}" class="block rounded-lg px-3 py-2 font-semibold hover:bg-gray-100">Sign in</a>{% endif %}
+  </nav>
+</header>
+
+{% if messages %}
+<div class="mx-auto max-w-6xl px-4 pt-4">
+  {% for m in messages %}
+  <div class="mb-2 rounded-lg px-4 py-3 text-sm {% if m.tags == 'error' %}bg-red-50 text-red-700{% elif m.tags == 'warning' %}bg-orange-50 text-orange-700{% else %}bg-green-50 text-green-700{% endif %}">{{ m }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main>{% block content %}{% endblock %}</main>
+<script>
+(function(){var sel='.reveal,.reveal-left,.reveal-scale,.stagger';function arm(root){var els=(root||document).querySelectorAll(sel);if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return}
+  var io=new IntersectionObserver(function(entries){entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}})},{rootMargin:'0px 0px -8% 0px',threshold:.08});
+  els.forEach(function(e){if(!e.classList.contains('in'))io.observe(e)})}
+  arm();document.body.addEventListener('htmx:afterSwap',function(e){arm(e.detail.elt)})})();
+(function(){function init(box){if(box.dataset.ready)return;box.dataset.ready='1';var inp=box.querySelector('[data-ccombo-input]'),val=box.querySelector('[data-ccombo-value]'),list=box.querySelector('[data-ccombo-list]'),items=[].slice.call(list.children),form=box.closest('form'),submit=box.dataset.submit==='1';
+  function filter(){var q=inp.value.toLowerCase().trim(),n=0;items.forEach(function(li){var show=!q||li.textContent.toLowerCase().indexOf(q)>-1;li.classList.toggle('hidden',!show);if(show)n++});list.classList.toggle('hidden',!n)}
+  function pick(li){val.value=li.dataset.v;inp.value=li.dataset.v?li.textContent:'';list.classList.add('hidden');if(submit&&form)form.submit()}
+  inp.addEventListener('focus',filter);inp.addEventListener('input',function(){val.value='';filter()});
+  items.forEach(function(li){li.addEventListener('mousedown',function(e){e.preventDefault();pick(li)})});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var f=items.filter(function(li){return !li.classList.contains('hidden')&&li.dataset.v})[0];if(f)pick(f)}if(e.key==='Escape')list.classList.add('hidden')});
+  inp.addEventListener('blur',function(){setTimeout(function(){list.classList.add('hidden');if(!val.value)inp.value=''},150)})}
+  function all(root){(root||document).querySelectorAll('[data-ccombo]').forEach(init)}all();document.body.addEventListener('htmx:afterSwap',function(e){all(e.detail.elt)})})();
+</script>
+
+<footer class="mt-16 bg-dark text-white">
+  <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="grid gap-10 md:grid-cols-12">
+      <div class="md:col-span-4">
+        <a href="{% url 'home' %}" class="inline-block rounded-xl bg-white px-3 py-2"><img src="{% static 'img/logo.png' %}" alt="BeautyFlow" class="h-9 w-auto"></a>
+        <p class="mt-3 text-sm leading-relaxed text-white">Book salons, spas, barbers and nail studios across Kenya — and run your own with BeautyFlow.</p>
+        <div class="mt-4 flex gap-2">
+          <a href="https://wa.me/{{ site.support_whatsapp }}" target="_blank" rel="noopener" class="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white hover:bg-white/20">WhatsApp support</a>
+          <a href="mailto:{{ site.support_email }}" class="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white hover:bg-white/20">Email us</a>
+        </div>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-heading text-sm font-semibold text-white">Explore</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="{% url 'types_index' 'salons' %}" class="hover:text-white">Salons in Kenya</a></li>
+          <li><a href="{% url 'types_index' 'spas' %}" class="hover:text-white">Spas</a></li>
+          <li><a href="{% url 'types_index' 'barbers' %}" class="hover:text-white">Barbers</a></li>
+          <li><a href="{% url 'types_index' 'nail-studios' %}" class="hover:text-white">Nail studios</a></li>
+          <li><a href="{% url 'types_index' 'makeup-artists' %}" class="hover:text-white">Makeup artists</a></li>
+          <li><a href="{% url 'food_index' %}" class="hover:text-white">Services &amp; prices</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-heading text-sm font-semibold text-white">For vendors</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="{% url 'owner_page' 'list-your-restaurant' %}" class="hover:text-white">List your restaurant</a></li>
+          <li><a href="{% url 'owner_page' 'list-your-hotel' %}" class="hover:text-white">List your hotel</a></li>
+          <li><a href="{% url 'owner_page' 'digital-menu' %}" class="hover:text-white">Digital QR menu</a></li>
+          <li><a href="{% url 'owner_page' 'restaurant-marketing' %}" class="hover:text-white">Restaurant marketing</a></li>
+          <li><a href="{% url 'owner_page' 'chefs-and-caterers' %}" class="hover:text-white">Chefs &amp; caterers</a></li>
+          <li><a href="{% url 'login' %}" class="hover:text-white">Vendor login</a></li>
+          <li><a href="{% url 'terms' %}" class="hover:text-white">How it works</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-heading text-sm font-semibold text-white">Contact</h4>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a href="https://wa.me/{{ site.support_whatsapp }}" class="hover:text-white">+{{ site.support_whatsapp }}</a></li>
+          <li><a href="mailto:{{ site.support_email }}" class="hover:text-white">{{ site.support_email }}</a></li>
+          <li>Nairobi, Kenya</li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-heading text-sm font-semibold text-white">Follow us</h4>
+        <div class="mt-3 flex gap-2">
+          <a href="#" aria-label="Facebook" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20"><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0022 12z"/></svg></a>
+          <a href="#" aria-label="Instagram" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="X" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20"><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.9 2H22l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2.1l7.7-8.8L1 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/></svg></a>
+          <a href="#" aria-label="TikTok" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20"><svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 2h-3v13.3a2.8 2.8 0 11-2.8-2.8c.3 0 .6 0 .8.1V9.5a6 6 0 00-.8-.1 6 6 0 106 6V8.9a7.4 7.4 0 004.3 1.4V7.2A4.3 4.3 0 0116.5 2z"/></svg></a>
+        </div>
+        <p class="mt-4 text-sm text-white">Good food. Great places.</p>
+        <a href="{% url 'about' %}" class="mt-1 inline-block text-sm text-white underline-offset-2 hover:underline">About BeautyFlow</a>
+      </div>
+    </div>
+    <div class="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/20 pt-5 text-xs text-white">
+      <span>© {% now "Y" %} BeautyFlow · beautyflow.co.ke</span>
+      <span class="flex gap-4"><a href="{% url 'terms' %}" class="hover:text-white">Terms of use</a><a href="{% url 'privacy' %}" class="hover:text-white">Privacy policy</a></span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

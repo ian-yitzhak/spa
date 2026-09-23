@@ -1,0 +1,22 @@
+{% extends "affiliates/base.html" %}{% load qr icons %}{% block page_title %}Dashboard{% endblock %}{% block aff %}
+<h1 class="text-2xl font-black">Hello, {{ user.first_name|default:user.email }}</h1>
+{% if not aff.has_payout_details %}<div class="mt-4 rounded-xl border border-accent bg-orange-50 p-3 text-sm text-orange-900">Add your <a href="{% url 'aff_payout' %}" class="font-semibold underline">payment details</a> so we can pay your earnings.</div>{% endif %}
+<div class="mt-4 rounded-2xl bg-dark p-5 text-white">
+  <div class="text-xs text-gray-400">Your referral link — earn KES {{ fee|kes }} for every business that signs up through it and uploads its first product</div>
+  <div class="mt-2 flex flex-col gap-2 sm:flex-row"><input id="reflink" readonly value="{{ link }}" class="min-w-0 flex-1 rounded-lg bg-white/10 px-3 py-2 font-mono text-sm text-white">
+    <button onclick="navigator.clipboard.writeText(document.getElementById('reflink').value);this.textContent='Copied!'" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold">Copy link</button>
+    <a href="https://wa.me/?text={{ 'List your restaurant on BeautyFlow for free and get orders on WhatsApp: '|urlencode }}{{ link|urlencode }}" target="_blank" class="rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold">Share on WhatsApp</a></div>
+</div>
+<div class="mt-4 grid gap-4 sm:grid-cols-4">
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Sign-ups</div><div class="font-heading text-2xl font-semibold">{{ st.signups }}</div></div>
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Qualified</div><div class="font-heading text-2xl font-semibold">{{ st.qualified }}</div></div>
+  <div class="rounded-2xl border border-accent bg-orange-50/40 p-4"><div class="text-xs text-gray-500">Unpaid earnings</div><div class="font-heading text-2xl font-semibold">KES {{ st.unpaid|kes }}</div></div>
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Paid out</div><div class="font-heading text-2xl font-semibold text-green-700">KES {{ st.paid|kes }}</div></div>
+</div>
+<div class="mt-6 grid gap-6 md:grid-cols-3">
+  <div class="rounded-2xl border p-4 text-center md:col-span-1"><div class="text-xs text-gray-500">QR for posters &amp; flyers</div><div class="mt-2 inline-block rounded-xl border p-2">{% qr_svg link 150 %}</div></div>
+  <div class="md:col-span-2"><h2 class="font-bold">Recent sign-ups</h2>
+    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for r in recent %}<div class="flex items-center justify-between p-3"><span>{{ r.vendor.brand_name }} <span class="text-xs text-gray-400">· {{ r.created_at|date:"j M" }}</span></span><span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if r.status == 'paid' %}bg-green-50 text-green-700{% elif r.status == 'qualified' %}bg-orange-50 text-orange-700{% elif r.status == 'rejected' %}bg-red-50 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ r.get_status_display }}</span></div>{% empty %}<p class="p-4 text-gray-500">No sign-ups yet — share your link!</p>{% endfor %}</div>
+    <p class="mt-2 text-xs text-gray-500">A sign-up qualifies once the business verifies its email and uploads its first menu item. Payouts go to your M-Pesa number.</p></div>
+</div>
+{% endblock %}

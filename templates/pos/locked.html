@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}{% block page_title %}POS module{% endblock %}{% block dash %}
+{% if branch and branch.vendor.branches_enabled %}
+<h1 class="text-2xl font-black">{% if branch.pos_expired %}Renew{% else %}Activate{% endif %} the POS at {{ branch.name }}</h1>
+{% if branch.pos_expired %}<p class="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">POS for {{ branch.name }} expired on {{ branch.pos_expires_at|date:"j M Y" }}. This branch is locked until you renew. Its data is kept safely, and your other branches carry on.</p>
+{% else %}<p class="mt-2 rounded-lg bg-orange-50 p-3 text-sm text-orange-800">{{ branch.name }} has not been paid for yet. Each branch runs on its own subscription.</p>{% endif %}
+{% else %}
+<h1 class="text-2xl font-black">{% if vendor.pos_expired %}Renew the POS module{% else %}Activate the POS module{% endif %}</h1>
+{% if vendor.pos_expired %}<p class="mt-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">Your POS subscription expired on {{ vendor.pos_expires_at|date:"j M Y" }}. It is locked until you renew. Your data is kept safely.</p>{% endif %}
+{% endif %}
+{% if is_team %}<p class="mt-4 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">The POS subscription for {% if branch %}{{ branch.name }}{% else %}{{ vendor.brand_name }}{% endif %} is not active. Please ask the owner to renew it.</p>{% else %}
+<div class="mt-6 rounded-2xl bg-dark p-5 text-white">
+  <div class="mb-3 flex items-baseline justify-between"><span class="font-heading text-lg font-semibold">POS module{% if branch %} · {{ branch.name }}{% endif %}</span><span class="font-heading text-2xl font-semibold">KES {{ site.pos_fee|floatformat:"-2" }}<span class="text-sm font-normal text-gray-400">/month</span></span></div>
+  <p class="mb-3 rounded-lg bg-white/10 p-3 text-sm">Includes the <strong>Premium listing free</strong>: unlimited services and photos, your offers on the public Deals page, online bookings, and the price-list PDF without a watermark.</p>
+  {% include "payments/_pay_form.html" with product="pos" branch=branch %}
+</div>
+{% if branch %}<p class="mt-3 text-sm text-gray-500">Paying here activates <strong>{{ branch.name }}</strong> only. <a href="{% url 'pos_branches' %}" class="text-primary underline">See all branches</a>.</p>{% endif %}
+{% endif %}
+{% endblock %}

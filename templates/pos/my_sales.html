@@ -1,0 +1,27 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}My sales{% endblock %}{% block dash %}
+<h1 class="text-2xl font-black">My sales</h1>
+<p class="mt-1 text-sm text-gray-500">Services you did that the cashier has marked paid, and what you earned on each.</p>
+<div class="mt-4 grid gap-3 sm:grid-cols-3">
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Services{% if d_from or d_to or state %} (filtered){% endif %}</div><div class="mt-1 font-heading text-2xl font-semibold">{{ totals.n|default:0 }}</div><div class="text-xs text-gray-500">KES {{ totals.sales|default:0|kes }} in sales</div></div>
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Commission</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ totals.commission|default:0|kes }}</div></div>
+  <div class="rounded-2xl bg-dark p-4 text-white"><div class="text-xs text-gray-400">Not yet paid to you</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ balance|kes }}</div></div>
+</div>
+<form method="get" class="mt-4 flex flex-wrap items-end gap-2 text-sm">
+  <label>From<input type="date" name="from" value="{{ d_from }}" class="ml-1 rounded-lg border px-2 py-1.5"></label>
+  <label>To<input type="date" name="to" value="{{ d_to }}" class="ml-1 rounded-lg border px-2 py-1.5"></label>
+  <select name="state" class="rounded-lg border px-2 py-1.5"><option value="">Paid out or not</option><option value="unpaid" {% if state == 'unpaid' %}selected{% endif %}>Not paid out yet</option><option value="paid" {% if state == 'paid' %}selected{% endif %}>Paid out</option></select>
+  <button class="rounded-lg bg-dark px-4 py-1.5 text-white">Filter</button>{% if d_from or d_to or state %}<a href="?" class="rounded-lg border px-4 py-1.5">Clear</a>{% endif %}
+</form>
+<div class="mt-3 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">When</th><th class="p-3">Service</th><th class="p-3">Client</th><th class="p-3 text-right">Price</th><th class="p-3 text-right">You earn</th><th class="p-3">Status</th></tr></thead>
+  <tbody>{% for l in lines %}<tr class="border-t">
+    <td class="p-3 whitespace-nowrap text-gray-500">{{ l.order.paid_at|date:"j M H:i" }}</td>
+    <td class="p-3">{% if l.qty > 1 %}{{ l.qty }}× {% endif %}{{ l.name }} <a href="{% url 'pos_receipt' l.order_id %}" class="text-xs text-gray-400 hover:text-primary">#{{ l.order.ref }}</a></td>
+    <td class="p-3">{{ l.order.label }}</td>
+    <td class="p-3 text-right">{{ l.line_total|kes }}</td>
+    <td class="p-3 text-right font-semibold">{{ l.commission|kes }}</td>
+    <td class="p-3">{% if l.payout %}<a href="{% url 'pos_payout' l.payout_id %}" class="rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">Paid · #{{ l.payout.number }}</a>{% else %}<span class="rounded-full bg-orange-50 px-2 py-0.5 text-xs text-orange-700">Owed</span>{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="6" class="p-6 text-center text-gray-500">No paid services yet. They show up here as soon as the cashier takes payment.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

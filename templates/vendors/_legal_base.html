@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mx-auto max-w-3xl px-4 py-12">
+  <h1 class="text-3xl font-black">{% block legal_title %}{% endblock %}</h1>
+  <p class="mt-1 text-sm text-gray-500">Last updated {% block updated %}12 September 2026{% endblock %}</p>
+  <div class="prose prose-sm mt-8 max-w-none text-gray-700 [&_h2]:mt-8 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-dark [&_ul]:list-disc [&_ul]:pl-5 [&_p]:my-2 [&_li]:my-1">
+    {% block legal %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

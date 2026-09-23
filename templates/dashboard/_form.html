@@ -1,0 +1,26 @@
+{% if form.non_field_errors %}<div class="rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ form.non_field_errors }}</div>{% endif %}
+{% for f in form %}
+<div class="{% if f.field.widget.input_type == 'checkbox' %}flex items-center gap-2{% endif %}">
+  {% if f.field.widget.input_type == 'checkbox' %}{{ f }}<label class="text-sm font-medium">{{ f.label }}</label>
+  {% elif f.name == 'category' %}<label class="mb-1 block text-sm font-medium">{{ f.label }}</label>
+    <div class="relative" data-combo>
+      <input type="text" placeholder="Type to search categories…" autocomplete="off" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none" data-combo-input value="{% for opt in f.field.choices %}{% if opt.0|stringformat:'s' == f.value|stringformat:'s' and opt.0 %}{{ opt.1 }}{% endif %}{% endfor %}">
+      <input type="hidden" name="{{ f.html_name }}" value="{{ f.value|default_if_none:'' }}" data-combo-value>
+      <ul class="absolute z-20 mt-1 hidden max-h-56 w-full overflow-auto rounded-lg border bg-white shadow" data-combo-list>
+        <li data-id="" class="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-gray-100">No category</li>
+        {% for opt in f.field.choices %}{% if opt.0 %}<li data-id="{{ opt.0 }}" class="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100">{{ opt.1 }}</li>{% endif %}{% endfor %}
+      </ul>
+    </div>
+    <script>(function(){var box=document.querySelector('[data-combo]:not([data-ready])');if(!box)return;box.setAttribute('data-ready','1');var inp=box.querySelector('[data-combo-input]'),val=box.querySelector('[data-combo-value]'),list=box.querySelector('[data-combo-list]'),items=[].slice.call(list.children);
+      function filter(){var q=inp.value.toLowerCase();var n=0;items.forEach(function(li){var show=!q||li.textContent.toLowerCase().indexOf(q)>-1;li.classList.toggle('hidden',!show);if(show)n++});list.classList.toggle('hidden',!n)}
+      inp.addEventListener('focus',function(){filter()});inp.addEventListener('input',function(){val.value='';filter()});
+      items.forEach(function(li){li.addEventListener('mousedown',function(e){e.preventDefault();val.value=li.dataset.id;inp.value=li.dataset.id?li.textContent:'';list.classList.add('hidden')})});
+      inp.addEventListener('blur',function(){setTimeout(function(){list.classList.add('hidden');if(!val.value)inp.value=''},150)});
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var first=items.filter(function(li){return !li.classList.contains('hidden')&&li.dataset.id})[0];if(first){val.value=first.dataset.id;inp.value=first.textContent;list.classList.add('hidden')}}});})();</script>
+  {% elif f.field.widget.input_type == 'radio' %}<label class="mb-1 block text-sm font-medium">{{ f.label }}</label>
+    <div class="flex flex-wrap gap-4 rounded-lg border bg-gray-50 px-3 py-2 text-sm">{% for r in f %}<label class="flex items-center gap-2">{{ r.tag }} {{ r.choice_label }}</label>{% endfor %}</div>
+  {% else %}<label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% endif %}
+  {% if f.help_text %}<p class="mt-1 text-xs text-gray-400">{{ f.help_text }}</p>{% endif %}
+  {% if f.errors %}<p class="mt-1 text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}
+</div>
+{% endfor %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}{% load static icons %}
+{% block title %}{% if q %}“{{ q }}” — restaurants & food in Kenya | BeautyFlow{% else %}Restaurants in Kenya — menus, prices & WhatsApp orders | BeautyFlow{% endif %}{% endblock %}
+{% block meta_description %}{% if q %}Restaurants and food vendors matching “{{ q }}” on BeautyFlow — menus with prices, photos and WhatsApp ordering.{% else %}Find restaurants in Nairobi, Mombasa, Kisumu and across Kenya. Browse restaurant menus with prices, food photos, opening hours and special offers, then order on WhatsApp.{% endif %}{% endblock %}
+{% block canonical %}{{ request.scheme }}://{{ request.get_host }}/{% endblock %}
+{% block content %}
+{% if not q %}
+<!-- Hero: full-bleed photo, no visible edges — text fades in from the left -->
+<section class="relative isolate min-h-[520px] overflow-hidden bg-[#1a1a1a] md:min-h-[600px]">
+  <div class="kb absolute inset-0 -z-20" id="hero" aria-hidden="true">
+    <div class="kb-slide active" data-dir="1" style="background-image:url('{% static 'img/hero-1.jpg' %}');background-position:65% center"></div>
+    <div class="kb-slide" data-dir="2" style="background-image:url('{% static 'img/hero-2.jpg' %}');background-position:70% center"></div>
+    <div class="kb-slide" data-dir="3" style="background-image:url('{% static 'img/hero-3.jpg' %}');background-position:60% center"></div>
+  </div>
+  <div class="absolute inset-0 -z-10 bg-[#0b1b3a]/60"></div>
+  <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1b3a]/70 via-[#0b1b3a]/30 to-transparent"></div>
+  <div class="mx-auto flex min-h-[520px] max-w-6xl items-center px-4 py-14 md:min-h-[600px]">
+    <div class="hero-in w-full max-w-xl">
+      <h1 class="break-words font-heading text-3xl font-bold leading-tight tracking-tight text-white drop-shadow sm:text-4xl lg:text-5xl">Great food, <span class="text-accent">near you.</span></h1>
+      <p class="mt-4 max-w-md text-base text-white/95 sm:text-lg">Explore restaurants, hotels and food businesses across Kenya. Menus, dishes, prices, locations and offers.</p>
+      <form action="{% url 'search' %}" method="get" role="search" class="mt-6 flex w-full items-center gap-1 rounded-2xl bg-white p-1.5 shadow-xl shadow-black/15 sm:gap-2 sm:p-2">
+        <label class="flex min-w-0 flex-1 items-center gap-1.5 px-1.5 sm:px-2"><svg class="hidden h-5 w-5 flex-none text-primary sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M7 3v8m0 0a3 3 0 003-3V3M7 11v10M4 3v5a3 3 0 003 3M17 3c-2 1-3 4-3 7v11m3-18v18"/></svg>
+          <input type="search" name="q" value="{{ q }}" placeholder="Restaurant, dish or chef…" class="w-full min-w-0 bg-transparent py-2.5 text-sm text-dark placeholder-gray-400 focus:outline-none" autocomplete="off"></label>
+        <div class="relative w-28 flex-none border-l sm:w-44" data-ccombo data-submit="0">
+          <div class="flex items-center gap-1 px-1.5 sm:px-2"><svg class="h-4 w-4 flex-none text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+            <input type="text" autocomplete="off" placeholder="County" class="w-full min-w-0 bg-transparent py-2.5 text-xs text-gray-700 placeholder-gray-500 focus:outline-none sm:text-sm" data-ccombo-input><input type="hidden" name="loc" data-ccombo-value></div>
+          <ul class="absolute left-0 z-30 mt-1 hidden max-h-56 w-48 overflow-auto rounded-lg border bg-white text-left shadow" data-ccombo-list><li data-v="" class="cursor-pointer px-3 py-2 text-sm text-gray-500 hover:bg-gray-100">Anywhere</li>{% for c in counties %}<li data-v="{{ c.name }}" class="cursor-pointer px-3 py-2 text-sm text-dark hover:bg-gray-100">{{ c.name }}</li>{% endfor %}</ul>
+        </div>
+        <button class="flex flex-none items-center justify-center gap-2 rounded-xl bg-primary p-2.5 text-sm font-semibold text-white hover:bg-primary/90 sm:px-5" aria-label="Search">{% icon "search" "h-4 w-4" %}<span class="hidden sm:inline">Search</span></button>
+      </form>
+      <div class="mt-4 flex flex-wrap gap-2 text-xs">
+        {% for p in popular %}<a href="{% url 'search' %}?q={{ p|urlencode }}" class="rounded-full border border-white/30 bg-white/15 px-3 py-1 text-white backdrop-blur hover:bg-white hover:text-primary">{{ p }}</a>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="pointer-events-none absolute right-6 top-6 hidden -rotate-6 font-heading text-xl font-semibold text-white drop-shadow-lg md:block lg:right-16 lg:top-10 lg:text-2xl">Good food.<br>Great places.</div>
+  <div class="absolute bottom-5 right-6 z-10 flex gap-2 lg:right-16" id="hero-dots" aria-hidden="true"></div>
+  <script>
+  (function(){
+    var slides=[].slice.call(document.querySelectorAll('#hero .kb-slide')),dots=document.getElementById('hero-dots'),i=0,t;
+    slides.forEach(function(_,n){var d=document.createElement('button');d.className='kb-dot'+(n?'':' active');d.onclick=function(){go(n);restart();};dots.appendChild(d);});
+    function go(n){slides[i].classList.remove('active');dots.children[i].classList.remove('active');i=n%slides.length;slides[i].classList.add('active');dots.children[i].classList.add('active');}
+    function restart(){clearInterval(t);t=setInterval(function(){go(i+1)},7000);}
+    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches) restart();
+    slides.slice(1).forEach(function(s){new Image().src=s.style.backgroundImage.slice(5,-2);});
+  })();
+  </script>
+</section>
+
+<!-- Feature strip -->
+<section class="border-b border-gray-100 bg-white">
+  <div class="stagger mx-auto grid max-w-6xl grid-cols-2 gap-4 px-4 py-6 text-sm md:grid-cols-4 md:divide-x md:divide-gray-100">
+    <a href="{% url 'menus_index' %}" class="flex items-center gap-3 md:justify-center">{% icon "menu" "h-7 w-7 text-primary" %}<span><span class="block font-semibold text-black">Explore menus</span><span class="text-gray-500">See what's on offer</span></span></a>
+    <a href="{% url 'types_index' 'restaurants' %}" class="flex items-center gap-3 md:justify-center">{% icon "pin" "h-7 w-7 text-primary" %}<span><span class="block font-semibold text-black">Find locations</span><span class="text-gray-500">Get directions easily</span></span></a>
+    <a href="{% url 'menus_index' %}" class="flex items-center gap-3 md:justify-center">{% icon "tag" "h-7 w-7 text-primary" %}<span><span class="block font-semibold text-black">Check prices</span><span class="text-gray-500">Plan your visit</span></span></a>
+    <a href="{% url 'deals' %}" class="flex items-center gap-3 md:justify-center">{% icon "star" "h-7 w-7 text-primary" %}<span><span class="block font-semibold text-black">Discover offers</span><span class="text-gray-500">Save on your favourites</span></span></a>
+  </div>
+</section>
+
+<!-- Popular categories -->
+<section class="bg-[#f7f7f7]">
+  <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="reveal flex items-center justify-between"><h2 class="font-heading text-2xl font-bold text-black">Popular categories</h2><a href="{% url 'types_index' 'restaurants' %}" class="text-sm font-medium text-primary">View all →</a></div>
+    <div class="stagger mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {% for slug, img, label, blurb, ic in categories_cards %}
+      <a href="{{ slug }}" class="group lift overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div class="relative"><img src="{% static img %}" alt="{{ label }}" loading="lazy" class="aspect-[16/10] w-full object-cover transition group-hover:scale-105">
+          <span class="absolute -bottom-5 left-4 grid h-11 w-11 place-items-center rounded-full bg-white shadow">{% icon ic "h-5 w-5 text-dark" %}</span></div>
+        <div class="px-4 pb-4 pt-7"><h3 class="font-heading text-lg font-semibold text-black">{{ label }}</h3><p class="text-sm text-gray-500">{{ blurb }}</p></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="mx-auto max-w-6xl px-4 py-12">
+  <div class="reveal mb-4 flex items-center justify-between">
+    <h2 class="font-heading text-2xl font-bold text-black">{% if q %}Results for “{{ q }}”{% else %}Places to eat{% endif %}</h2>
+    <a href="{% url 'signup' %}" class="text-sm font-medium text-primary">List your business →</a>
+  </div>
+  <div id="vendors" class="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{% include "partials/vendor_cards.html" %}</div>
+  <div id="vendors-pagination">{% include "partials/pagination.html" %}</div>
+</section>
+{% if not q %}
+<section class="mx-auto max-w-6xl px-4 pb-12">
+  <div class="stagger grid gap-8 md:grid-cols-3">
+    <div><h2 class="font-heading text-lg font-semibold">Browse by place</h2><ul class="mt-3 space-y-1 text-sm text-gray-700">{% for l in seo_locations %}<li><a href="{% url 'restaurants_in' 'restaurants' l.slug %}" class="hover:text-primary">Restaurants in {{ l.name }}</a></li>{% empty %}<li class="text-gray-400">Coming soon</li>{% endfor %}</ul></div>
+    <div><h2 class="font-heading text-lg font-semibold">Browse by food</h2><ul class="mt-3 space-y-1 text-sm text-gray-700">{% for t in seo_tags %}<li><a href="{% url 'food_tag' t.slug %}" class="hover:text-primary">{{ t.name }} in Kenya</a></li>{% empty %}<li class="text-gray-400">Coming soon</li>{% endfor %}</ul></div>
+    <div><h2 class="font-heading text-lg font-semibold">Own a food business?</h2><ul class="mt-3 space-y-1 text-sm text-gray-700"><li><a href="{% url 'owner_page' 'list-your-restaurant' %}" class="hover:text-primary">List your restaurant in Kenya</a></li><li><a href="{% url 'owner_page' 'list-your-hotel' %}" class="hover:text-primary">Put your hotel menu online</a></li><li><a href="{% url 'owner_page' 'digital-menu' %}" class="hover:text-primary">Digital QR-code menu</a></li><li><a href="{% url 'owner_page' 'restaurant-marketing' %}" class="hover:text-primary">Restaurant marketing in Kenya</a></li><li><a href="{% url 'owner_page' 'chefs-and-caterers' %}" class="hover:text-primary">Chefs &amp; caterers directory</a></li></ul></div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

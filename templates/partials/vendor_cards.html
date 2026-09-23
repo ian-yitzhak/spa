@@ -1,0 +1,23 @@
+{% for v in vendors %}
+<a href="{{ v.get_absolute_url }}" class="group lift overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
+  <div class="aspect-[16/9] bg-gray-100">
+    {% if v.cover %}<img src="{{ v.cover.url }}" alt="" class="h-full w-full object-cover">
+    {% elif v.logo %}<img src="{{ v.logo.url }}" alt="" class="h-full w-full object-contain p-6">
+    {% else %}<div class="grid h-full place-items-center bg-gradient-to-br from-gray-100 to-gray-200 text-4xl font-black text-gray-300">{{ v.brand_name|first }}</div>{% endif %}
+  </div>
+  <div class="p-4">
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="font-bold group-hover:text-primary">{{ v.brand_name }}</h3>
+      <span class="flex flex-none items-center gap-1">{% if v.is_approved %}<svg class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-label="Verified"><path fill-rule="evenodd" d="M16.403 12.652a3 3 0 000-5.304 3 3 0 00-3.75-3.751 3 3 0 00-5.305 0 3 3 0 00-3.751 3.75 3 3 0 000 5.305 3 3 0 003.75 3.751 3 3 0 005.305 0 3 3 0 003.751-3.75zm-2.546-4.46a.75.75 0 00-1.214-.883l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>{% endif %}{% with o=v.is_open_now %}{% if o is True %}<span class="rounded-full bg-green-50 px-2 py-0.5 text-[11px] font-medium text-green-700">Open</span>{% elif o is False %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500">Closed</span>{% endif %}{% endwith %}</span>
+    </div>
+    <p class="mt-0.5 line-clamp-1 text-sm text-gray-500">{{ v.tagline|default:v.town }}</p>
+    <div class="mt-2 flex items-center gap-2 text-xs text-gray-500">
+      {% with r=v.rating %}{% if r %}<span class="text-accent">★</span> {{ r|floatformat:1 }} · {% endif %}{% endwith %}{{ v.type_label }}{% if v.town %} · {{ v.town }}{% elif v.county %} · {{ v.county }}{% endif %}
+      {% if v.delivers %}· Delivery{% endif %}
+    </div>
+  </div>
+</a>
+{% empty %}
+<p class="col-span-full py-10 text-center text-gray-500">No vendors found{% if q %} for “{{ q }}”{% endif %}.</p>
+{% endfor %}
+{% if request.htmx %}<div id="vendors-pagination" hx-swap-oob="true">{% include "partials/pagination.html" %}</div>{% endif %}

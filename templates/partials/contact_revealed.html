@@ -1,0 +1,9 @@
+{% load icons %}
+<dl class="mt-3 space-y-2 text-sm">
+  {% if vendor.phone %}<div class="flex justify-between gap-4"><dt class="text-gray-500">Phone</dt><dd><a href="tel:{{ vendor.phone }}" class="font-medium hover:text-primary">{{ vendor.phone }}</a></dd></div>{% endif %}
+  {% if vendor.whatsapp_link %}<div class="flex justify-between gap-4"><dt class="text-gray-500">WhatsApp</dt><dd><a href="{{ vendor.whatsapp_link }}" target="_blank" rel="noopener" class="font-medium hover:text-primary">+{{ vendor.whatsapp_msisdn }}</a></dd></div>{% endif %}
+</dl>
+<div class="mt-3 flex gap-2">
+  {% if vendor.whatsapp_link %}<a href="{{ vendor.whatsapp_link }}?text=Hi {{ vendor.brand_name|urlencode }}, I found you on BeautyFlow." target="_blank" rel="noopener" class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-sm font-semibold text-white">{% icon "whatsapp" "h-4 w-4" %}WhatsApp</a>{% endif %}
+  {% if vendor.phone %}<a href="tel:{{ vendor.phone }}" class="flex-1 rounded-lg border py-2 text-center text-sm font-semibold">Call</a>{% endif %}
+</div>

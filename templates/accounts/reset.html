@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Set a new password — BeautyFlow{% endblock %}{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm px-4 py-16">
+  <h1 class="font-heading text-3xl font-semibold text-black">Set a new password</h1>
+  <p class="mt-2 text-gray-600">Enter the code we sent to <strong>{{ email }}</strong> and choose a new password.</p>
+  <form method="post" class="mt-6 space-y-4">{% csrf_token %}
+    <div><label class="mb-1 block text-sm font-medium">6-digit code</label>{{ code_form.code }}{% if code_form.code.errors %}<p class="mt-1 text-xs text-red-600">{{ code_form.code.errors.0 }}</p>{% endif %}</div>
+    {% with form=pw_form %}{% include "accounts/_pw_fields.html" %}{% endwith %}
+    <button class="w-full rounded-lg bg-primary py-3 font-semibold text-white hover:bg-primary/90">Save new password</button>
+  </form>
+  <form method="post" action="{% url 'resend_code' %}" class="mt-4 text-center text-sm text-gray-500">{% csrf_token %}Didn't get it? <button class="font-medium text-primary hover:underline">Resend the code</button></form>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}Profile{% endblock %}{% block dash %}
+<div class="flex items-center gap-4">
+  <div class="h-16 w-16 flex-none overflow-hidden rounded-full bg-gray-100">{% if st.photo %}<img src="{{ st.photo.url }}" alt="" class="h-full w-full object-cover">{% else %}<div class="flex h-full w-full items-center justify-center text-2xl font-bold text-gray-400">{{ st.name|slice:":1" }}</div>{% endif %}</div>
+  <div><h1 class="text-2xl font-black">{{ st.name }}</h1><p class="text-sm text-gray-500">{{ st.job_title|default:st.get_role_display }} at {{ vendor.brand_name }}</p></div>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+  <section class="rounded-2xl border p-5 text-sm">
+    <h2 class="font-bold">Your details</h2>
+    <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+      <dt class="text-gray-500">Login email</dt><dd>{{ user.email }}</dd>
+      <dt class="text-gray-500">Phone</dt><dd>{{ user.phone|default:"—" }}</dd>
+      {% if st.payout_phone %}<dt class="text-gray-500">Paid to</dt><dd>{{ st.payout_phone }}</dd>{% endif %}
+      <dt class="text-gray-500">ID number</dt><dd>{{ st.national_id|default:"—" }}</dd>
+      <dt class="text-gray-500">Started</dt><dd>{{ st.hired_on|date:"j M Y"|default:"—" }}</dd>
+      {% if st.branch and many_branches %}<dt class="text-gray-500">Branch</dt><dd>{{ st.branch.name }}</dd>{% endif %}
+    </dl>
+    <p class="mt-4 text-xs text-gray-500">Something wrong? Ask the owner to update it. <a href="{% url 'change_password' %}" class="text-primary underline">Change your password</a></p>
+  </section>
+  {% if st.role == 'staff' %}
+  <section class="rounded-2xl border p-5 text-sm">
+    <h2 class="font-bold">What you earn</h2>
+    <p class="mt-2">Default: <strong>{{ st.rate_label }}</strong> {% if st.commission_type == 'percent' %}of each service you do{% else %}for each service you do{% endif %}.</p>
+    {% if links %}<div class="mt-3 divide-y rounded-xl border">{% for l in links %}<div class="flex justify-between px-3 py-2"><span>{{ l.service.name }}</span><span class="{% if l.has_own_rate %}font-semibold{% else %}text-gray-500{% endif %}">{{ l.rate_label }}</span></div>{% endfor %}</div>
+    {% else %}<p class="mt-2 text-gray-500">No services attached yet — you can be picked for any service.</p>{% endif %}
+    <p class="mt-3 rounded-lg bg-gray-50 p-3">Owed to you now: <strong>KES {{ balance|kes }}</strong></p>
+  </section>
+  {% endif %}
+</div>
+<h2 class="mt-8 font-bold">Payslips</h2>
+<div class="mt-2 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Payout</th><th class="p-3">Paid</th><th class="p-3">Covers</th><th class="p-3">Method</th><th class="p-3 text-right">Amount</th><th></th></tr></thead>
+  <tbody>{% for p in payouts %}<tr class="border-t"><td class="p-3 font-semibold">#{{ p.number }}</td><td class="p-3">{{ p.paid_at|date:"j M Y" }}</td><td class="p-3 text-gray-600">{% if p.period_from %}{{ p.period_from|date:"j M" }} – {{ p.period_to|date:"j M" }} · {% endif %}{{ p.services_count }} services</td><td class="p-3">{{ p.get_method_display }}{% if p.reference %}<div class="text-xs text-gray-400">{{ p.reference }}</div>{% endif %}</td><td class="p-3 text-right font-semibold">KES {{ p.amount|kes }}</td><td class="p-3"><a href="{% url 'pos_payout' p.pk %}" class="text-xs text-primary">Payslip</a></td></tr>
+  {% empty %}<tr><td colspan="6" class="p-6 text-center text-gray-500">No payouts yet.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% if page.paginator.num_pages > 1 %}
+<nav class="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm" aria-label="Pagination">
+  <span class="text-gray-500">{{ page.start_index }}–{{ page.end_index }} of {{ page.paginator.count }}</span>
+  <div class="flex gap-1">
+    {% if page.has_previous %}<a href="?{{ qs }}page={{ page.previous_page_number }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50">Previous</a>{% endif %}
+    {% for n in page.paginator.get_elided_page_range %}{% if n == page.paginator.ELLIPSIS %}<span class="px-2 py-1.5 text-gray-400">…</span>{% elif n == page.number %}<span class="rounded-lg bg-dark px-3 py-1.5 text-white">{{ n }}</span>{% else %}<a href="?{{ qs }}page={{ n }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50">{{ n }}</a>{% endif %}{% endfor %}
+    {% if page.has_next %}<a href="?{{ qs }}page={{ page.next_page_number }}" class="rounded-lg border px-3 py-1.5 hover:bg-gray-50">Next</a>{% endif %}
+  </div>
+</nav>
+{% endif %}

@@ -1,0 +1,36 @@
+{% extends "pos/base.html" %}{% load icons %}{% block pos_title %}POS{% endblock %}{% block dash %}
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-black">Point of sale</h1>
+  <div class="flex items-center gap-2 text-sm">
+    <a href="{% url 'pos_bookings' %}?date={% now 'Y-m-d' %}" class="rounded-lg border px-3 py-1.5 font-semibold">Today's bookings</a>
+    <a href="{% url 'pos_open' %}" class="rounded-lg border px-3 py-1.5 font-semibold">Open tickets{% if open_count %} <span class="ml-1 rounded-full bg-primary px-2 text-xs text-white">{{ open_count }}</span>{% endif %}</a>
+  </div>
+</div>
+{% if bookings_today %}
+<div class="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-accent bg-accent/10 p-3 text-sm">
+  <span class="font-semibold">Booked today</span>
+  {% for b in bookings_today %}<form method="post" action="{% url 'pos_booking_start' b.pk %}" class="inline">{% csrf_token %}
+    <button class="rounded-full bg-white px-2.5 py-1 text-xs font-medium hover:bg-primary hover:text-white" title="Start the sale">{{ b.time|time:"H:i" }} · {{ b.name }} · {{ b.service.name|default:"—" }}{% if b.staff %} · {{ b.staff.name }}{% endif %}</button></form>{% endfor %}
+</div>
+{% endif %}
+<div class="mt-4 grid gap-4 lg:grid-cols-12">
+  <div class="lg:col-span-7">
+    <div class="rounded-xl border bg-gray-50 p-3">
+      <div class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Who is doing it?</div>
+      <div class="flex flex-wrap gap-2">
+        <a href="?staff=" class="rounded-full border px-3 py-1.5 text-sm {% if not picked %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">Pick on the ticket</a>
+        {% for s in team %}<a href="?staff={{ s.pk }}" class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm {% if picked and picked.pk == s.pk %}border-primary bg-primary text-white{% else %}bg-white hover:border-primary{% endif %}">
+          {% if s.photo %}<img src="{{ s.photo.url }}" alt="" class="h-5 w-5 rounded-full object-cover">{% endif %}{{ s.name }}</a>{% empty %}
+        <a href="{% url 'pos_staff' %}" class="text-sm text-primary underline">Add your staff first</a>{% endfor %}
+      </div>
+      {% if picked %}<p class="mt-2 text-xs text-gray-500">Services you tap go on the ticket as done by <strong>{{ picked.name }}</strong>{% if picked.service_links.exists %} — showing only what they do{% endif %}.</p>{% endif %}
+    </div>
+    <form class="mt-3 flex gap-2" onsubmit="return false" hx-get="{% url 'pos_home' %}" hx-target="#menu-grid" hx-trigger="input changed delay:200ms from:input, change from:select, search from:input" hx-push-url="true">
+      <input type="search" name="q" value="{{ q }}" placeholder="Search services…" autofocus class="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm">
+      {% if categories %}<select name="cat" class="rounded-lg border px-2 py-2 text-sm"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.pk }}" {% if cat == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>{% endif %}
+    </form>
+    <div id="menu-grid" class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">{% include "pos/_menu_grid.html" %}</div>
+  </div>
+  <div class="lg:col-span-5"><div id="order-panel" class="lg:sticky lg:top-20">{% include "pos/_order.html" %}</div></div>
+</div>
+{% endblock %}

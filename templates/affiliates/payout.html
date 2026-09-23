@@ -1,0 +1,20 @@
+{% extends "affiliates/base.html" %}{% block page_title %}Payment details{% endblock %}{% block aff %}
+<h1 class="text-2xl font-black">Payment details</h1>
+<p class="mt-1 text-sm text-gray-500">Where we send your earnings. Payouts are made by BeautyFlow admin and you'll see the reference on each paid sign-up.</p>
+{% if aff.has_payout_details %}<div class="mt-3 rounded-xl bg-green-50 p-3 text-sm text-green-800">Current: {{ aff.payout_summary }}</div>{% endif %}
+<form method="post" class="mt-4 max-w-lg space-y-4">{% csrf_token %}
+  {% if form.non_field_errors %}<p class="text-xs text-red-600">{{ form.non_field_errors.0 }}</p>{% endif %}
+  <div><label class="mb-1 block text-sm font-medium">Pay me via</label>
+    <div class="flex gap-4 rounded-lg border bg-gray-50 px-3 py-2 text-sm">{% for r in form.payout_method %}<label class="flex items-center gap-2">{{ r.tag }} {{ r.choice_label }}</label>{% endfor %}</div></div>
+  <div id="mpesa-fields" class="space-y-3 rounded-2xl border p-4">
+    <h2 class="font-bold">M-Pesa</h2>
+    {% for f in form %}{% if f.name == 'mpesa_number' or f.name == 'mpesa_name' %}<div><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>{% endif %}{% endfor %}
+  </div>
+  <div id="bank-fields" class="space-y-3 rounded-2xl border p-4">
+    <h2 class="font-bold">Bank transfer</h2>
+    {% for f in form %}{% if f.name|slice:":5" == 'bank_' %}<div><label class="mb-1 block text-sm font-medium">{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="text-xs text-red-600">{{ f.errors.0 }}</p>{% endif %}</div>{% endif %}{% endfor %}
+  </div>
+  <button class="rounded-lg bg-primary px-6 py-2.5 font-semibold text-white">Save payment details</button>
+</form>
+<script>(function(){function sync(){var m=document.querySelector('[name=payout_method]:checked');var v=m?m.value:'mpesa';document.getElementById('mpesa-fields').classList.toggle('hidden',v!=='mpesa');document.getElementById('bank-fields').classList.toggle('hidden',v!=='bank')}document.querySelectorAll('[name=payout_method]').forEach(function(r){r.addEventListener('change',sync)});sync()})();</script>
+{% endblock %}

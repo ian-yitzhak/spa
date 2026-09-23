@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Forgot password — BeautyFlow{% endblock %}{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm px-4 py-16">
+  <h1 class="font-heading text-3xl font-semibold text-black">Forgot your password?</h1>
+  <p class="mt-2 text-gray-600">Enter your email and we'll send a 6-digit code to set a new one.</p>
+  <form method="post" class="mt-6 space-y-4">{% csrf_token %}
+    <div><label class="mb-1 block text-sm font-medium">Email</label>{{ form.email }}{% if form.email.errors %}<p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>{% endif %}</div>
+    {% include "partials/turnstile.html" %}
+    <button class="w-full rounded-lg bg-primary py-3 font-semibold text-white hover:bg-primary/90">Send code</button>
+  </form>
+  <p class="mt-4 text-center text-sm text-gray-500"><a href="{% url 'login' %}" class="text-primary">Back to log in</a></p>
+</div>
+{% endblock %}

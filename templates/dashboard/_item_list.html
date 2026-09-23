@@ -1,0 +1,4 @@
+<div class="mt-4 divide-y rounded-2xl border">
+  {% for item in items %}{% include "partials/item_row.html" %}{% empty %}<p class="p-4 text-sm text-gray-500">{% if q %}No services match “{{ q }}”.{% else %}No services yet — add your first one.{% endif %}</p>{% endfor %}
+</div>
+{% include "partials/pagination.html" %}

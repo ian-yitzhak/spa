@@ -1,0 +1,1 @@
+{% with r=vendor.rating %}{% if r %}<span class="text-accent">★</span> <strong class="text-dark">{{ r|floatformat:1 }}</strong> ({{ vendor.review_count }} review{{ vendor.review_count|pluralize }}){% else %}No reviews yet{% endif %}{% endwith %}

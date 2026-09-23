@@ -1,0 +1,13 @@
+<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;color:#221A1F">
+  <div style="background:#221A1F;padding:18px 24px;border-radius:12px 12px 0 0"><img src="{{ site_url }}/static/img/logo.png" alt="BeautyFlow" style="height:32px;background:#fff;border-radius:6px;padding:2px 6px"></div>
+  <div style="border:1px solid #eee;border-top:0;padding:24px;border-radius:0 0 12px 12px">
+    <p>Hi {{ vendor.owner.first_name|default:vendor.brand_name }},</p>
+    {% if kind == 'expired' %}
+    <p><strong>Your {{ label }} for {{ vendor.brand_name }} expired on {{ expires|date:"j M Y" }}.</strong> {% if label == 'Premium listing' %}Your menu is now hidden from customers — only the first item shows.{% else %}POS, orders, sales and reports are locked until you renew. Your data is safe.{% endif %}</p>
+    {% else %}
+    <p><strong>Your {{ label }} for {{ vendor.brand_name }} ends on {{ expires|date:"j M Y" }}</strong> ({% if kind == '1d' %}tomorrow{% else %}in {{ days }} days{% endif %}). {% if label == 'Premium listing' %}After that your menu is hidden from customers until you renew.{% else %}After that POS, orders, sales and reports are locked until you renew.{% endif %}</p>
+    {% endif %}
+    <p style="margin:22px 0"><a href="{{ renew_url }}" style="background:#B0426C;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:600">Renew now — KES {{ fee|floatformat:"-2" }}/month</a></p>
+    <p style="font-size:13px;color:#666">Choose 1, 3, 6 or 12 months. Questions? WhatsApp <a href="https://wa.me/{{ site.support_whatsapp }}">+{{ site.support_whatsapp }}</a>.</p>
+  </div>
+</div>

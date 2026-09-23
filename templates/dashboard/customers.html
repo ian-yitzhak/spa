@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}{% load icons %}{% block page_title %}Customers{% endblock %}{% block dash %}
+{% if show_all_branches_note %}<p class="mb-4 rounded-xl bg-gray-50 p-3 text-sm text-gray-600">Customers are shared across all your branches — the same person may eat at any of them.</p>{% endif %}
+<div class="flex flex-wrap items-center justify-between gap-2"><h1 class="text-2xl font-black">Customers</h1><a href="{% url 'customers_export' %}" class="rounded-lg border px-3 py-1.5 text-sm">Download CSV</a></div>
+<p class="mt-1 text-sm text-gray-500">{{ count }} customer{{ count|pluralize }} · {{ totals.n|default:0 }} orders · KES {{ totals.spent|default:0|kes }} — built automatically from orders, reservations and inquiries. Yours to keep.</p>
+<details class="mt-4 rounded-2xl border p-4"><summary class="cursor-pointer font-bold">Send an offer to your customers (WhatsApp broadcast)</summary>
+  <div class="mt-3 grid gap-3 md:grid-cols-2">
+    <div><label class="mb-1 block text-sm font-medium">Message</label><textarea id="bc" rows="4" class="w-full rounded-lg border px-3 py-2 text-sm">Hi! This week at {{ vendor.brand_name }}: [your offer]. Show this message to claim. Book here: {{ request.scheme }}://{{ request.get_host }}{{ vendor.get_absolute_url }}</textarea>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('bc').value);this.textContent='Copied'" class="mt-2 rounded-lg bg-dark px-4 py-2 text-sm font-semibold text-white">Copy message</button></div>
+    <div class="text-sm text-gray-600"><p class="font-medium text-dark">How to send</p><ol class="mt-1 list-decimal space-y-1 pl-5"><li>Download the CSV above and import the numbers to your phone contacts (or copy them).</li><li>In WhatsApp Business: <em>New broadcast</em> → select those contacts.</li><li>Paste the message and send. Each customer receives it as a normal chat.</li></ol><p class="mt-2 text-xs text-gray-400">WhatsApp delivers broadcasts only to people who have your number saved — encourage customers to save it.</p></div>
+  </div>
+</details>
+<form method="get" class="mt-4 flex flex-wrap gap-2">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name or phone" class="min-w-0 flex-1 rounded-lg border px-3 py-2">
+  <select name="sort" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">Most recent</option><option value="spent" {% if sort == 'spent' %}selected{% endif %}>Top spenders</option><option value="orders" {% if sort == 'orders' %}selected{% endif %}>Most orders</option></select>
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Search</button>
+</form>
+<div class="mt-3 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">Customer</th><th class="p-3">Orders</th><th class="p-3">Spent</th><th class="p-3">Last seen</th><th class="p-3"></th></tr></thead>
+  <tbody>{% for c in customers %}<tr class="border-t">
+    <td class="p-3"><div class="font-semibold">{{ c.name|default:"—" }}</div><div class="text-xs text-gray-500">+{{ c.phone }}</div></td>
+    <td class="p-3">{{ c.orders_count }}</td><td class="p-3">KES {{ c.total_spent|kes }}</td>
+    <td class="p-3 text-gray-500">{{ c.last_seen|date:"j M Y" }}</td>
+    <td class="p-3 text-right whitespace-nowrap"><a href="{{ c.wa_link }}" target="_blank" class="rounded-lg bg-green-600 px-3 py-1 text-xs font-semibold text-white">WhatsApp</a></td>
+  </tr>{% empty %}<tr><td colspan="5" class="p-6 text-center text-gray-500">No customers yet — they appear as orders and inquiries come in.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "pos/base.html" %}{% block pos_title %}Edit booking{% endblock %}{% block dash %}
+<a href="{% url 'pos_bookings' %}" class="text-sm text-gray-500 hover:text-primary">← Bookings</a>
+<h1 class="mt-2 text-2xl font-black">{{ b.name }} · {{ b.date|date:"D j M" }} {{ b.time|time:"H:i" }}</h1>
+<form method="post" class="mt-4 grid max-w-3xl gap-3 sm:grid-cols-2">{% csrf_token %}
+  {% for f in form %}{% include "pos/_field.html" with f=f cls="" %}{% endfor %}
+  <div class="sm:col-span-2"><button class="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white">Save</button></div>
+</form>
+{% endblock %}

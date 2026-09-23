@@ -1,0 +1,25 @@
+<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#221A1F">
+  <p style="font-size:15px">Hi {{ name }},</p>
+  <p style="font-size:15px">{% if kind == 'welcome' %}Welcome to BeautyFlow, and thank you for listing <strong>{{ brand }}</strong>.{% else %}<strong>{{ brand }}</strong> has been on BeautyFlow for a week now. Here is what you are not using yet.{% endif %}</p>
+  <p style="font-size:15px;margin-bottom:8px">BeautyFlow will help your business go digital with:</p>
+  <table style="font-size:14px;line-height:1.5;border-collapse:collapse">
+    <tr><td style="padding:4px 0"><strong>QR code menus</strong>: customers scan and view the menu instantly from their phones.</td></tr>
+    <tr><td style="padding:4px 0"><strong>Less printing</strong>: no constant cost of printing and replacing physical menus.</td></tr>
+    <tr><td style="padding:4px 0"><strong>Easy updates</strong>: change prices, dishes and offers instantly.</td></tr>
+    <tr><td style="padding:4px 0"><strong>Online ordering</strong>: customers can order directly from the digital menu.</td></tr>
+    <tr><td style="padding:4px 0"><strong>More visibility</strong>: your business can be discovered by more customers on BeautyFlow.</td></tr>
+    <tr><td style="padding:4px 0"><strong>Marketing</strong>: showcase your food, offers and promotions.</td></tr>
+    <tr><td style="padding:4px 0"><strong>More customers</strong>: makes it easier for new customers to discover and order.</td></tr>
+    <tr><td style="padding:4px 0"><strong>POS and sales</strong>: manage orders and track your sales.</td></tr>
+  </table>
+  {% if kind == 'welcome' %}
+  <p style="font-size:15px">Start by adding your dishes and prices, then print your QR code.</p>
+  <p><a href="{{ site_url }}/dashboard/menu/" style="display:inline-block;background:#B0426C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:600">Add my menu</a></p>
+  {% else %}
+  <p style="font-size:15px">The <strong>POS module is {{ pos_fee }} a month</strong> and includes the Premium listing at no extra cost: unlimited menu items and photos, your offers on the Deals page, and the point of sale with the kitchen screen, staff accounts, sales and reports.</p>
+  <p><a href="{{ site_url }}/dashboard/upgrade/" style="display:inline-block;background:#B0426C;color:#fff;text-decoration:none;padding:12px 22px;border-radius:6px;font-weight:600">See the plans</a></p>
+  {% endif %}
+  <p style="font-size:14px;color:#555">Your page: <a href="{{ site_url }}{{ url }}" style="color:#B0426C">{{ site_url }}{{ url }}</a></p>
+  <p style="font-size:14px;color:#555">Need a hand? WhatsApp us on <a href="https://wa.me/{{ support_whatsapp }}" style="color:#B0426C">+{{ support_whatsapp }}</a>.</p>
+  <p style="font-size:12px;color:#999;border-top:1px solid #eee;padding-top:12px">BeautyFlow · <a href="{{ site_url }}" style="color:#999">{{ site_url }}</a></p>
+</div>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}{{ title }} — BeautyFlow{% endblock %}{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm px-4 py-16">
+  <h1 class="text-3xl font-black">{{ title }}</h1>
+  <p class="mt-2 text-gray-600">{{ lead }} <strong class="text-dark">{{ email }}</strong>. It expires in 10 minutes.</p>
+  <form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    <div>{{ form.code }}{% if form.code.errors %}<p class="mt-2 text-sm text-red-600">{{ form.code.errors.0 }}</p>{% endif %}</div>
+    <button class="w-full rounded-lg bg-primary py-3 font-semibold text-white hover:bg-primary/90">Continue</button>
+  </form>
+  <form method="post" action="{{ resend_url }}" class="mt-4 text-center text-sm text-gray-500">{% csrf_token %}
+    Didn't get it? Check your spam folder or <button class="font-medium text-primary hover:underline">resend the code</button>.
+  </form>
+  <p class="mt-6 text-center text-xs text-gray-400"><a href="{% url 'login' %}" class="hover:text-primary">Use a different account</a></p>
+</div>
+{% endblock %}

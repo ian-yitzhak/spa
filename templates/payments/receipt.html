@@ -1,0 +1,18 @@
+<div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;color:#221A1F">
+  <div style="background:#221A1F;color:#fff;padding:20px 24px;border-radius:12px 12px 0 0"><img src="{{ site_url }}/static/img/logo.png" alt="BeautyFlow" style="height:32px;background:#fff;border-radius:6px;padding:2px 6px;vertical-align:middle"> &nbsp;<span style="color:#aaa">Payment receipt</span></div>
+  <div style="border:1px solid #eee;border-top:0;padding:24px;border-radius:0 0 12px 12px">
+    <p>Hi {{ vendor.owner.first_name|default:vendor.brand_name }},</p>
+    <p>We received your {{ p.get_product_display }} subscription payment. Thank you!</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:6px 0;color:#666">Business</td><td style="text-align:right"><strong>{{ vendor.brand_name }}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666">Amount</td><td style="text-align:right"><strong>KES {{ p.amount|floatformat:"-2" }}</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#666">Paid via</td><td style="text-align:right">{% if p.source == "manual" %}Recorded by BeautyFlow{% else %}Paystack{% if p.channel %} ({{ p.channel }}){% endif %}{% endif %}</td></tr>
+            <tr><td style="padding:6px 0;color:#666">Invoice</td><td style="text-align:right">{{ p.api_ref }}</td></tr>
+      <tr><td style="padding:6px 0;color:#666">Date</td><td style="text-align:right">{{ p.applied_at|date:"j M Y H:i" }}</td></tr>
+      <tr><td style="padding:6px 0;color:#666">Period</td><td style="text-align:right">{{ p.months }} month{{ p.months|pluralize }}</td></tr>
+      <tr style="border-top:1px solid #eee"><td style="padding:10px 0;color:#666">{{ p.get_product_display }} active until</td><td style="text-align:right;padding-top:10px"><strong style="color:#B0426C">{{ p.expires_at|date:"j M Y" }}</strong></td></tr>
+    </table>
+    <p style="margin-top:20px"><a href="{{ site_url }}/dashboard/" style="background:#B0426C;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600">Open dashboard</a></p>
+    <p style="font-size:12px;color:#888">Your public page: <a href="{{ site_url }}{{ vendor.get_absolute_url }}">{{ site_url }}{{ vendor.get_absolute_url }}</a><br>Questions? WhatsApp +{{ site.support_whatsapp }} · {{ site.support_email }}</p>
+  </div>
+</div>

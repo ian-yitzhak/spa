@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Check your email — BeautyFlow{% endblock %}{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-sm px-4 py-16 text-center">
+  <h1 class="font-heading text-2xl font-semibold text-black">Check your email</h1>
+  <p class="mt-2 text-gray-600">If an account exists for <strong>{{ email }}</strong>, we've sent a 6-digit code. It expires in 10 minutes.</p>
+  <a href="{% url 'reset_password' %}" class="mt-6 inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white">I have the code</a>
+</div>
+{% endblock %}

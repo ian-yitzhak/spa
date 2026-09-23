@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Restaurant menus in Kenya with prices | BeautyFlow{% endblock %}
+{% block meta_description %}Browse restaurant, hotel and café menus across Kenya with up-to-date prices and photos. Every menu is published by the business itself. Order on WhatsApp.{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-6xl px-4 py-10">
+  <h1 class="font-heading text-3xl font-semibold text-black">Restaurant menus in Kenya</h1>
+  <p class="mt-2 max-w-3xl text-gray-600">Menus with prices, published and updated by the restaurants, hotels, cafés and kibandas themselves.</p>
+  <div class="stagger mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{% include "partials/vendor_cards.html" %}</div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<form method="post" action="{% url 'ap_referrals_bulk' %}" id="bulk">{% csrf_token %}
+  <div class="mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-gray-50 p-3 text-sm">
+    <span class="font-medium"><span id="sel-count">0</span> selected</span>
+    <input name="paid_ref" placeholder="Payment reference (M-Pesa code / batch)" class="min-w-0 flex-1 rounded-lg border px-3 py-1.5">
+    <button name="action" value="paid" onclick="return confirm('Mark the selected qualified referrals as PAID with this reference?')" class="rounded-lg bg-green-600 px-4 py-1.5 font-semibold text-white">Mark as paid</button>
+    <button name="action" value="recheck" class="rounded-lg border px-3 py-1.5">Re-check</button>
+    <button name="action" value="reject" onclick="return confirm('Reject the selected referrals?')" class="rounded-lg border px-3 py-1.5 text-primary">Reject</button>
+  </div>
+  <div class="mt-2 overflow-x-auto rounded-2xl border">
+    <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3"><input type="checkbox" onclick="document.querySelectorAll('.rid').forEach(c=>c.checked=this.checked);cnt()"></th><th class="p-3">Business</th>{% if not aff %}<th class="p-3">Affiliate</th>{% endif %}<th class="p-3">Signed up</th><th class="p-3">Products</th><th class="p-3">Status</th><th class="p-3">Reward</th><th class="p-3">Paid</th></tr></thead>
+    <tbody>{% for r in refs %}<tr class="border-t align-top {% if r.flagged %}bg-red-50/50{% endif %}">
+      <td class="p-3"><input type="checkbox" name="ids" value="{{ r.pk }}" class="rid" onclick="cnt()"></td>
+      <td class="p-3"><a href="{% url 'ap_vendor' r.vendor.pk %}" class="font-semibold hover:text-primary">{{ r.vendor.brand_name }}</a><div class="text-xs text-gray-500">{{ r.vendor.owner.email }} · {{ r.vendor.owner.phone }}{% if not r.vendor.owner.email_verified %} · <span class="text-primary">email unverified</span>{% endif %}</div>{% if r.flagged %}<div class="text-xs text-primary">⚑ {{ r.flag_reason }}</div>{% endif %}</td>
+      {% if not aff %}<td class="p-3"><a href="{% url 'ap_affiliate' r.affiliate.pk %}" class="hover:text-primary">{{ r.affiliate.user.first_name }}</a><div class="font-mono text-xs text-gray-500">{{ r.affiliate.code }}</div><div class="text-xs text-gray-500">{{ r.affiliate.payout_summary|default:"no payment details" }}</div></td>{% endif %}
+      <td class="p-3 whitespace-nowrap">{{ r.created_at|date:"j M Y" }}<div class="text-xs text-gray-400">{{ r.signup_ip|default:"" }}</div></td>
+      <td class="p-3">{{ r.vendor.items.count }}</td>
+      <td class="p-3"><span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if r.status == 'paid' %}bg-green-50 text-green-700{% elif r.status == 'qualified' %}bg-orange-50 text-orange-700{% elif r.status == 'rejected' %}bg-red-50 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ r.get_status_display }}</span></td>
+      <td class="p-3">KES {{ r.amount|floatformat:"-2" }}</td>
+      <td class="p-3 text-xs text-gray-500">{% if r.paid_at %}{{ r.paid_at|date:"j M Y" }}<br>{{ r.paid_ref }}{% if r.paid_by %}<br>by {{ r.paid_by.first_name }}{% endif %}{% else %}—{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="8" class="p-6 text-center text-gray-500">No referrals.</td></tr>{% endfor %}</tbody></table>
+  </div>
+</form>
+<script>function cnt(){document.getElementById('sel-count').textContent=document.querySelectorAll('.rid:checked').length}</script>
+{% include "partials/pagination.html" %}

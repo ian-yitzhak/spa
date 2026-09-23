@@ -1,0 +1,23 @@
+{% extends "adminpanel/base.html" %}{% load icons %}{% block page_title %}Payments{% endblock %}{% block panel %}
+<h1 class="text-2xl font-black">Payments</h1>
+<p class="mt-1 text-sm text-gray-500">Paystack keys: {% if keys_on %}<span class="text-green-600">configured</span>{% else %}<span class="text-primary">missing</span>{% endif %} · Webhook URL: <code>/webhooks/paystack/</code> · Unfinished checkouts are re-checked by <code>reconcile_payments</code>.</p>
+<form class="mt-4 flex flex-wrap gap-2" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Business or reference…" class="flex-1 rounded-lg border px-3 py-2">
+  <select name="state" class="rounded-lg border px-3 py-2" onchange="this.form.submit()"><option value="">All states</option>{% for k,l in states %}<option value="{{ k }}" {% if state == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button class="rounded-lg bg-dark px-4 py-2 text-sm text-white">Filter</button>
+</form>
+<div class="mt-4 overflow-x-auto rounded-2xl border">
+  <table class="w-full text-sm"><thead class="bg-gray-50 text-left text-gray-500"><tr><th class="p-3">When</th><th class="p-3">Vendor</th><th class="p-3">Product</th><th class="p-3">Source</th><th class="p-3">Amount</th><th class="p-3">Phone</th><th class="p-3">State</th><th class="p-3">Invoice / ref</th><th class="p-3">Premium applied</th></tr></thead>
+  <tbody>{% for p in payments %}<tr class="border-t align-top">
+    <td class="p-3 whitespace-nowrap text-gray-500">{{ p.created_at|date:"j M H:i" }}</td>
+    <td class="p-3"><a href="{% url 'ap_vendor' p.vendor.pk %}" class="font-semibold hover:text-primary">{{ p.vendor.brand_name }}</a></td>
+    <td class="p-3">{{ p.get_product_display }}</td><td class="p-3 text-xs">{{ p.get_source_display }}{% if p.recorded_by %}<br><span class="text-gray-400">{{ p.recorded_by.first_name }}</span>{% endif %}</td>
+    <td class="p-3 font-semibold">KES {{ p.amount|kes }}</td>
+    <td class="p-3">{{ p.phone }}</td>
+    <td class="p-3"><span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if p.state == 'COMPLETE' %}bg-green-50 text-green-700{% elif p.state == 'FAILED' %}bg-red-50 text-red-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ p.get_state_display }}</span>{% if p.failed_reason %}<div class="mt-1 text-xs text-gray-400">{{ p.failed_reason|truncatechars:60 }}</div>{% endif %}</td>
+    <td class="p-3 text-xs text-gray-500">{{ p.api_ref }}{% if p.channel %}<br>{{ p.channel }}{% endif %}</td>
+    <td class="p-3 text-xs text-gray-500">{% if p.applied_at %}{{ p.applied_at|date:"j M H:i" }} · {{ p.months }} mo{% else %}—{% endif %}</td>
+  </tr>{% empty %}<tr><td colspan="7" class="p-6 text-center text-gray-500">No payments yet.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

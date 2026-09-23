@@ -1,0 +1,21 @@
+{% if payment.state == 'COMPLETE' %}
+<div id="pay-box" class="rounded-2xl bg-green-600 p-5 text-white">
+  <h2 class="font-heading text-xl font-semibold">Payment received</h2>
+  <p class="mt-1 text-sm">KES {{ payment.amount|floatformat:"-2" }} for {{ payment.months }} month{{ payment.months|pluralize }} of {% if payment.product == 'pos' %}POS{% if payment.branch %} at {{ payment.branch.name }}{% endif %}{% else %}Premium{% endif %}. Active until <strong>{{ payment.expires_at|date:"j M Y" }}</strong>. A receipt is on its way to your email.</p>
+  <a href="{% if payment.product == 'pos' %}{% url 'pos_home' %}{% else %}{% url 'dashboard' %}{% endif %}" class="mt-4 inline-block rounded-lg bg-white px-4 py-2 text-sm font-semibold text-dark">{% if payment.product == 'pos' %}Open POS{% else %}Go to dashboard{% endif %}</a>
+</div>
+{% elif payment.state == 'FAILED' or payment.is_stale %}
+<div id="pay-box" class="rounded-2xl border border-primary bg-red-50 p-5">
+  <h2 class="font-heading text-xl font-semibold text-primary">Payment {% if payment.state == 'FAILED' %}not completed{% else %}not finished{% endif %}</h2>
+  <p class="mt-1 text-sm text-gray-700">{{ payment.failed_reason|default:"The checkout was closed before paying. No money was taken." }}</p>
+  <p class="mt-1 text-xs text-gray-500">Reference: {{ payment.api_ref }}</p>
+  <a href="{% if payment.product == 'pos' %}{% url 'pos_branches' %}{% else %}{% url 'dashboard_upgrade' %}{% endif %}" class="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Try again</a>
+</div>
+{% else %}
+<div id="pay-box" hx-get="{% url 'pay_status' payment.pk %}" hx-trigger="every 4s [document.visibilityState=='visible']" hx-swap="outerHTML" class="rounded-2xl border p-5">
+  <div class="flex items-center gap-3">
+    <span class="h-5 w-5 flex-none animate-spin rounded-full border-2 border-gray-200 border-t-primary"></span>
+    <div><h2 class="font-bold">Confirming your payment…</h2><p class="text-sm text-gray-600">Paystack is still processing KES {{ payment.amount|floatformat:"-2" }}. This page updates by itself. If you paid by M-Pesa, approve the prompt on your phone.</p></div>
+  </div>
+</div>
+{% endif %}
