@@ -12,7 +12,7 @@
   <a href="{% if payment.product == 'pos' %}{% url 'pos_branches' %}{% else %}{% url 'dashboard_upgrade' %}{% endif %}" class="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Try again</a>
 </div>
 {% else %}
-<div id="pay-box" hx-get="{% url 'pay_status' payment.pk %}" hx-trigger="every 4s [document.visibilityState=='visible']" hx-swap="outerHTML" class="rounded-2xl border p-5">
+<div id="pay-box" hx-get="{% url 'pay_status' payment.pk %}" hx-trigger="every 4s" hx-swap="outerHTML" class="rounded-2xl border p-5">
   <div class="flex items-center gap-3">
     <span class="h-5 w-5 flex-none animate-spin rounded-full border-2 border-gray-200 border-t-primary"></span>
     <div><h2 class="font-bold">Confirming your payment…</h2><p class="text-sm text-gray-600">Paystack is still processing KES {{ payment.amount|floatformat:"-2" }}. This page updates by itself. If you paid by M-Pesa, approve the prompt on your phone.</p></div>

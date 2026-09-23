@@ -76,9 +76,10 @@ def start(request):
     p.raw = raw
     p.save(update_fields=["raw"])
     if request.htmx:
-        resp = HttpResponse()
-        resp["HX-Redirect"] = url
-        return resp
+        # Open Paystack's popup over this page; the full checkout page is only the fallback.
+        return render(request, "payments/_popup.html", {**ctx, "payment": p, "checkout_url": url,
+                                                        "access_code": (raw.get("data") or {}).get("access_code", ""),
+                                                        "done_url": reverse("pay_callback")})
     return redirect(url)
 
 

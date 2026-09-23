@@ -1,0 +1,20 @@
+<div id="pay-box">
+  <div class="flex items-center gap-3 rounded-lg bg-white/10 p-4">
+    <span class="h-5 w-5 flex-none animate-spin rounded-full border-2 border-white/30 border-t-accent"></span>
+    <div><h3 class="font-bold">Opening secure payment…</h3>
+      <p class="text-sm text-gray-300">KES {{ payment.amount|floatformat:"-2" }} — pay by card or M-Pesa in the Paystack window. <a href="{{ checkout_url }}" class="underline">Open it on a separate page</a> if nothing appears.</p></div>
+  </div>
+  <script>
+  (function(){
+    var code="{{ access_code|escapejs }}", fallback="{{ checkout_url|escapejs }}", done="{{ done_url|escapejs }}?reference={{ payment.api_ref|urlencode }}";
+    var box=document.getElementById('pay-box'), tries=0;
+    function cancelled(){box.innerHTML='<p class="rounded-lg bg-white/10 p-4 text-sm">Payment window closed — nothing was charged. <a href="" class="font-semibold underline">Try again</a></p>'}
+    function open(){
+      if(!window.PaystackPop){ if(++tries>40){window.location=fallback;return} return setTimeout(open,100) }  // wait up to 4 s for the script
+      try{ new PaystackPop().resumeTransaction(code,{onSuccess:function(){window.location=done},onCancel:cancelled,onError:function(){window.location=fallback}}) }
+      catch(e){ window.location=fallback }
+    }
+    if(!code){window.location=fallback}else{open()}
+  })();
+  </script>
+</div>

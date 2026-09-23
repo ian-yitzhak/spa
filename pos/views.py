@@ -782,9 +782,11 @@ def booking_start(request, pk):
     return redirect("pos_home")
 
 
-@pos_required
+@login_required
 def bookings_badge(request):
-    """Sidebar badge: bookings waiting to be confirmed."""
+    """Sidebar badge: bookings waiting to be confirmed. Empty (not the locked page) when the POS isn't paid for."""
+    if not _resolve_pos_user(request) or not request.vendor.pos_active:
+        return HttpResponse("")
     qs = request.vendor.bookings.filter(status=Booking.Status.REQUESTED, date__gte=timezone.localdate())
     if request.role == "staff":
         qs = qs.filter(staff=request.staff)

@@ -2,12 +2,12 @@
 
 CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://challenges.cloudflare.com https://static.cloudflareinsights.com; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com https://js.paystack.co; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.paystack.co https://*.paystack.com; "
     "font-src 'self' https://fonts.gstatic.com data:; "
     "img-src 'self' data: blob: https:; "
-    "frame-src https://challenges.cloudflare.com; "
-    "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com; "
+    "frame-src https://challenges.cloudflare.com https://*.paystack.co https://*.paystack.com; "
+    "connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com https://*.paystack.co https://*.paystack.com; "
     "object-src 'none'; base-uri 'self'; form-action 'self' https://wa.me https://www.facebook.com https://twitter.com; frame-ancestors 'none'"
 )
 
@@ -20,6 +20,6 @@ class SecurityHeadersMiddleware:
         resp = self.get_response(request)
         resp.setdefault("Content-Security-Policy", CSP)
         resp.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        resp.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()")
+        resp.setdefault("Permissions-Policy", 'camera=(), microphone=(), geolocation=(), payment=(self "https://checkout.paystack.com"), usb=()')
         resp.setdefault("X-Content-Type-Options", "nosniff")
         return resp
