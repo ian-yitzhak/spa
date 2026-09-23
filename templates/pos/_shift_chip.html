@@ -1,0 +1,8 @@
+<details class="relative">
+  <summary class="cursor-pointer list-none rounded-md px-1.5 py-1 text-[11px] font-medium leading-tight {% if s.status == 'worked' %}bg-green-100 text-green-800{% elif s.status == 'absent' %}bg-red-100 text-red-700 line-through{% elif s.status == 'leave' %}bg-gray-200 text-gray-600{% else %}bg-accent/40 text-dark{% endif %}">{% if s.status == 'leave' %}Leave{% else %}{{ s.starts|time:"H:i" }}–<wbr>{{ s.ends|time:"H:i" }}{% endif %}</summary>
+  <div class="absolute left-0 z-20 mt-1 w-40 rounded-lg border bg-white p-1 text-xs shadow-lg">
+    {% if s.note %}<p class="px-2 py-1 text-gray-500">{{ s.note }}</p>{% endif %}
+    {% for k, l in statuses %}{% if k != s.status %}<form method="post" action="{% url 'pos_shift_status' s.pk %}">{% csrf_token %}<input type="hidden" name="status" value="{{ k }}"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="block w-full rounded px-2 py-1.5 text-left hover:bg-gray-100">Mark {{ l|lower }}</button></form>{% endif %}{% endfor %}
+    <form method="post" action="{% url 'pos_shift_status' s.pk %}">{% csrf_token %}<input type="hidden" name="status" value="delete"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="block w-full rounded px-2 py-1.5 text-left text-primary hover:bg-red-50">Remove</button></form>
+  </div>
+</details>

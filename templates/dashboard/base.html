@@ -1,7 +1,20 @@
-{% extends "base.html" %}{% load icons %}
+{% extends "base.html" %}{% load static icons %}
 {% block title %}{% block page_title %}Dashboard{% endblock %} · {{ vendor.brand_name }} — BeautyFlow{% endblock %}
 {% block meta_description %}BeautyFlow dashboard for {{ vendor.brand_name }}.{% endblock %}
 {% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block site_header %}
+<header class="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5">
+    <a href="{% if is_team %}{% url 'pos_me' %}{% else %}{% url 'dashboard' %}{% endif %}" class="flex items-center gap-2" aria-label="Dashboard"><img src="{% static 'img/logo.png' %}" alt="BeautyFlow" class="h-8 w-auto"></a>
+    <div class="flex items-center gap-2 text-sm">
+      <span class="hidden text-gray-500 sm:inline">{{ user.first_name|default:user.email }}{% if vendor %} · {{ vendor.brand_name }}{% endif %}</span>
+      {% if vendor and not is_team %}<a href="{{ vendor.get_absolute_url }}" target="_blank" rel="noopener" class="hidden rounded-lg border px-3 py-1.5 font-medium hover:bg-gray-50 md:inline-block">Public page ↗</a>{% endif %}
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="flex items-center gap-1.5 rounded-lg bg-dark px-3 py-1.5 font-semibold text-white hover:bg-black"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>Log out</button></form>
+    </div>
+  </div>
+</header>
+{% endblock %}
+{% block site_footer %}{% endblock %}
 {% block content %}
 {% with u=request.resolver_match.url_name %}
 <div class="mx-auto max-w-6xl px-4 py-6 lg:grid lg:grid-cols-4 lg:gap-8 lg:py-8">
@@ -32,6 +45,7 @@
       {% endif %}
       <a href="{% url 'pos_profile' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'pos_profile' or u == 'pos_payout' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "user" %}Profile</a>
       <a href="{% url 'change_password' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'change_password' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "lock" %}Change password</a>
+      <form method="post" action="{% url 'logout' %}" class="mt-2 border-t pt-2">{% csrf_token %}<button class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-gray-600 hover:bg-red-50 hover:text-primary"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>Log out</button></form>
     </nav>
     {% else %}
     <nav class="flex flex-col gap-1 rounded-2xl border p-2 text-sm lg:border-0 lg:p-0" aria-label="Dashboard">
@@ -80,6 +94,7 @@
       <a href="{% url 'dashboard_payments' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 {% if u == 'dashboard_payments' %}bg-primary text-white{% else %}hover:bg-gray-100{% endif %}">{% icon "card" %}Billing</a>
       <a href="{% url 'dashboard_upgrade' %}" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 font-semibold {% if u == 'dashboard_upgrade' %}bg-primary text-white{% elif vendor.subscription_expired %}text-primary hover:bg-red-50{% else %}text-primary hover:bg-accent/20{% endif %}">{% icon "bolt" %}{% if vendor.subscription_expired %}Renew Premium{% elif vendor.is_premium %}Plan · {{ vendor.premium_days_left }}d left{% else %}Upgrade to Premium{% endif %}</a>
       <a href="{{ vendor.get_absolute_url }}" target="_blank" class="flex flex-none items-center gap-2 rounded-lg px-3 py-2 text-gray-500 hover:bg-gray-100">{% icon "external" %}View public page</a>
+      <form method="post" action="{% url 'logout' %}" class="mt-2 border-t pt-2">{% csrf_token %}<button class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-gray-600 hover:bg-red-50 hover:text-primary"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>Log out</button></form>
     </nav>
     {% endif %}
   </aside>

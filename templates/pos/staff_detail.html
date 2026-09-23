@@ -1,66 +1,102 @@
 {% extends "pos/base.html" %}{% load icons %}{% block pos_title %}{{ st.name }}{% endblock %}{% block dash %}
 <a href="{% url 'pos_staff' %}" class="text-sm text-gray-500 hover:text-primary">← Staff</a>
-<div class="mt-2 flex flex-wrap items-center justify-between gap-3">
+
+<div class="mt-3 flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5">
   <div class="flex items-center gap-4">
-    <div class="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-accent/30 text-2xl font-bold text-primary">{{ st.name|slice:":1" }}</div>
-    <div><h1 class="text-2xl font-black">{{ st.name }}{% if not st.is_active %} <span class="align-middle rounded-full bg-gray-100 px-2 py-0.5 text-xs font-normal text-gray-500">disabled</span>{% endif %}</h1>
-      <p class="text-sm text-gray-500">{{ st.job_title|default:st.get_role_display }}{% if st.role == 'staff' %} · {{ st.rate_label }} per service{% endif %}{% if many_branches and st.branch %} · {{ st.branch.name }}{% endif %}</p></div>
-  </div>
-  <a href="{% url 'pos_staff_edit' st.pk %}" class="rounded-lg border px-4 py-2 text-sm font-semibold">Edit details &amp; services</a>
-</div>
-<div class="mt-6 grid gap-6 lg:grid-cols-3">
-  <section class="rounded-2xl border p-5 text-sm">
-    <h2 class="font-bold">HR record</h2>
-    <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-      <dt class="text-gray-500">Phone</dt><dd>{{ st.user.phone|default:"—" }}</dd>
-      <dt class="text-gray-500">Login</dt><dd class="break-all">{{ st.user.email }}</dd>
-      <dt class="text-gray-500">Started</dt><dd>{{ st.hired_on|date:"j M Y"|default:"—" }}</dd>
-      <dt class="text-gray-500">Last login</dt><dd>{{ st.user.last_login|date:"j M Y H:i"|default:"never" }}</dd>
-    </dl>
-    {% if st.role == 'staff' %}<h3 class="mt-5 font-semibold">Services &amp; rates</h3>
-    <div class="mt-2 divide-y rounded-xl border">{% for l in links %}<div class="flex justify-between px-3 py-1.5"><span>{{ l.service.name }}</span><span class="{% if l.has_own_rate %}font-semibold{% else %}text-gray-500{% endif %}">{{ l.rate_label }}</span></div>{% empty %}<p class="px-3 py-2 text-gray-500">Any service, at {{ st.rate_label }}.</p>{% endfor %}</div>{% endif %}
-    <h3 class="mt-5 flex items-center justify-between font-semibold">Coming shifts <a href="{% url 'pos_shifts' %}" class="text-xs font-normal text-primary">Rota</a></h3>
-    <div class="mt-2 space-y-1">{% for s in shifts %}<div class="flex justify-between"><span>{{ s.date|date:"D j M" }}</span><span>{{ s.starts|time:"H:i" }}–{{ s.ends|time:"H:i" }}{% if s.status != 'planned' %} · {{ s.get_status_display }}{% endif %}</span></div>{% empty %}<p class="text-gray-500">None planned.</p>{% endfor %}</div>
-  </section>
-  <section class="lg:col-span-2">
-    <form method="get" class="flex flex-wrap items-end gap-2 text-sm">
-      <label>From<input type="date" name="from" value="{{ d_from }}" class="ml-1 rounded-lg border px-2 py-1.5"></label>
-      <label>To<input type="date" name="to" value="{{ d_to }}" class="ml-1 rounded-lg border px-2 py-1.5"></label>
-      <button class="rounded-lg bg-dark px-4 py-1.5 text-white">Show</button>
-    </form>
-    <div class="mt-3 grid gap-3 sm:grid-cols-3">
-      <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Services</div><div class="mt-1 font-heading text-2xl font-semibold">{{ period.n|default:0 }}</div></div>
-      <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Sales brought in</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ period.sales|default:0|kes }}</div></div>
-      <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Commission earned</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ period.c|default:0|kes }}</div></div>
+    <div class="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-accent/30 text-2xl font-bold text-primary">{{ st.name|slice:":1" }}</div>
+    <div>
+      <div class="flex flex-wrap items-center gap-2"><h1 class="text-2xl font-black">{{ st.name }}</h1>
+        {% if st.is_active %}<span class="rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">Active</span>{% else %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">Disabled</span>{% endif %}</div>
+      <p class="text-sm text-gray-500">{{ st.job_title|default:st.get_role_display }}{% if st.role == 'staff' %} · earns {{ st.rate_label }} per service{% endif %}{% if many_branches and st.branch %} · {{ st.branch.name }}{% endif %}</p>
     </div>
-    {% if top %}<div class="mt-3 flex flex-wrap gap-2 text-xs">{% for t in top %}<span class="rounded-full bg-gray-100 px-2.5 py-1">{{ t.name }} · {{ t.n }}</span>{% endfor %}</div>{% endif %}
+  </div>
+  <div class="flex flex-wrap gap-2 text-sm">
+    <a href="{% url 'pos_shifts' %}?staff={{ st.pk }}" class="flex items-center gap-1.5 rounded-lg border px-3 py-2 font-semibold hover:bg-gray-50">{% icon "calendar" "h-4 w-4" %}Shifts</a>
+    <a href="{% url 'pos_staff_edit' st.pk %}" class="rounded-lg border px-3 py-2 font-semibold hover:bg-gray-50">Edit</a>
+  </div>
+</div>
 
-    <h2 class="mt-8 flex items-center justify-between font-bold">Not paid yet <span class="rounded-full bg-dark px-3 py-1 text-sm text-white">KES {{ balance|kes }}</span></h2>
-    {% if unpaid %}
-    <form method="post" action="{% url 'pos_staff_pay' st.pk %}" class="mt-2" id="pay-staff" onsubmit="return confirm('Mark these as paid to {{ st.name }}? They will see the payslip on their profile.')">{% csrf_token %}
-      <div class="max-h-96 overflow-y-auto rounded-2xl border">
-        <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-50 text-left text-gray-500"><tr><th class="p-2"><input type="checkbox" checked onclick="document.querySelectorAll('[name=line]').forEach(c=>{c.checked=this.checked});payTotal()" class="h-4 w-4"></th><th class="p-2">When</th><th class="p-2">Service</th><th class="p-2 text-right">Price</th><th class="p-2 text-right">Commission</th></tr></thead>
-        <tbody>{% for l in unpaid %}<tr class="border-t"><td class="p-2"><input type="checkbox" name="line" value="{{ l.pk }}" data-c="{{ l.commission|floatformat:'2' }}" checked onchange="payTotal()" class="h-4 w-4"></td><td class="p-2 whitespace-nowrap text-gray-500">{{ l.order.paid_at|date:"j M H:i" }}</td><td class="p-2">{% if l.qty > 1 %}{{ l.qty }}× {% endif %}{{ l.name }} <span class="text-xs text-gray-400">{{ l.order.label }}</span></td><td class="p-2 text-right">{{ l.line_total|kes }}</td><td class="p-2 text-right font-semibold">{{ l.commission|kes }}</td></tr>{% endfor %}</tbody></table>
-      </div>
-      {% if unpaid_count > 200 %}<p class="mt-1 text-xs text-gray-500">Showing the oldest 200 of {{ unpaid_count }}. Pay these, then the rest.</p>{% endif %}
-      <div class="mt-3 grid gap-3 rounded-2xl border bg-gray-50 p-4 sm:grid-cols-3">
-        {% for f in form %}{% include "pos/_field.html" with f=f cls="" %}{% endfor %}
-        <div class="flex flex-col justify-end"><div class="text-xs text-gray-500">To pay</div><div class="font-heading text-2xl font-semibold">KES <span id="pay-total">0</span></div></div>
-        <div class="sm:col-span-3"><button class="rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white">Mark as paid</button></div>
-      </div>
-    </form>
-    <script>
-    function payTotal(){var t=0;document.querySelectorAll('[name=line]:checked').forEach(function(c){t+=+c.dataset.c});
-      var f=document.getElementById('pay-staff');t+=+(f.querySelector('[name=bonus]').value||0)-(+(f.querySelector('[name=deduction]').value||0));
-      document.getElementById('pay-total').textContent=Math.max(t,0).toLocaleString(undefined,{maximumFractionDigits:2})}
-    document.querySelectorAll('#pay-staff [name=bonus],#pay-staff [name=deduction]').forEach(function(i){i.oninput=payTotal});payTotal();
-    </script>
-    {% else %}<p class="mt-2 rounded-2xl border border-dashed p-6 text-center text-sm text-gray-500">Nothing owed. New paid services land here.</p>{% endif %}
+{% if st.role == 'staff' %}
+<div class="mt-6 flex flex-wrap items-end justify-between gap-2">
+  <h2 class="font-bold">Earnings</h2>
+  <form method="get" class="flex flex-wrap items-center gap-2 text-sm">
+    <input type="date" name="from" value="{{ d_from }}" class="rounded-lg border px-2 py-1.5" aria-label="From">
+    <span class="text-gray-400">to</span>
+    <input type="date" name="to" value="{{ d_to }}" class="rounded-lg border px-2 py-1.5" aria-label="To">
+    <button class="rounded-lg bg-dark px-3 py-1.5 text-white">Show</button>
+  </form>
+</div>
+<div class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Services done</div><div class="mt-1 font-heading text-2xl font-semibold">{{ period.n|default:0 }}</div></div>
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Sales brought in</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ period.sales|default:0|kes }}</div></div>
+  <div class="rounded-2xl border p-4"><div class="text-xs text-gray-500">Commission earned</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ period.c|default:0|kes }}</div></div>
+  <div class="rounded-2xl bg-dark p-4 text-white"><div class="text-xs text-gray-400">Owed now</div><div class="mt-1 font-heading text-2xl font-semibold">KES {{ balance|kes }}</div></div>
+</div>
+{% endif %}
 
-    <h2 class="mt-8 font-bold">Payouts</h2>
-    <div class="mt-2 divide-y rounded-2xl border text-sm">{% for p in payouts %}
-      <a href="{% url 'pos_payout' p.pk %}" class="flex items-center justify-between p-3 hover:bg-gray-50"><span>#{{ p.number }} · {{ p.paid_at|date:"j M Y" }}<span class="block text-xs text-gray-500">{{ p.services_count }} services · {{ p.get_method_display }}{% if p.reference %} · {{ p.reference }}{% endif %}</span></span><strong>KES {{ p.amount|kes }}</strong></a>
-    {% empty %}<p class="p-4 text-gray-500">No payouts yet.</p>{% endfor %}</div>
-  </section>
+<div class="mt-6 grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    {% if st.role == 'staff' %}
+    <section class="rounded-2xl border">
+      <div class="flex items-center justify-between border-b px-5 py-3"><h2 class="font-bold">To pay</h2>{% if unpaid_count %}<span class="text-sm text-gray-500">{{ unpaid_count }} service{{ unpaid_count|pluralize }}</span>{% endif %}</div>
+      {% if unpaid %}
+      <form method="post" action="{% url 'pos_staff_pay' st.pk %}" id="pay-staff" onsubmit="return confirm('Mark these as paid to {{ st.name }}?')">{% csrf_token %}
+        <div class="max-h-80 overflow-y-auto">
+          <table class="w-full text-sm"><thead class="sticky top-0 bg-gray-50 text-left text-xs text-gray-500"><tr><th class="w-8 p-2 pl-5"><input type="checkbox" checked onclick="document.querySelectorAll('[name=line]').forEach(c=>{c.checked=this.checked});payTotal()" class="h-4 w-4" aria-label="All"></th><th class="p-2">Date</th><th class="p-2">Service</th><th class="p-2 text-right">Price</th><th class="p-2 pr-5 text-right">Commission</th></tr></thead>
+          <tbody>{% for l in unpaid %}<tr class="border-t"><td class="p-2 pl-5"><input type="checkbox" name="line" value="{{ l.pk }}" data-c="{{ l.commission|floatformat:'2' }}" checked onchange="payTotal()" class="h-4 w-4"></td><td class="p-2 whitespace-nowrap text-gray-500">{{ l.order.paid_at|date:"j M" }}</td><td class="p-2">{% if l.qty > 1 %}{{ l.qty }}× {% endif %}{{ l.name }}</td><td class="p-2 text-right text-gray-500">{{ l.line_total|kes }}</td><td class="p-2 pr-5 text-right font-semibold">{{ l.commission|kes }}</td></tr>{% endfor %}</tbody></table>
+        </div>
+        {% if unpaid_count > 200 %}<p class="px-5 pt-2 text-xs text-gray-500">Showing the oldest 200 of {{ unpaid_count }}.</p>{% endif %}
+        <div class="grid gap-3 border-t bg-gray-50 p-5 sm:grid-cols-2 lg:grid-cols-4">
+          {% include "pos/_field.html" with f=form.method cls="" %}
+          {% include "pos/_field.html" with f=form.reference cls="" %}
+          {% include "pos/_field.html" with f=form.bonus cls="" %}
+          {% include "pos/_field.html" with f=form.deduction cls="" %}
+          <div class="flex items-center justify-between gap-3 sm:col-span-2 lg:col-span-4">
+            <div><div class="text-xs text-gray-500">To pay</div><div class="font-heading text-2xl font-semibold">KES <span id="pay-total">0</span></div></div>
+            <button class="rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Mark as paid</button>
+          </div>
+        </div>
+      </form>
+      <script>
+      function payTotal(){var t=0;document.querySelectorAll('[name=line]:checked').forEach(function(c){t+=+c.dataset.c});
+        var f=document.getElementById('pay-staff');t+=+(f.querySelector('[name=bonus]').value||0)-(+(f.querySelector('[name=deduction]').value||0));
+        document.getElementById('pay-total').textContent=Math.max(t,0).toLocaleString(undefined,{maximumFractionDigits:2})}
+      document.querySelectorAll('#pay-staff [name=bonus],#pay-staff [name=deduction]').forEach(function(i){i.oninput=payTotal});payTotal();
+      </script>
+      {% else %}<p class="p-6 text-center text-sm text-gray-500">Nothing owed right now.</p>{% endif %}
+    </section>
+
+    <section class="rounded-2xl border">
+      <div class="border-b px-5 py-3"><h2 class="font-bold">Payouts</h2></div>
+      <div class="divide-y text-sm">{% for p in payouts %}
+        <a href="{% url 'pos_payout' p.pk %}" class="flex items-center justify-between px-5 py-3 hover:bg-gray-50"><span>#{{ p.number }} · {{ p.paid_at|date:"j M Y" }}<span class="block text-xs text-gray-500">{{ p.services_count }} services · {{ p.get_method_display }}{% if p.reference %} · {{ p.reference }}{% endif %}</span></span><strong>KES {{ p.amount|kes }}</strong></a>
+      {% empty %}<p class="p-6 text-center text-gray-500">No payouts yet.</p>{% endfor %}</div>
+    </section>
+    {% else %}
+    <section class="rounded-2xl border p-6 text-sm text-gray-600">{{ st.name }} is a cashier: they run the POS and take payments. Cashiers don't earn commission.</section>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="rounded-2xl border p-5 text-sm">
+      <h2 class="font-bold">Details</h2>
+      <dl class="mt-3 space-y-2">
+        <div class="flex justify-between gap-3"><dt class="text-gray-500">Phone</dt><dd>{{ st.user.phone|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-gray-500">Login</dt><dd class="truncate">{{ st.user.email }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-gray-500">Started</dt><dd>{{ st.hired_on|date:"j M Y"|default:"—" }}</dd></div>
+        <div class="flex justify-between gap-3"><dt class="text-gray-500">Last login</dt><dd>{{ st.user.last_login|date:"j M, H:i"|default:"never" }}</dd></div>
+      </dl>
+    </section>
+    {% if st.role == 'staff' %}
+    <section class="rounded-2xl border p-5 text-sm">
+      <h2 class="font-bold">Services &amp; rates</h2>
+      <div class="mt-3 space-y-1.5">{% for l in links %}<div class="flex justify-between gap-3"><span class="truncate">{{ l.service.name }}</span><span class="{% if l.has_own_rate %}font-semibold{% else %}text-gray-500{% endif %}">{{ l.rate_label }}</span></div>{% empty %}<p class="text-gray-500">Any service at {{ st.rate_label }}.</p>{% endfor %}</div>
+    </section>
+    {% endif %}
+    <section class="rounded-2xl border p-5 text-sm">
+      <div class="flex items-center justify-between"><h2 class="font-bold">Coming shifts</h2><a href="{% url 'pos_shifts' %}?staff={{ st.pk }}" class="text-xs text-primary">Calendar</a></div>
+      <div class="mt-3 space-y-1.5">{% for s in shifts %}<div class="flex justify-between"><span>{{ s.date|date:"D j M" }}</span><span class="{% if s.status == 'absent' %}text-red-600{% elif s.status == 'leave' %}text-gray-500{% endif %}">{% if s.status == 'leave' %}Leave{% else %}{{ s.starts|time:"H:i" }}–{{ s.ends|time:"H:i" }}{% endif %}</span></div>{% empty %}<p class="text-gray-500">None planned.</p>{% endfor %}</div>
+    </section>
+  </aside>
 </div>
 {% endblock %}

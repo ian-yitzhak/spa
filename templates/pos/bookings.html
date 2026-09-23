@@ -28,11 +28,16 @@
     <div class="min-w-0">
       <div class="font-semibold">{{ b.time|time:"H:i" }}–{{ b.ends_at|time:"H:i" }} · {{ b.services_label }}</div>
       {% if b.items.all|length > 1 %}<div class="text-xs text-gray-500">{{ b.items.all|length }} services · KES {{ b.total|kes }}</div>{% endif %}
-      <div class="text-gray-600">{{ b.name }} · <a href="tel:{{ b.phone }}" class="hover:text-primary">{{ b.phone }}</a> · with <strong>{{ b.staff.name|default:"anyone available" }}</strong></div>
+      <div class="text-gray-600">{{ b.name }} · <a href="tel:{{ b.phone }}" class="hover:text-primary">{{ b.phone }}</a>{% if not can_edit %} · with <strong>{{ b.staff.name|default:"not assigned" }}</strong>{% endif %}</div>
+      {% if can_edit and b.is_open %}<form method="post" action="{% url 'pos_booking_assign' b.pk %}" class="mt-2 flex items-center gap-2 text-xs">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label class="{% if b.staff %}text-gray-500{% else %}font-semibold text-primary{% endif %}">Staff</label>
+        <select name="staff" onchange="this.form.submit()" class="rounded-lg border px-2 py-1 text-xs {% if not b.staff %}border-primary{% endif %}"><option value="">— assign staff —</option>{% for s in team %}<option value="{{ s.pk }}" {% if b.staff_id == s.pk %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></form>
+      {% elif can_edit %}<div class="text-xs text-gray-500">Staff: {{ b.staff.name|default:"—" }}</div>{% endif %}
       {% if b.note %}<div class="mt-1 text-xs text-gray-500">“{{ b.note }}”</div>{% endif %}
       <div class="mt-1 text-xs text-gray-400">{{ b.get_source_display }} · booked {{ b.created_at|date:"j M H:i" }}</div>
     </div>
     <div class="flex flex-wrap items-center gap-1.5">
+      {% if b.order and b.order.paid_at %}<span class="rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">Paid · KES {{ b.order.total|kes }}</span>{% elif b.status != 'cancelled' and b.status != 'no_show' %}<span class="rounded-full border border-orange-300 px-2 py-0.5 text-xs font-semibold text-orange-700">Not paid</span>{% endif %}
       <span class="rounded-full px-2 py-0.5 text-xs font-semibold {% if b.status == 'requested' %}bg-orange-50 text-orange-700{% elif b.status == 'confirmed' %}bg-green-50 text-green-700{% elif b.status == 'done' %}bg-gray-100 text-gray-600{% else %}bg-red-50 text-red-700{% endif %}">{{ b.get_status_display }}</span>
       {% if can_edit %}
         {% if b.status == 'requested' %}<form method="post" action="{% url 'pos_booking_status' b.pk %}">{% csrf_token %}<input type="hidden" name="status" value="confirmed"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">Confirm</button></form>{% endif %}

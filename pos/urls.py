@@ -30,6 +30,7 @@ urlpatterns = [
     path("bookings/<uuid:pk>/", views.booking_edit, name="pos_booking_edit"),
     path("bookings/<uuid:pk>/status/", views.booking_status, name="pos_booking_status"),
     path("bookings/<uuid:pk>/start/", views.booking_start, name="pos_booking_start"),
+    path("bookings/<uuid:pk>/assign/", views.booking_assign, name="pos_booking_assign"),
     path("payouts/<uuid:pk>/", views.payout_receipt, name="pos_payout"),
     # owner: team, HR, rota, money out
     path("staff/", views.staff_list, name="pos_staff"),

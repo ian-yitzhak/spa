@@ -759,6 +759,21 @@ def booking_status(request, pk):
 
 @till_required
 @require_POST
+def booking_assign(request, pk):
+    """Give an incoming booking to a staff member. It then shows in their bookings."""
+    b = get_object_or_404(request.vendor.bookings, pk=pk)
+    sid = request.POST.get("staff") or ""
+    b.staff = request.vendor.staff.filter(pk=sid, is_active=True, role=Staff.Role.STAFF).first() if sid else None
+    b.save(update_fields=["staff"])
+    if b.order_id and b.order.paid_at is None and b.staff:      # ticket already open: move it to them too
+        b.order.items.update(staff=b.staff)
+    if b.staff:
+        messages.success(request, f"{b.name}'s booking is now with {b.staff.name}.")
+    return redirect(request.POST.get("next") or "pos_bookings")
+
+
+@till_required
+@require_POST
 def booking_start(request, pk):
     """Client has arrived: open a ticket with their service and stylist already on it."""
     b = get_object_or_404(request.vendor.bookings.select_related("staff").prefetch_related("items__service"), pk=pk)
@@ -907,18 +922,47 @@ def payouts(request):
 
 # ── Staff shifts (rota) ───────────────────────────────────────────────
 
+def _today_board(request, v, today):
+    """Who is in today, who is absent or on leave, and who has nothing planned."""
+    team = list(_scope(request, v.staff.filter(is_active=True)).select_related("user"))
+    todays = {}
+    for sh in _scope(request, v.staff_shifts.filter(date=today)).select_related("staff__user"):
+        todays.setdefault(sh.staff_id, []).append(sh)
+    board = {"working": [], "absent": [], "leave": [], "off": []}
+    for st in team:
+        mine = todays.get(st.pk, [])
+        if any(x.status == StaffShift.Status.LEAVE for x in mine):
+            board["leave"].append(st)
+        elif mine and all(x.status == StaffShift.Status.ABSENT for x in mine):
+            board["absent"].append(st)
+        elif mine:
+            board["working"].append((st, [x for x in mine if x.status != StaffShift.Status.ABSENT]))
+        else:
+            board["off"].append(st)
+    return team, board
+
+
+def _month_calendar(shifts_by_date, month_start, today):
+    """Weeks (Mon–Sun) of day cells for one month; days outside the month are None."""
+    import calendar
+    weeks = []
+    for week in calendar.Calendar(firstweekday=0).monthdatescalendar(month_start.year, month_start.month):
+        weeks.append([{"date": d, "in_month": d.month == month_start.month, "today": d == today,
+                       "shifts": shifts_by_date.get(d, [])} for d in week])
+    return weeks
+
+
 @owner_pos_required
 def shifts(request):
-    """The week's rota: who works when. Add a shift, or mark it worked / absent."""
+    """Today's board, the week's rota, and — for one person — their month on a calendar."""
     from .forms import StaffShiftForm
     v = request.vendor
     today = timezone.localdate()
-    try:
-        start = timezone.datetime.strptime(request.GET.get("week", ""), "%Y-%m-%d").date()
-    except ValueError:
-        start = today
-    start -= timedelta(days=start.weekday())
-    form = StaffShiftForm(request.POST or None, vendor=v, initial={"date": today})
+    who = v.staff.filter(pk=request.GET.get("staff")).select_related("user").first() if request.GET.get("staff") else None
+    initial = {"date": today, "starts": "08:00", "ends": "17:00"}
+    if who:
+        initial["staff"] = who.pk
+    form = StaffShiftForm(request.POST or None, vendor=v, initial=initial)
     if request.method == "POST" and form.is_valid():
         s = form.save(commit=False)
         s.vendor = v
@@ -930,19 +974,44 @@ def shifts(request):
                 StaffShift.objects.get_or_create(vendor=v, staff=s.staff, date=s.date + timedelta(days=i),
                                                  defaults={"starts": s.starts, "ends": s.ends, "branch": s.branch, "note": s.note})
         messages.success(request, f"{s.staff.name} on {s.date:%a %d %b}, {s.starts:%H:%M}–{s.ends:%H:%M}" + (" and the rest of that week." if repeat else "."))
-        return redirect(f"{request.path}?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
+        back = request.POST.get("next") or ""
+        return redirect(back if back.startswith("/pos/shifts/") else f"{request.path}?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
+    team, board = _today_board(request, v, today)
+    ctx = _ctx(request, form=form, today=today, board=board, team=team, who=who, statuses=StaffShift.Status.choices)
+    if who:
+        try:
+            month = timezone.datetime.strptime(request.GET.get("month", ""), "%Y-%m").date()
+        except ValueError:
+            month = today.replace(day=1)
+        nxt = (month.replace(day=28) + timedelta(days=4)).replace(day=1)
+        rows = list(who.shifts.filter(date__gte=month, date__lt=nxt))
+        by_date = {}
+        for sh in rows:
+            by_date.setdefault(sh.date, []).append(sh)
+        worked = [x for x in rows if x.status in (StaffShift.Status.WORKED, StaffShift.Status.PLANNED)]
+        ctx.update(month=month, weeks=_month_calendar(by_date, month, today),
+                   prev_month=(month - timedelta(days=1)).strftime("%Y-%m"), next_month=nxt.strftime("%Y-%m"),
+                   month_stats={"shifts": len(worked), "hours": round(sum(x.hours for x in worked), 1),
+                                "absent": sum(1 for x in rows if x.status == StaffShift.Status.ABSENT),
+                                "leave": sum(1 for x in rows if x.status == StaffShift.Status.LEAVE)})
+        return render(request, "pos/shifts_person.html", ctx)
+    try:
+        start = timezone.datetime.strptime(request.GET.get("week", ""), "%Y-%m-%d").date()
+    except ValueError:
+        start = today
+    start -= timedelta(days=start.weekday())
     days = [start + timedelta(days=i) for i in range(7)]
-    rows = list(_scope(request, v.staff.filter(is_active=True)).select_related("user"))
     week = _scope(request, v.staff_shifts.filter(date__gte=days[0], date__lte=days[-1])).select_related("staff__user")
     grid = {}
-    for s in week:
-        grid.setdefault((s.staff_id, s.date), []).append(s)
-    table = [{"staff": st, "cells": [grid.get((st.pk, d), []) for d in days],
-              "hours": sum(s.hours for d in days for s in grid.get((st.pk, d), []) if s.status != StaffShift.Status.ABSENT)}
-             for st in rows]
-    return render(request, "pos/shifts.html", _ctx(request, form=form, days=days, table=table, today=today,
-                                                   prev=(start - timedelta(days=7)).isoformat(), next=(start + timedelta(days=7)).isoformat(),
-                                                   statuses=StaffShift.Status.choices))
+    for sh in week:
+        grid.setdefault((sh.staff_id, sh.date), []).append(sh)
+    table = [{"staff": st, "cells": [{"date": d, "shifts": grid.get((st.pk, d), [])} for d in days],
+              "hours": round(sum(x.hours for d in days for x in grid.get((st.pk, d), [])
+                                 if x.status in (StaffShift.Status.WORKED, StaffShift.Status.PLANNED)), 1)}
+             for st in team]
+    ctx.update(days=days, table=table, prev=(start - timedelta(days=7)).isoformat(), next=(start + timedelta(days=7)).isoformat(),
+               this_week=(today - timedelta(days=today.weekday())).isoformat())
+    return render(request, "pos/shifts.html", ctx)
 
 
 @owner_pos_required
@@ -955,7 +1024,8 @@ def shift_status(request, pk):
     elif target in StaffShift.Status.values:
         s.status = target
         s.save(update_fields=["status"])
-    return redirect(f"/pos/shifts/?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
+    back = request.POST.get("next") or ""
+    return redirect(back if back.startswith("/pos/shifts/") else f"/pos/shifts/?week={(s.date - timedelta(days=s.date.weekday())).isoformat()}")
 
 
 # ── Branches (owner) ──────────────────────────────────────────────────
